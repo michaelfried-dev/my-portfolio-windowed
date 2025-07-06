@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import {
   IconType,
   SiGmail,
@@ -29,36 +30,56 @@ export default function Home() {
 
   return (
     <div className="w600:p-[30px] w600:text-lg w400:p-5 w400:text-base p-10 text-xl leading-[1.7]">
-      <div className="flex flex-col md:flex-row items-start gap-10">
-        <div className="md:w-2/3">
+      <div className="flex flex-col md:flex-row items-start gap-10 w400:gap-5 w600:gap-[30px]">
+        {/* Profile Section - shows first on mobile, second on desktop */}
+        <div className="w-full md:w-1/3 flex flex-col items-center md:pt-10 md:order-2">
+          <div className="flex w-full flex-row items-center justify-center gap-4 md:flex-col">
+            <Image
+              src="/profile.jpg"
+              alt="Michael Fried"
+              width={200}
+              height={200}
+              className="aspect-square rounded-base border-4 border-border object-cover shadow-[8px_8px_0_0_#000]"
+            />
+            <div className="flex flex-1 flex-col gap-4 md:mt-4 md:w-[200px] md:flex-none">
+              {links.map(({ icon: Icon, href, label }) => (
+                <Button
+                  asChild
+                  key={href}
+                  variant="neutral"
+                  className="flex w-full items-center justify-center gap-2"
+                >
+                  <Link href={href}>
+                    <Icon className="size-5" />
+                    <span>{label}</span>
+                  </Link>
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Text Section - shows second on mobile, first on desktop */}
+        <div className="w-full md:w-2/3 md:order-1">
           <Card className="bg-card text-foreground border-border rounded-base border-4 p-5 shadow-[8px_8px_0_0_#000]">
             <CardContent>
               <p>
-                Hi, I'm Michael! As a software engineer, I enjoy taking projects all the way from an initial idea to a fully-realized product. I'm comfortable in both Agile and traditional development environments, and I have a passion for building high-performance backend microservices using tools like Kotlin, Java, and Spring. I also have experience with front-end development for both web and iOS.
+                Hi, I'm Michael! As a software engineer, I enjoy taking projects
+                all the way from an initial idea to a fully-realized product.
+                I'm comfortable in both Agile and traditional development
+                environments, and I have a passion for building high-performance
+                backend microservices using tools like Kotlin, Java, and Spring.
+                I also have experience with front-end development for both web
+                and iOS.
                 <br /><br />
-                I believe that quality is key, so I always focus on creating comprehensive automated tests to ensure everything runs smoothly. I'm a quick learner and I'm always excited to dive into new technologies to find the best solutions for the job. Feel free to connect with me!
+                I believe that quality is key, so I always focus on creating
+                comprehensive automated tests to ensure everything runs
+                smoothly. I'm a quick learner and I'm always excited to dive
+                into new technologies to find the best solutions for the job.
+                Feel free to connect with me!
               </p>
             </CardContent>
           </Card>
-        </div>
-        <div className="md:w-1/3 flex flex-col items-center justify-center pt-10">
-          <Image
-            src="/profile.jpg"
-            alt="Michael Fried"
-            width={200}
-            height={200}
-            className="aspect-square object-cover rounded-base border-4 border-border shadow-[8px_8px_0_0_#000]"
-          />
-          <div className="mt-5 flex w-[200px] flex-col gap-4">
-            {links.map((link, index) => (
-              <Button asChild key={index} variant="neutral" className="w-full justify-start">
-                <a href={link.href} target="_blank" rel="noopener noreferrer">
-                  <link.icon />
-                  <span className="text-lg">{link.label}</span>
-                </a>
-              </Button>
-            ))}
-          </div>
         </div>
       </div>
     </div>

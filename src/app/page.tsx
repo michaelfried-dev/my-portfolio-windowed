@@ -6,6 +6,7 @@ import {
 } from '@icons-pack/react-simple-icons'
 import { FaPhone } from 'react-icons/fa'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from "@/components/ui/button"
 
 export default function Home() {
   const links: { icon: any; href: string; label: string }[] = [
@@ -40,26 +41,22 @@ export default function Home() {
             </CardContent>
           </Card>
         </div>
-        <div className="md:w-1/3 flex flex-col items-center justify-center pt-5">
+        <div className="md:w-1/3 flex flex-col items-center justify-center pt-10">
           <Image
             src="/profile.jpg"
             alt="Michael Fried"
             width={200}
             height={200}
-            className="rounded-base border-4 border-border shadow-[8px_8px_0_0_#000]"
+            className="aspect-square object-cover rounded-base border-4 border-border shadow-[8px_8px_0_0_#000]"
           />
-          <div className="mt-5 flex flex-col gap-4 items-start">
+          <div className="mt-5 flex w-[200px] flex-col gap-4">
             {links.map((link, index) => (
-              <a
-                key={index}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-foreground hover:text-main flex items-center gap-3 group"
-              >
-                <link.icon className="h-6 w-6" />
-                <span className="text-lg group-hover:underline">{link.label}</span>
-              </a>
+              <Button asChild key={index} variant="neutral" className="w-full justify-start">
+                <a href={link.href} target="_blank" rel="noopener noreferrer">
+                  <link.icon />
+                  <span className="text-lg">{link.label}</span>
+                </a>
+              </Button>
             ))}
           </div>
         </div>

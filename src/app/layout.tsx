@@ -7,7 +7,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 const archivo = Archivo({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'John Doe',
+  title: 'Michael Fried',
 }
 
 export default function RootLayout({
@@ -23,7 +23,7 @@ export default function RootLayout({
             <header className="border-r-border rounded-l-base bg-main w500:hidden relative flex items-center justify-center border-r-4 portrait:rounded-none">
               <h1 className="smallHeight:text-[30px] smallHeight:tracking-[2px] w600:text-[30px] w600:tracking-[2px] -rotate-90 text-[40px] font-bold tracking-[4px] whitespace-nowrap">
                 <span className="text-main-foreground inline-block">
-                  JOHN DOE
+                  MICHAEL FRIED
                 </span>
               </h1>
             </header>

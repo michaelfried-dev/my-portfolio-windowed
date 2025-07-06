@@ -37,7 +37,6 @@
   --color-border: var(--border);
   --color-overlay: var(--overlay);
   --color-ring: var(--ring);
-
   --spacing-boxShadowX: 4px;
   --spacing-boxShadowY: 4px;
   --spacing-reverseBoxShadowX: -4px;
@@ -46,6 +45,26 @@
   --shadow-shadow: var(--shadow);
   --font-weight-base: 500;
   --font-weight-heading: 700;
+}
+
+.dark .bg-main {
+  @apply bg-white;
+}
+
+.dark .text-main-foreground {
+  @apply text-black;
+}
+
+.dark .border-border {
+  @apply border-white;
+}
+
+.bg-card {
+  @apply bg-white;
+}
+
+.dark .bg-card {
+  @apply bg-black;
 }
 
 :root {

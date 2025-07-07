@@ -35,7 +35,7 @@ export default function Nav() {
         </Link>
       ))}
       {/* Wrapper for ThemeSwitcher to handle mobile border and alignment */}
-      <div className="flex h-[50px] w-full items-center justify-center border-t-4 border-border bg-main text-main-foreground md:h-full md:border-t-0">
+      <div className="hidden h-[50px] w-full items-center justify-center border-t-4 border-border bg-main text-main-foreground md:flex md:h-full md:border-t-0">
         <ThemeSwitcher />
       </div>
     </nav>

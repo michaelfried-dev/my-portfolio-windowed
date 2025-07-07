@@ -64,9 +64,9 @@ export default function Home() {
           <Card className="bg-card text-foreground border-border rounded-base border-4 p-5 shadow-[8px_8px_0_0_#000]">
             <CardContent>
               <p>
-                Hi, I'm Michael! As a software engineer, I enjoy taking projects
+                Hi, I&apos;m Michael! As a software engineer, I enjoy taking projects
                 all the way from an initial idea to a fully-realized product.
-                I'm comfortable in both Agile and traditional development
+                I&apos;m comfortable in both Agile and traditional development
                 environments, and I have a passion for building high-performance
                 backend microservices using tools like Kotlin, Java, and Spring.
                 I also have experience with front-end development for both web
@@ -74,7 +74,7 @@ export default function Home() {
                 <br /><br />
                 I believe that quality is key, so I always focus on creating
                 comprehensive automated tests to ensure everything runs
-                smoothly. I'm a quick learner and I'm always excited to dive
+                smoothly. I&apos;m a quick learner and I&apos;m always excited to dive
                 into new technologies to find the best solutions for the job.
                 Feel free to connect with me!
               </p>

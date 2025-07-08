@@ -9,6 +9,9 @@ const archivo = Archivo({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Michael Fried',
+  icons: {
+    icon: '/profile.jpg',
+  },
 }
 
 export default function RootLayout({

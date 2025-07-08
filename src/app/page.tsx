@@ -40,6 +40,7 @@ export default function Home() {
               width={200}
               height={200}
               className="aspect-square rounded-base border-4 border-border object-cover shadow-[8px_8px_0_0_#000]"
+              priority
             />
             <div className="flex flex-1 flex-col gap-4 md:mt-4 md:w-[200px] md:flex-none">
               {links.map(({ icon: Icon, href, label }) => (

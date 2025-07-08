@@ -75,14 +75,14 @@ export default function Home() {
                 backend microservices using tools like Kotlin, Java, and Spring.
                 I also have experience with front-end development for both web
                 and iOS.
-                <br /><br />
+                <br />
                 I believe that quality is key, so I always focus on creating
                 comprehensive automated tests to ensure everything runs
                 smoothly. I&apos;m a quick learner and I&apos;m always excited to dive
                 into new technologies to find the best solutions for the job.
                 Feel free to connect with me!
-                <br /><br />
-                Check out the repository for this site <Link href="https://github.com/michaelfried-dev/my-portfolio-windowed">here</Link>.
+                <br />
+                Check out the repository for this site <Link href="https://github.com/michaelfried-dev/my-portfolio-windowed" className="hover:underline">here</Link>.
               </p>
             </CardContent>
           </Card>

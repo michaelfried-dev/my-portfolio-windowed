@@ -27,6 +27,7 @@ describe('Page', () => {
       'href',
       'https://github.com/michaelfried-dev/my-portfolio-windowed',
     )
+    expect(repoLink).toHaveClass('hover:underline')
 
     // Check for other links to ensure they are still present
     expect(screen.getByRole('link', { name: /email/i })).toBeInTheDocument()

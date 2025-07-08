@@ -17,6 +17,14 @@ describe('Page', () => {
     expect(githubLink).toBeInTheDocument()
     expect(githubLink).toHaveAttribute(
       'href',
+      'https://github.com/michaelfried-dev',
+    )
+
+    // Check for the new repository link in the text
+    const repoLink = screen.getByRole('link', { name: /here/i })
+    expect(repoLink).toBeInTheDocument()
+    expect(repoLink).toHaveAttribute(
+      'href',
       'https://github.com/michaelfried-dev/my-portfolio-windowed',
     )
 

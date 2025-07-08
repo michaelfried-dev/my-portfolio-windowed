@@ -81,7 +81,7 @@ export default function Home() {
                 smoothly. I&apos;m a quick learner and I&apos;m always excited to dive
                 into new technologies to find the best solutions for the job.
                 Feel free to connect with me!
-
+                <br /><br />
                 Check out the repository for this site <Link href="https://github.com/michaelfried-dev/my-portfolio-windowed">here</Link>.
               </p>
             </CardContent>

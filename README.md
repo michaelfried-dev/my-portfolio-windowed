@@ -1,55 +1,60 @@
-<img src="public/preview.png" />
+# Michael's Professional Portfolio
 
-# Windowed portfolio
+This repository contains the source code for my personal portfolio website, designed to showcase my skills, professional experience, and project work. The site is built with a modern, clean, neobrutalist aesthetic and is fully responsive.
 
-Windowed portfolio is a neobrutalism-styled nextjs tailwind template for portfolios.
+## Tech Stack
 
-## Get started
+This project is built with a modern, robust, and scalable tech stack:
 
-[Create a new repo](https://github.com/neobrutalism-templates/windowed-portfolio/generate) from this template.
+-   **Framework:** [Next.js](https://nextjs.org/) 15
+-   **UI:** [React](https://react.dev/) 19
+-   **Language:** [TypeScript](https://www.typescriptlang.org/)
+-   **Styling:** [Tailwind CSS](https://tailwindcss.com/) 4
+-   **Testing:** [Jest](https://jestjs.io/) & [React Testing Library](https://testing-library.com/)
+-   **Deployment:** [Cloudflare Pages](https://pages.cloudflare.com/)
+
+## Getting Started
+
+To run this project locally, follow these steps.
+
+### Prerequisites
+
+Make sure you have [Node.js](https://nodejs.org/en) and [pnpm](https://pnpm.io/installation) installed on your machine.
 
 ### Installation
 
-This template uses `pnpm` package manager so make sure you have it installed.
+1.  Clone the repository to your local machine:
+    ```bash
+    git clone https://github.com/michaelfried-dev/my-portfolio-windowed.git
+    cd my-portfolio-windowed
+    ```
 
-To install all dependencies run:
+2.  Install the project dependencies:
+    ```bash
+    pnpm install
+    ```
 
-```bash
-pnpm i
-```
+### Running the Development Server
 
-To run the app locally:
+Once the dependencies are installed, you can start the local development server:
 
 ```bash
 pnpm run dev
 ```
 
-### Config
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
 
-- Inside `layout.tsx` update the metadata
-- Inside `page.tsx` update the content
-- Update the `favicon.ico`
+## Testing
 
-### Content config
+This project is configured with Jest for unit and component testing. To run the complete test suite, use the following command:
 
-#### Links on the home page
-
-To update the links on the home page go to `src/app/page.tsx` and inside `links` array add or remove objects. Each object has 2 properties, `icon`, and `href`. `href` is self-explanatory, and inside `icon` you'll put an icon imported from `@icons-pack/react-simple-icons`. Visit [simpleicons.org](https://simpleicons.org/) to see all the icons. Import them by adding `Si` prefix to their name as I imported them in `links` component.
-
-#### Updating the `previewImage` in `src/app/work/page.tsx`
-
-Make sure to put `/` + name of the picture that's inside public folder. e.g. you have a `my-project.png` picture inside `public` folder, you'll type:
-
-```ts
-previewImage: '/my-project.png'
+```bash
+pnpm test
 ```
 
-##### Image aspect ratio
+To run the tests and view a code coverage report, run:
 
-Inside `app/work/page.tsx` `previewImage` is wrapped inside AspectRatio component. Change the `ratio` prop so it suits your needs (default preview images are 600 x 300, so I set the ratio to be `2 / 1`).
+```bash
+pnpm test:cov
+```
 
-### Styling
-
-To change the styling visit [styling docs](https://neobrutalism.dev/styling), and copy the desired styling to your css like it's shown in the styling docs.
-
-I didn't add custom font weights for this template since I think it's best that way.

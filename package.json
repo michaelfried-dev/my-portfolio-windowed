@@ -9,7 +9,8 @@
     "build:cf": "pnpm test && pnpm next-on-pages",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest"
+    "test": "jest",
+    "test:cov": "jest --coverage"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^9.4.1",

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {
   IconType,
   SiGmail,
+  SiGithub, // Import Github icon
   SiLinkedin,
 } from '@icons-pack/react-simple-icons'
 import { FaPhone } from 'react-icons/fa'
@@ -21,6 +22,11 @@ export default function Home() {
       icon: SiLinkedin,
       href: 'https://www.linkedin.com/in/michael-fried/',
       label: 'LinkedIn',
+    },
+    {
+      icon: SiGithub,
+      href: 'https://github.com/michaelfried-dev/my-portfolio-windowed',
+      label: 'GitHub',
     },
     {
       icon: FaPhone,

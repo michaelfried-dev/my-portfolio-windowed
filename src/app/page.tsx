@@ -8,6 +8,7 @@ import {
 import { FaPhone } from 'react-icons/fa'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 export default function Home() {
   const links: { icon: any; href: string; label: string }[] = [
@@ -34,13 +35,10 @@ export default function Home() {
         {/* Profile Section - shows first on mobile, second on desktop */}
         <div className="w-full md:w-1/3 flex flex-col items-center md:pt-10 md:order-2">
           <div className="flex w-full flex-row items-center justify-center gap-4 md:flex-col">
-            <Image
-              src="/profile.jpg"
-              alt="Michael Fried"
-              width={200}
-              height={200}
-              className="aspect-square rounded-base border-4 border-border object-cover shadow-[8px_8px_0_0_#000]"
-            />
+            <Avatar className="size-[200px] rounded-base border-4 border-border shadow-[8px_8px_0_0_#000]">
+              <AvatarImage src="/profile.jpg" />
+              <AvatarFallback className="text-6xl">MF</AvatarFallback>
+            </Avatar>
             <div className="flex flex-1 flex-col gap-4 md:mt-4 md:w-[200px] md:flex-none">
               {links.map(({ icon: Icon, href, label }) => (
                 <Button

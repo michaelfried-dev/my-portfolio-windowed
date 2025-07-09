@@ -68,21 +68,23 @@ export default function Home() {
           <Card className="bg-card text-foreground border-border rounded-base border-4 p-5 shadow-[8px_8px_0_0_#000]">
             <CardContent>
               <p>
-                Hi, I&apos;m Michael! As a software engineer, I enjoy taking projects
+                Hi, I&apos;m <strong>Michael</strong>! As a software engineer, I enjoy taking projects
                 all the way from an initial idea to a fully-realized product.
                 I&apos;m comfortable in both Agile and traditional development
                 environments, and I have a passion for building high-performance
                 backend microservices using tools like Kotlin, Java, and Spring.
                 I also have experience with front-end development for both web
                 and iOS.
-                <br />
+              </p>
+              <p className="pt-[10px]">
                 I believe that quality is key, so I always focus on creating
                 comprehensive automated tests to ensure everything runs
                 smoothly. I&apos;m a quick learner and I&apos;m always excited to dive
                 into new technologies to find the best solutions for the job.
                 Feel free to connect with me!
-                <br />
-                Check out the repository for this site <Link href="https://github.com/michaelfried-dev/my-portfolio-windowed" className="hover:underline">here</Link>.
+              </p>
+              <p className="pt-[20px]">
+                Check out the repository for this site <Link href="https://github.com/michaelfried-dev/my-portfolio-windowed" className="underline">here</Link>!
               </p>
             </CardContent>
           </Card>

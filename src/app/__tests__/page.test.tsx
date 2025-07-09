@@ -5,8 +5,12 @@ import Page from '../page'
 describe('Page', () => {
   it('renders the main heading', () => {
     render(<Page />)
-    const heading = screen.getByText(/Hi, I'm Michael!/i)
+    // The text is now split across multiple elements with "Michael" in a <strong> tag
+    const heading = screen.getByText(/Hi, I'm/i)
+    const name = screen.getByText('Michael')
     expect(heading).toBeInTheDocument()
+    expect(name).toBeInTheDocument()
+    expect(name.tagName).toBe('STRONG')
   })
 
   it('renders all social and contact links', () => {
@@ -27,7 +31,7 @@ describe('Page', () => {
       'href',
       'https://github.com/michaelfried-dev/my-portfolio-windowed',
     )
-    expect(repoLink).toHaveClass('hover:underline')
+    expect(repoLink).toHaveClass('underline')
 
     // Check for other links to ensure they are still present
     expect(screen.getByRole('link', { name: /email/i })).toBeInTheDocument()

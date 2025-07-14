@@ -10,7 +10,7 @@ import { FaPhone } from 'react-icons/fa'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import PaypalDonateButton from '@/components/PaypalDonateButton'
+import BuyMeACoffeeButton from '@/components/BuyMeACoffeeButton'
 
 export default function Home() {
   const links: { icon: any; href: string; label: string }[] = [
@@ -62,7 +62,7 @@ export default function Home() {
               ))}
               {/* PayPal Donate Button below all contact links */}
               <div className="flex w-full items-center justify-center mt-2">
-                <PaypalDonateButton />
+                <BuyMeACoffeeButton  />
               </div>
             </div>
           </div>

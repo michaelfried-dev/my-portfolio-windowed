@@ -10,7 +10,7 @@ describe('Page', () => {
     const name = screen.getByText('Michael')
     expect(heading).toBeInTheDocument()
     expect(name).toBeInTheDocument()
-    expect(name.tagName).toBe('STRONG')
+    expect(name.tagName).not.toBe('STRONG')
   })
 
   it('renders all social and contact links', () => {

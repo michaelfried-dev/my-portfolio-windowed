@@ -21,8 +21,6 @@ export default function PaypalDonateButton() {
         <span>Donate</span>
       </a>
     </Button>
-
-    //comment
   )
 }
 

@@ -10,7 +10,7 @@ export function ThemeSwitcher() {
 
   return (
     <button
-      className="m500:h-9 border-l-border m500:w-9 rounded-tr-base bg-main w-[50px] border-l-2 p-0 portrait:rounded-none flex items-center justify-center"
+      className="m500:h-9 border-l-border m500:w-9 rounded-tr-base bg-main flex w-[50px] items-center justify-center border-l-2 p-0 portrait:rounded-none"
       onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
     >
       <Sun className="m500:size-4 stroke-main-foreground hidden size-6 dark:inline" />

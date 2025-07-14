@@ -47,22 +47,25 @@ describe('ExperiencePage', () => {
   })
 
   it('should render all company names as headings', () => {
-    experience.forEach(job => {
-      const heading = screen.getByRole('heading', { name: job.company, level: 3 })
+    experience.forEach((job) => {
+      const heading = screen.getByRole('heading', {
+        name: job.company,
+        level: 3,
+      })
       expect(heading).toBeInTheDocument()
     })
   })
 
   it('should render all job titles', () => {
-    experience.forEach(job => {
+    experience.forEach((job) => {
       const titles = screen.getAllByText(job.title)
       expect(titles.length).toBeGreaterThan(0)
-      titles.forEach(title => expect(title).toBeInTheDocument())
+      titles.forEach((title) => expect(title).toBeInTheDocument())
     })
   })
 
   it('should render all locations and dates', () => {
-    experience.forEach(job => {
+    experience.forEach((job) => {
       const locationAndDate = screen.getByText(`${job.location} | ${job.date}`)
       expect(locationAndDate).toBeInTheDocument()
     })

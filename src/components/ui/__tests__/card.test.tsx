@@ -30,23 +30,32 @@ describe('Card Components', () => {
   describe('CardHeader', () => {
     it('renders children and applies classes', () => {
       render(<CardHeader>Header</CardHeader>)
-      expect(screen.getByText('Header')).toHaveClass('flex flex-col space-y-1.5 p-6')
+      expect(screen.getByText('Header')).toHaveClass(
+        'flex flex-col space-y-1.5 p-6',
+      )
     })
   })
 
   describe('CardTitle', () => {
     it('renders as an h3 with correct classes', () => {
       render(<CardTitle>Title</CardTitle>)
-      const titleElement = screen.getByRole('heading', { name: 'Title', level: 3 })
+      const titleElement = screen.getByRole('heading', {
+        name: 'Title',
+        level: 3,
+      })
       expect(titleElement).toBeInTheDocument()
-      expect(titleElement).toHaveClass('font-semibold leading-none tracking-tight')
+      expect(titleElement).toHaveClass(
+        'font-semibold leading-none tracking-tight',
+      )
     })
   })
 
   describe('CardDescription', () => {
     it('renders children and applies classes', () => {
       render(<CardDescription>Description</CardDescription>)
-      expect(screen.getByText('Description')).toHaveClass('text-muted-foreground text-sm')
+      expect(screen.getByText('Description')).toHaveClass(
+        'text-muted-foreground text-sm',
+      )
     })
   })
 
@@ -60,7 +69,9 @@ describe('Card Components', () => {
   describe('CardFooter', () => {
     it('renders children and applies classes', () => {
       render(<CardFooter>Footer</CardFooter>)
-      expect(screen.getByText('Footer')).toHaveClass('flex items-center p-6 pt-0')
+      expect(screen.getByText('Footer')).toHaveClass(
+        'flex items-center p-6 pt-0',
+      )
     })
   })
 })

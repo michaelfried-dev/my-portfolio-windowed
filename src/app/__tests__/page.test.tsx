@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import Page from '../page'
- 
+
 describe('Page', () => {
   it('renders the main heading', () => {
     render(<Page />)
@@ -39,4 +39,3 @@ describe('Page', () => {
     expect(screen.getByRole('link', { name: /phone/i })).toBeInTheDocument()
   })
 })
-

@@ -8,7 +8,10 @@ describe('CertificationsPage', () => {
   })
 
   it('should render the main heading', () => {
-    const heading = screen.getByRole('heading', { name: /Certifications/i, level: 3 })
+    const heading = screen.getByRole('heading', {
+      name: /Certifications/i,
+      level: 3,
+    })
     expect(heading).toBeInTheDocument()
   })
 

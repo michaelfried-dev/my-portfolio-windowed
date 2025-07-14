@@ -10,6 +10,7 @@ import { FaPhone } from 'react-icons/fa'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import PaypalDonateButton from '@/components/PaypalDonateButton'
 
 export default function Home() {
   const links: { icon: any; href: string; label: string }[] = [
@@ -46,7 +47,7 @@ export default function Home() {
               <AvatarFallback className="text-6xl">MF</AvatarFallback>
             </Avatar>
             <div className="flex flex-1 flex-col gap-4 md:mt-4 md:w-[200px] md:flex-none">
-              {links.map(({ icon: Icon, href, label }) => (
+              {links.map(({ icon: Icon, href, label }, idx) => (
                 <Button
                   asChild
                   key={href}
@@ -59,6 +60,10 @@ export default function Home() {
                   </Link>
                 </Button>
               ))}
+              {/* PayPal Donate Button below all contact links */}
+              <div className="flex w-full items-center justify-center mt-2">
+                <PaypalDonateButton />
+              </div>
             </div>
           </div>
         </div>

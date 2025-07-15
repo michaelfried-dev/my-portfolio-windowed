@@ -5,6 +5,48 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { MessageSquare } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeRaw from 'rehype-raw'
+
+import React from 'react'
+
+const PHONE = '856-905-0670'
+
+// Converts phone numbers in a string to a markdown link
+function linkifyPhone(text: string): string {
+  // Escape characters with special meaning in regex
+  const escapedPhone = PHONE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const phoneRegex = new RegExp(escapedPhone, 'g')
+  const rawPhoneNumber = PHONE.replace(/\D/g, '')
+  return text.replace(phoneRegex, `[${PHONE}](tel:${rawPhoneNumber})`)
+}
+
+// Renders markdown and ensures links open in a new tab
+function SafeMarkdown({ children }: { children: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeRaw]}
+      urlTransform={(url) => url}
+      components={{
+        a: ({ node, ...props }) => {
+          const isHttp = props.href?.startsWith('http')
+          return (
+            <a
+              {...props}
+              target={isHttp ? '_blank' : undefined}
+              rel={isHttp ? 'noopener noreferrer' : undefined}
+              className="text-blue-600 underline dark:text-blue-400"
+            />
+          )
+        },
+      }}
+    >
+      {children}
+    </ReactMarkdown>
+  )
+}
 
 export function Chatbot() {
   const [open, setOpen] = useState(false)
@@ -70,10 +112,23 @@ export function Chatbot() {
         return
       }
       const data = await response.json()
+      // Ensure answer is always a string
+      let safeAnswer: string
+      if (typeof data.answer === 'string') {
+        safeAnswer = data.answer
+      } else if (data.answer != null) {
+        safeAnswer = `[Invalid answer type: ${typeof data.answer}]`
+        console.error(
+          'Chatbot backend returned non-string answer:',
+          data.answer,
+        )
+      } else {
+        safeAnswer = '[No answer received]'
+      }
       // Update the last QA pair with the answer
       setQa((prev) => {
         const updated = [...prev]
-        updated[updated.length - 1] = { question, answer: data.answer }
+        updated[updated.length - 1] = { question, answer: safeAnswer }
         return updated
       })
     } catch (err) {
@@ -85,12 +140,12 @@ export function Chatbot() {
     }
   }
 
-  // Always focus input on mount
+  // Always focus input on mount and when widget is opened
   useEffect(() => {
-    if (inputRef.current) {
+    if (open && inputRef.current) {
       inputRef.current.focus()
     }
-  }, [])
+  }, [open])
 
   return (
     <>
@@ -156,12 +211,23 @@ export function Chatbot() {
                         className="bg-muted text-muted-foreground max-w-[80%] rounded-lg px-3 py-2"
                         ref={i === qa.length - 1 ? latestAnswerRef : undefined}
                       >
-                        {item.answer ||
-                          (isLoading && i === qa.length - 1 ? (
-                            <span className="text-muted animate-pulse">
-                              Thinking...
-                            </span>
-                          ) : null)}
+                        {item.answer ? (
+                          <div className="prose dark:prose-invert max-w-none text-sm">
+                            {typeof item.answer === 'string' ? (
+                              <SafeMarkdown>
+                                {linkifyPhone(item.answer)}
+                              </SafeMarkdown>
+                            ) : (
+                              <span style={{ color: 'red' }}>
+                                [Chatbot error: answer is not a string]
+                              </span>
+                            )}
+                          </div>
+                        ) : isLoading && i === qa.length - 1 ? (
+                          <span className="text-muted animate-pulse">
+                            Thinking...
+                          </span>
+                        ) : null}
                       </div>
                     </div>
                   </div>

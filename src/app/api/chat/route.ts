@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-export const runtime = 'edge';
+export const runtime = 'edge'
 
 export async function POST(req: Request) {
   try {
@@ -37,7 +37,12 @@ export async function POST(req: Request) {
     try {
       // Home/About
       const homeModule = await import('../../page')
-      const homeText = `Contact Information:\n- LinkedIn: https://www.linkedin.com/in/michael-fried/\n- Email: EMAIL@MICHAELFRIED.INFO\n- GitHub: https://github.com/michaelfried-dev\n\nYou can direct users to these links for professional networking, questions, or to view open source work.\n\nAbout: Hi, I'm Michael! As a software engineer, I enjoy taking projects all the way from an initial idea to a fully-realized product. I'm comfortable in both Agile and traditional development environments, and I have a passion for building high-performance backend microservices using tools like Kotlin, Java, and Spring. I also have experience with front-end development for both web and iOS. I believe that quality is key, so I always focus on creating comprehensive automated tests to ensure everything runs smoothly. I'm a quick learner and I'm always excited to dive into new technologies to find the best solutions for the job. Feel free to connect with me!`
+      const homeText = `Contact Information:
+- LinkedIn: https://www.linkedin.com/in/michael-fried/
+- Email: email@michaelfried.info
+- GitHub: https://github.com/michaelfried-dev
+- Phone: 856-905-0670 (If someone asks for my phone or how to call, always answer with the digits 856-905-0670, not as a markdown link. The website will make it clickable.)
+Feel free to reach out for professional networking, questions about my experience, or to discuss potential opportunities! work.\n\nAbout: Hi, I'm Michael! As a software engineer, I enjoy taking projects all the way from an initial idea to a fully-realized product. I'm comfortable in both Agile and traditional development environments, and I have a passion for building high-performance backend microservices using tools like Kotlin, Java, and Spring. I also have experience with front-end development for both web and iOS. I believe that quality is key, so I always focus on creating comprehensive automated tests to ensure everything runs smoothly. I'm a quick learner and I'm always excited to dive into new technologies to find the best solutions for the job. Feel free to connect with me!`
 
       // Experience
       const experienceModule = await import('../../experience/page')
@@ -207,14 +212,14 @@ export async function POST(req: Request) {
         ],
       })
       let answer = result.choices?.[0]?.message?.content || 'No answer found.'
-      // Convert markdown to plain text for clean chatbot display
-      answer = markdownToPlainText(answer)
+      // Return markdown directly so frontend can render links
       return NextResponse.json(
         { answer },
         { headers: { 'Content-Type': 'application/json' } },
       )
 
       // --- Helper function for markdown to plain text ---
+      // (Unused, but left for reference)
       function markdownToPlainText(markdown: string): string {
         // Remove headings
         let text = markdown.replace(/^#+\s?/gm, '')

@@ -16,7 +16,11 @@ jest.mock('lucide-react', () => {
 describe('ThemeSwitcher', () => {
   const renderWithProvider = (theme: 'light' | 'dark') => {
     return render(
-      <ThemeProvider attribute="class" defaultTheme={theme} enableSystem={false}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme={theme}
+        enableSystem={false}
+      >
         <ThemeSwitcher />
       </ThemeProvider>,
     )

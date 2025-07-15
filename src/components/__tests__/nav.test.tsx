@@ -26,7 +26,7 @@ describe('Nav component', () => {
   it('renders all navigation links', () => {
     mockedUsePathname.mockReturnValue('/')
     render(<Nav />)
-    links.forEach(link => {
+    links.forEach((link) => {
       expect(screen.getByRole('link', { name: link.label })).toBeInTheDocument()
     })
   })

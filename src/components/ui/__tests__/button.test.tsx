@@ -7,29 +7,43 @@ describe('Button component', () => {
     render(<Button>Click me</Button>)
     const button = screen.getByRole('button', { name: /click me/i })
     expect(button).toBeInTheDocument()
-    expect(button).toHaveClass(buttonVariants({ variant: 'default', size: 'default' }))
+    expect(button).toHaveClass(
+      buttonVariants({ variant: 'default', size: 'default' }),
+    )
   })
 
   it('applies variant classes correctly', () => {
     const { rerender } = render(<Button variant="noShadow">No Shadow</Button>)
-    expect(screen.getByRole('button')).toHaveClass(buttonVariants({ variant: 'noShadow' }))
+    expect(screen.getByRole('button')).toHaveClass(
+      buttonVariants({ variant: 'noShadow' }),
+    )
 
     rerender(<Button variant="neutral">Neutral</Button>)
-    expect(screen.getByRole('button')).toHaveClass(buttonVariants({ variant: 'neutral' }))
+    expect(screen.getByRole('button')).toHaveClass(
+      buttonVariants({ variant: 'neutral' }),
+    )
 
     rerender(<Button variant="reverse">Reverse</Button>)
-    expect(screen.getByRole('button')).toHaveClass(buttonVariants({ variant: 'reverse' }))
+    expect(screen.getByRole('button')).toHaveClass(
+      buttonVariants({ variant: 'reverse' }),
+    )
   })
 
   it('applies size classes correctly', () => {
     const { rerender } = render(<Button size="sm">Small</Button>)
-    expect(screen.getByRole('button')).toHaveClass(buttonVariants({ size: 'sm' }))
+    expect(screen.getByRole('button')).toHaveClass(
+      buttonVariants({ size: 'sm' }),
+    )
 
     rerender(<Button size="lg">Large</Button>)
-    expect(screen.getByRole('button')).toHaveClass(buttonVariants({ size: 'lg' }))
+    expect(screen.getByRole('button')).toHaveClass(
+      buttonVariants({ size: 'lg' }),
+    )
 
     rerender(<Button size="icon">Icon</Button>)
-    expect(screen.getByRole('button')).toHaveClass(buttonVariants({ size: 'icon' }))
+    expect(screen.getByRole('button')).toHaveClass(
+      buttonVariants({ size: 'icon' }),
+    )
   })
 
   it('renders as a child component when asChild is true', () => {

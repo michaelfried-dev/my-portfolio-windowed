@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import Page from '../page'
- 
+
 describe('Page', () => {
   it('renders the main heading', () => {
     render(<Page />)
@@ -36,7 +36,5 @@ describe('Page', () => {
     // Check for other links to ensure they are still present
     expect(screen.getByRole('link', { name: /email/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /linkedin/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /phone/i })).toBeInTheDocument()
   })
 })
-

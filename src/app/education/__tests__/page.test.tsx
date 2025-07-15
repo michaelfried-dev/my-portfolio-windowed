@@ -8,7 +8,10 @@ describe('EducationPage', () => {
   })
 
   it('should render the main heading', () => {
-    const heading = screen.getByRole('heading', { name: /Education/i, level: 3 })
+    const heading = screen.getByRole('heading', {
+      name: /Education/i,
+      level: 3,
+    })
     expect(heading).toBeInTheDocument()
   })
 
@@ -21,7 +24,9 @@ describe('EducationPage', () => {
   })
 
   it('should render the school, location, and date', () => {
-    const schoolInfo = screen.getByText(/Drexel University | Philadelphia, Pennsylvania | August 2008 - July 2013/i)
+    const schoolInfo = screen.getByText(
+      /Drexel University | Philadelphia, Pennsylvania | August 2008 - July 2013/i,
+    )
     expect(schoolInfo).toBeInTheDocument()
   })
 

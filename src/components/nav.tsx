@@ -15,7 +15,7 @@ export default function Nav() {
   ]
 
   return (
-    <nav className="border-b-border rounded-tr-base w-full flex flex-col md:grid md:h-[50px] md:grid-cols-[1fr_1fr_1fr_1fr_50px] border-b-4 bg-black text-base sm:text-xl portrait:rounded-none">
+    <nav className="border-b-border rounded-tr-base flex w-full flex-col border-b-4 bg-black text-base sm:text-xl md:grid md:h-[50px] md:grid-cols-[1fr_1fr_1fr_1fr_50px] portrait:rounded-none">
       {links.map((link, index) => (
         <Link
           key={link.href}
@@ -23,7 +23,7 @@ export default function Nav() {
             'flex h-12 min-h-[48px] w-full items-center justify-center overflow-hidden px-2 text-center uppercase md:h-full',
             // Add a top border to create separation in the stacked mobile view
             // The border is not applied to the first item
-            index !== 0 && 'border-t-4 border-border md:border-t-0',
+            index !== 0 && 'border-border border-t-4 md:border-t-0',
             path === link.href
               ? 'bg-black text-white'
               : 'text-main-foreground bg-main',
@@ -34,7 +34,7 @@ export default function Nav() {
         </Link>
       ))}
       {/* Wrapper for ThemeSwitcher to handle mobile border and alignment */}
-      <div className="hidden h-12 min-h-[48px] w-full items-center justify-center border-t-4 border-border bg-main text-main-foreground md:flex md:h-full md:border-t-0">
+      <div className="border-border bg-main text-main-foreground hidden h-12 min-h-[48px] w-full items-center justify-center border-t-4 md:flex md:h-full md:border-t-0">
         <ThemeSwitcher />
       </div>
     </nav>

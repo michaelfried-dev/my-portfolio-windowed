@@ -70,7 +70,7 @@ export default function ExperiencePage() {
       date: 'April 2011 – September 2012',
       description: [
         'Developed web applications using Java, JSP, and the Google Web Toolkit, including a URL redirector for secure internal link creation.',
-        'Created and maintained web pages on multiple company websites, including Lockheed Martin Engineering\'s main site, using GWT, JSP, HTML, and other web-related technologies.',
+        "Created and maintained web pages on multiple company websites, including Lockheed Martin Engineering's main site, using GWT, JSP, HTML, and other web-related technologies.",
         'Administered over 60 databases across multiple systems, ensuring consistent and reliable data provision.',
         'Supported various computer-related projects, creating custom web pages and applications for specific uses.',
       ],
@@ -91,12 +91,13 @@ export default function ExperiencePage() {
     },
   ]
 
-  
-
   return (
     <div className="w600:p-[30px] w600:text-lg w400:p-5 w400:text-base p-10 text-xl leading-[1.7]">
       {experience.map((job, index) => (
-        <Card key={index} className="border-border bg-card text-foreground rounded-base mb-10 border-4 p-5 shadow-[8px_8px_0_0_#000]">
+        <Card
+          key={index}
+          className="border-border bg-card text-foreground rounded-base mb-10 border-4 p-5 shadow-[8px_8px_0_0_#000]"
+        >
           <CardHeader>
             <CardTitle className="text-3xl font-bold">{job.company}</CardTitle>
             <p className="pt-1 text-xl font-semibold">{job.title}</p>
@@ -107,14 +108,14 @@ export default function ExperiencePage() {
             </p>
             <ul className="list-outside list-disc pt-2 pl-5">
               {job.description.map((item, i) => (
-                <li key={i} className="mb-2 font-normal">{item}</li>
+                <li key={i} className="mb-2 font-normal">
+                  {item}
+                </li>
               ))}
             </ul>
           </CardContent>
         </Card>
       ))}
-
-      
     </div>
   )
 }

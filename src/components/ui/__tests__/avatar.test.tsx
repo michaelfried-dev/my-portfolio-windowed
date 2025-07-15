@@ -28,7 +28,9 @@ describe('Avatar Components', () => {
           alt="User's avatar"
           className="custom-image"
         />
-        <AvatarFallback className="custom-fallback">{fallbackText}</AvatarFallback>
+        <AvatarFallback className="custom-fallback">
+          {fallbackText}
+        </AvatarFallback>
       </Avatar>,
     )
 

@@ -225,6 +225,8 @@ export async function POST(req: Request) {
         text = text.replace(/_([^_]+)_/g, '$1')
         // Remove inline code/backticks
         text = text.replace(/`([^`]+)`/g, '$1')
+        // Convert markdown links [text](url) to 'text (url)'
+        text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
         // Convert lists to plain lines
         text = text.replace(/^\s*[-*+]\s+/gm, '- ')
         text = text.replace(/^\s*\d+\.\s+/gm, '- ')

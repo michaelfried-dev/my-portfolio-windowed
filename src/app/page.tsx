@@ -1,11 +1,5 @@
-import Image from 'next/image'
 import Link from 'next/link'
-import {
-  IconType,
-  SiGmail,
-  SiGithub, // Import Github icon
-  SiLinkedin,
-} from '@icons-pack/react-simple-icons'
+import { SiGmail, SiGithub, SiLinkedin } from '@icons-pack/react-simple-icons'
 import { FaPhone } from 'react-icons/fa'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

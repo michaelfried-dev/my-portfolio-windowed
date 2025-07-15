@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-
 import { Button } from '@/components/ui/button'
 import { FaCoffee } from 'react-icons/fa'
 

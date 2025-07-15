@@ -6,12 +6,12 @@ This repository contains the source code for my personal portfolio website, desi
 
 This project is built with a modern, robust, and scalable tech stack:
 
--   **Framework:** [Next.js](https://nextjs.org/) 15
--   **UI:** [React](https://react.dev/) 19
--   **Language:** [TypeScript](https://www.typescriptlang.org/)
--   **Styling:** [Tailwind CSS](https://tailwindcss.com/) 4
--   **Testing:** [Jest](https://jestjs.io/) & [React Testing Library](https://testing-library.com/)
--   **Deployment:** [Cloudflare Pages](https://pages.cloudflare.com/)
+- **Framework:** [Next.js](https://nextjs.org/) 15
+- **UI:** [React](https://react.dev/) 19
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/) 4
+- **Testing:** [Jest](https://jestjs.io/) & [React Testing Library](https://testing-library.com/)
+- **Deployment:** [Cloudflare Pages](https://pages.cloudflare.com/)
 
 ## Getting Started
 
@@ -24,6 +24,7 @@ Make sure you have [Node.js](https://nodejs.org/en) and [pnpm](https://pnpm.io/i
 ### Installation
 
 1.  Clone the repository to your local machine:
+
     ```bash
     git clone https://github.com/michaelfried-dev/my-portfolio-windowed.git
     cd my-portfolio-windowed
@@ -57,4 +58,3 @@ To run the tests and view a code coverage report, run:
 ```bash
 pnpm test:cov
 ```
-

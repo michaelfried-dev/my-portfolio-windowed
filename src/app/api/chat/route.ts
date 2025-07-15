@@ -1,45 +1,45 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
   try {
     // Verify content type
-    const contentType = req.headers.get('content-type');
+    const contentType = req.headers.get('content-type')
     if (!contentType?.includes('application/json')) {
       return NextResponse.json(
         { error: 'Invalid content type' },
-        { status: 415 }
-      );
+        { status: 415 },
+      )
     }
-    
+
     // Parse and validate request body
-    let requestBody;
+    let requestBody
     try {
-      requestBody = await req.json();
+      requestBody = await req.json()
     } catch (e) {
       return NextResponse.json(
         { error: 'Invalid JSON format' },
-        { status: 400 }
-      );
+        { status: 400 },
+      )
     }
-    
+
     // Only require question in the request body
-    const { question } = requestBody;
+    const { question } = requestBody
     if (!question || typeof question !== 'string') {
       return NextResponse.json(
         { error: 'Request must include a string question.' },
-        { status: 400 }
-      );
+        { status: 400 },
+      )
     }
 
     // Dynamically import and extract resume context from portfolio source files
-    let context = '';
+    let context = ''
     try {
       // Home/About
-      const homeModule = await import('../../page');
-      const homeText = `About: Hi, I'm Michael! As a software engineer, I enjoy taking projects all the way from an initial idea to a fully-realized product. I'm comfortable in both Agile and traditional development environments, and I have a passion for building high-performance backend microservices using tools like Kotlin, Java, and Spring. I also have experience with front-end development for both web and iOS. I believe that quality is key, so I always focus on creating comprehensive automated tests to ensure everything runs smoothly. I'm a quick learner and I'm always excited to dive into new technologies to find the best solutions for the job. Feel free to connect with me!`;
+      const homeModule = await import('../../page')
+      const homeText = `About: Hi, I'm Michael! As a software engineer, I enjoy taking projects all the way from an initial idea to a fully-realized product. I'm comfortable in both Agile and traditional development environments, and I have a passion for building high-performance backend microservices using tools like Kotlin, Java, and Spring. I also have experience with front-end development for both web and iOS. I believe that quality is key, so I always focus on creating comprehensive automated tests to ensure everything runs smoothly. I'm a quick learner and I'm always excited to dive into new technologies to find the best solutions for the job. Feel free to connect with me!`
 
       // Experience
-      const experienceModule = await import('../../experience/page');
+      const experienceModule = await import('../../experience/page')
       const experienceArr = [
         {
           company: 'Lincoln Financial Group',
@@ -128,13 +128,15 @@ export async function POST(req: Request) {
             'Tracked student issues using a ticketing system, ensuring timely resolution.',
           ],
         },
-      ];
-      let expText = experienceArr.map(job => {
-        return `Company: ${job.company}\nTitle: ${job.title}\nLocation: ${job.location}\nDate: ${job.date}\nDescription: ${job.description.join(' ')}\n`;
-      }).join('\n');
+      ]
+      let expText = experienceArr
+        .map((job) => {
+          return `Company: ${job.company}\nTitle: ${job.title}\nLocation: ${job.location}\nDate: ${job.date}\nDescription: ${job.description.join(' ')}\n`
+        })
+        .join('\n')
 
       // Education
-      const educationModule = await import('../../education/page');
+      const educationModule = await import('../../education/page')
       const education = {
         school: 'Drexel University',
         location: 'Philadelphia, Pennsylvania',
@@ -142,11 +144,11 @@ export async function POST(req: Request) {
         minor: 'Minor: Computer Science',
         date: 'August 2008 - July 2013',
         gpa: 'Cumulative GPA: 3.37',
-      };
-      const eduText = `Education: ${education.degree}\n${education.school} | ${education.location} | ${education.date}\n${education.minor}\n${education.gpa}\n`;
+      }
+      const eduText = `Education: ${education.degree}\n${education.school} | ${education.location} | ${education.date}\n${education.minor}\n${education.gpa}\n`
 
       // Certifications
-      const certModule = await import('../../certifications/page');
+      const certModule = await import('../../certifications/page')
       const certifications = [
         {
           name: 'ICAgile Certified Professional - Agile Testing (ICP-TST)',
@@ -156,77 +158,97 @@ export async function POST(req: Request) {
           name: 'ICAgile Certified Professional - Agile Test Automation (ICP-ATA)',
           date: 'Completed March 1st, 2017',
         },
-      ];
-      let certText = certifications.map(cert => `Certification: ${cert.name} (${cert.date})`).join('\n');
+      ]
+      let certText = certifications
+        .map((cert) => `Certification: ${cert.name} (${cert.date})`)
+        .join('\n')
 
-      context = `${homeText}\n\n${expText}\n${eduText}\n${certText}`;
+      context = `${homeText}\n\n${expText}\n${eduText}\n${certText}`
     } catch (extractErr) {
-      console.error('[DEBUG] Failed to extract resume context from source files:', extractErr);
+      console.error(
+        '[DEBUG] Failed to extract resume context from source files:',
+        extractErr,
+      )
       return NextResponse.json(
         { error: 'Failed to extract resume context from site source files.' },
-        { status: 500 }
-      );
+        { status: 500 },
+      )
     }
 
-        // Use Hugging Face InferenceClient for chatCompletion
-    const apiKey = process.env.HUGGINGFACE_API_KEY;
+    // Use Hugging Face InferenceClient for chatCompletion
+    const apiKey = process.env.HUGGINGFACE_API_KEY
     if (!apiKey) {
-      console.error('[DEBUG] HUGGINGFACE_API_KEY is missing or not loaded');
-      return NextResponse.json({ error: 'Hugging Face API key not set' }, { status: 500 });
+      console.error('[DEBUG] HUGGINGFACE_API_KEY is missing or not loaded')
+      return NextResponse.json(
+        { error: 'Hugging Face API key not set' },
+        { status: 500 },
+      )
     }
-    console.log(`[DEBUG] HUGGINGFACE_API_KEY loaded: ${apiKey.slice(0,6)}... (length: ${apiKey.length})`);
-    console.log('[DEBUG] Sending question to Hugging Face (InferenceClient):', question);
+    console.log(
+      `[DEBUG] HUGGINGFACE_API_KEY loaded: ${apiKey.slice(0, 6)}... (length: ${apiKey.length})`,
+    )
+    console.log(
+      '[DEBUG] Sending question to Hugging Face (InferenceClient):',
+      question,
+    )
     try {
-      const { InferenceClient } = await import("@huggingface/inference");
-      const client = new InferenceClient(apiKey);
-      console.log('[DEBUG] Using chatCompletion with deepseek-ai/DeepSeek-V3-0324');
-      const systemPrompt = `You are a helpful assistant that answers questions about the following resume and portfolio content. Context:\n${context}`;
+      const { InferenceClient } = await import('@huggingface/inference')
+      const client = new InferenceClient(apiKey)
+      console.log(
+        '[DEBUG] Using chatCompletion with deepseek-ai/DeepSeek-V3-0324',
+      )
+      const systemPrompt = `You are a helpful assistant that answers questions about the following resume and portfolio content. Context:\n${context}`
       const result = await client.chatCompletion({
-        model: "deepseek-ai/DeepSeek-V3-0324",
+        model: 'deepseek-ai/DeepSeek-V3-0324',
         messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: question }
-        ]
-      });
-      let answer = result.choices?.[0]?.message?.content || "No answer found.";
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: question },
+        ],
+      })
+      let answer = result.choices?.[0]?.message?.content || 'No answer found.'
       // Convert markdown to plain text for clean chatbot display
-      answer = markdownToPlainText(answer);
-      return NextResponse.json({ answer }, { headers: { 'Content-Type': 'application/json' } });
-    
-// --- Helper function for markdown to plain text ---
-function markdownToPlainText(markdown: string): string {
-  // Remove headings
-  let text = markdown.replace(/^#+\s?/gm, '');
-  // Remove bold/italic
-  text = text.replace(/\*\*([^*]+)\*\*/g, '$1');
-  text = text.replace(/\*([^*]+)\*/g, '$1');
-  text = text.replace(/__([^_]+)__/g, '$1');
-  text = text.replace(/_([^_]+)_/g, '$1');
-  // Remove inline code/backticks
-  text = text.replace(/`([^`]+)`/g, '$1');
-  // Convert lists to plain lines
-  text = text.replace(/^\s*[-*+]\s+/gm, '- ');
-  text = text.replace(/^\s*\d+\.\s+/gm, '- ');
-  // Remove blockquotes
-  text = text.replace(/^>\s?/gm, '');
-  // Collapse multiple newlines
-  text = text.replace(/\n{2,}/g, '\n');
-  // Trim
-  return text.trim();
-}
+      answer = markdownToPlainText(answer)
+      return NextResponse.json(
+        { answer },
+        { headers: { 'Content-Type': 'application/json' } },
+      )
 
+      // --- Helper function for markdown to plain text ---
+      function markdownToPlainText(markdown: string): string {
+        // Remove headings
+        let text = markdown.replace(/^#+\s?/gm, '')
+        // Remove bold/italic
+        text = text.replace(/\*\*([^*]+)\*\*/g, '$1')
+        text = text.replace(/\*([^*]+)\*/g, '$1')
+        text = text.replace(/__([^_]+)__/g, '$1')
+        text = text.replace(/_([^_]+)_/g, '$1')
+        // Remove inline code/backticks
+        text = text.replace(/`([^`]+)`/g, '$1')
+        // Convert lists to plain lines
+        text = text.replace(/^\s*[-*+]\s+/gm, '- ')
+        text = text.replace(/^\s*\d+\.\s+/gm, '- ')
+        // Remove blockquotes
+        text = text.replace(/^>\s?/gm, '')
+        // Collapse multiple newlines
+        text = text.replace(/\n{2,}/g, '\n')
+        // Trim
+        return text.trim()
+      }
     } catch (err) {
-      console.error('[DEBUG] Hugging Face InferenceClient error:', err);
-      return NextResponse.json({ error: 'Failed to process request via Hugging Face InferenceClient' }, { status: 500 });
+      console.error('[DEBUG] Hugging Face InferenceClient error:', err)
+      return NextResponse.json(
+        { error: 'Failed to process request via Hugging Face InferenceClient' },
+        { status: 500 },
+      )
     }
   } catch (error) {
-    console.error('Chat API error:', error);
+    console.error('Chat API error:', error)
     return NextResponse.json(
       { error: 'Failed to process request' },
-      { 
+      {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
   }
 }

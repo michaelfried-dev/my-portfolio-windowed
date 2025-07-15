@@ -1,86 +1,96 @@
-'use client';
-import { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { MessageSquare } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
+'use client'
+import { useState, useRef, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { MessageSquare } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export function Chatbot() {
-  const [open, setOpen] = useState(false);
-  const [qa, setQa] = useState<Array<{question: string, answer: string}>>([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const chatAreaRef = useRef<HTMLDivElement>(null);
-  const endOfMessagesRef = useRef<HTMLDivElement>(null);
-  const latestAnswerRef = useRef<HTMLDivElement>(null);
-  const prevAnswer = useRef<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [open, setOpen] = useState(false)
+  const [qa, setQa] = useState<Array<{ question: string; answer: string }>>([])
+  const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const chatAreaRef = useRef<HTMLDivElement>(null)
+  const endOfMessagesRef = useRef<HTMLDivElement>(null)
+  const latestAnswerRef = useRef<HTMLDivElement>(null)
+  const prevAnswer = useRef<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // Scroll to the new answer (assistant message) when it arrives
   useEffect(() => {
-    const last = qa[qa.length - 1];
-    if (last && last.answer && last.answer !== prevAnswer.current && latestAnswerRef.current) {
+    const last = qa[qa.length - 1]
+    if (
+      last &&
+      last.answer &&
+      last.answer !== prevAnswer.current &&
+      latestAnswerRef.current
+    ) {
       // Scroll to the top of the new answer
-      latestAnswerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      latestAnswerRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
     }
     // Only focus input after new message or answer
     if (inputRef.current) {
-      inputRef.current.focus();
+      inputRef.current.focus()
     }
-    prevAnswer.current = last ? last.answer : null;
-  }, [qa, isLoading]);
+    prevAnswer.current = last ? last.answer : null
+  }, [qa, isLoading])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    setIsLoading(true);
-    setError(null);
-    const question = input.trim();
-    setInput('');
+    e.preventDefault()
+    if (!input.trim()) return
+    setIsLoading(true)
+    setError(null)
+    const question = input.trim()
+    setInput('')
     // Focus the input after submit
-    if (inputRef.current) inputRef.current.focus();
+    if (inputRef.current) inputRef.current.focus()
     // Show the user's prompt immediately with a placeholder answer
-    setQa(prev => [...prev, { question, answer: '' }]);
+    setQa((prev) => [...prev, { question, answer: '' }])
     // Scroll to bottom after submitting
     setTimeout(() => {
       if (endOfMessagesRef.current) {
-        endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+        endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' })
       }
-    }, 0);
+    }, 0)
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question })
-      });
+        body: JSON.stringify({ question }),
+      })
       if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to get answer');
-        setIsLoading(false);
-        return;
+        const errorData = await response.json()
+        setError(errorData.error || 'Failed to get answer')
+        setIsLoading(false)
+        return
       }
-      const data = await response.json();
+      const data = await response.json()
       // Update the last QA pair with the answer
-      setQa(prev => {
-        const updated = [...prev];
-        updated[updated.length - 1] = { question, answer: data.answer };
-        return updated;
-      });
+      setQa((prev) => {
+        const updated = [...prev]
+        updated[updated.length - 1] = { question, answer: data.answer }
+        return updated
+      })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setError(
+        err instanceof Error ? err.message : 'An unexpected error occurred',
+      )
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   // Always focus input on mount
   useEffect(() => {
     if (inputRef.current) {
-      inputRef.current.focus();
+      inputRef.current.focus()
     }
-  }, []);
+  }, [])
 
   return (
     <>
@@ -89,11 +99,11 @@ export function Chatbot() {
         <Button
           variant="neutral"
           size="icon"
-          className="fixed bottom-6 right-6 z-50"
+          className="fixed right-6 bottom-6 z-50"
           aria-label="Open Chatbot"
           onClick={() => setOpen(true)}
         >
-          <MessageSquare className="w-6 h-6" />
+          <MessageSquare className="h-6 w-6" />
         </Button>
       )}
       {/* Chatbot Widget */}
@@ -108,15 +118,17 @@ export function Chatbot() {
               type: 'spring',
               stiffness: 340,
               damping: 16,
-              mass: 1.7
+              mass: 1.7,
             }}
             style={{ transformOrigin: 'bottom right' }}
-            className="fixed bottom-4 right-4 w-full max-w-md shadow-lg z-50"
+            className="fixed right-4 bottom-4 z-50 w-full max-w-md shadow-lg"
           >
             <Card>
-              <div className="flex items-center gap-2 p-4 border-b border-border">
-                <MessageSquare className="w-5 h-5 text-primary" />
-                <span className="font-semibold flex-1">Ask about my experience</span>
+              <div className="border-border flex items-center gap-2 border-b p-4">
+                <MessageSquare className="text-primary h-5 w-5" />
+                <span className="flex-1 font-semibold">
+                  Ask about my experience
+                </span>
                 <Button
                   variant="neutral"
                   size="icon"
@@ -128,36 +140,45 @@ export function Chatbot() {
                   <span className="text-lg">×</span>
                 </Button>
               </div>
-              <div ref={chatAreaRef} className="h-64 overflow-y-auto p-4 space-y-2">
+              <div
+                ref={chatAreaRef}
+                className="h-64 space-y-2 overflow-y-auto p-4"
+              >
                 {qa.map((item, i: number) => (
                   <div key={i}>
                     <div className="flex justify-end">
-                      <div
-                        className="rounded-lg px-3 py-2 max-w-[80%] bg-primary text-primary-foreground"
-                      >
+                      <div className="bg-primary text-primary-foreground max-w-[80%] rounded-lg px-3 py-2">
                         {item.question}
                       </div>
                     </div>
-                    <div className="flex justify-start mt-1">
+                    <div className="mt-1 flex justify-start">
                       <div
-                        className="rounded-lg px-3 py-2 max-w-[80%] bg-muted text-muted-foreground"
+                        className="bg-muted text-muted-foreground max-w-[80%] rounded-lg px-3 py-2"
                         ref={i === qa.length - 1 ? latestAnswerRef : undefined}
                       >
-                        {item.answer || (isLoading && i === qa.length - 1 ? <span className="animate-pulse text-muted">Thinking...</span> : null)}
+                        {item.answer ||
+                          (isLoading && i === qa.length - 1 ? (
+                            <span className="text-muted animate-pulse">
+                              Thinking...
+                            </span>
+                          ) : null)}
                       </div>
                     </div>
                   </div>
                 ))}
                 {error && (
-                  <div className="flex justify-center mt-2">
-                    <div className="rounded-lg px-3 py-2 bg-error text-error-foreground">
+                  <div className="mt-2 flex justify-center">
+                    <div className="bg-error text-error-foreground rounded-lg px-3 py-2">
                       {error}
                     </div>
                   </div>
                 )}
                 <div ref={endOfMessagesRef} />
               </div>
-              <form onSubmit={handleSubmit} className="p-4 border-t border-border">
+              <form
+                onSubmit={handleSubmit}
+                className="border-border border-t p-4"
+              >
                 <div className="flex gap-2">
                   <Input
                     ref={inputRef}
@@ -178,5 +199,5 @@ export function Chatbot() {
         )}
       </AnimatePresence>
     </>
-  );
+  )
 }

@@ -8,6 +8,13 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const config: Config = {
+  // Allow ESM modules in node_modules to be transpiled (for react-markdown, remark-gfm)
+  transformIgnorePatterns: [
+    "/node_modules/(?!react-markdown|remark-gfm)/"
+  ],
+  transform: {
+    "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
+  },
   collectCoverage: true,
   coverageProvider: 'v8',
   collectCoverageFrom: [
@@ -29,6 +36,8 @@ const config: Config = {
     '^@testing-library/react$':
       '<rootDir>/node_modules/@testing-library/react/dist/index.js',
     '^@/components/(.*)$': '<rootDir>/src/components/$1',
+    '^react-markdown$': '<rootDir>/src/__mocks__/react-markdown.tsx',
+    '^remark-gfm$': '<rootDir>/src/__mocks__/remark-gfm.js',
   },
 }
 

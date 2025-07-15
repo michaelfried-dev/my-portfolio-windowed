@@ -78,6 +78,29 @@ describe('Chatbot', () => {
     expect(await screen.findByText('Test answer')).toBeInTheDocument()
   })
 
+  it('renders phone number as clickable tel: link in answer', async () => {
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({ answer: 'You can call me at 856-905-0670.' }),
+      }),
+    )
+    render(<Chatbot />)
+    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    const input = await screen.findByPlaceholderText(
+      'e.g. Where did Michael Fried work in 2023?',
+    )
+    fireEvent.change(input, { target: { value: 'phone?' } })
+    const form = input.closest('form')
+    if (form) fireEvent.submit(form)
+    // Wait for the answer to appear, then check for the raw markdown link
+    const answerText = await screen.findByText(
+      /You can call me at \[856-905-0670\]\(tel:8569050670\)\./,
+    )
+    expect(answerText).toBeInTheDocument()
+  })
+
   it('shows a loading indicator while waiting for answer', async () => {
     ;(global.fetch as jest.Mock).mockImplementationOnce(
       () =>

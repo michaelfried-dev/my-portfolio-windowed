@@ -36,6 +36,5 @@ describe('Page', () => {
     // Check for other links to ensure they are still present
     expect(screen.getByRole('link', { name: /email/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /linkedin/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /phone/i })).toBeInTheDocument()
   })
 })

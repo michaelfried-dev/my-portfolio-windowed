@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { SiGmail, SiGithub, SiLinkedin } from '@icons-pack/react-simple-icons'
-import { FaPhone } from 'react-icons/fa'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -22,11 +21,6 @@ export default function Home() {
       icon: SiGithub,
       href: 'https://github.com/michaelfried-dev',
       label: 'GitHub',
-    },
-    {
-      icon: FaPhone,
-      href: 'tel:8569050670',
-      label: 'Phone',
     },
   ]
 

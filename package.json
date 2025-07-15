@@ -22,6 +22,7 @@
     "ai": "^4.3.19",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.23.6",
     "lucide-react": "^0.487.0",
     "next": "15.2.4",
     "next-themes": "^0.3.0",

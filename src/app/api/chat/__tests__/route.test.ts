@@ -54,4 +54,80 @@ describe('POST /api/chat', () => {
     const data = await res.json();
     expect(data.error).toMatch(/Request must include a string question/);
   });
+
+  it('returns 500 if Hugging Face API key is missing', async () => {
+    // Save and unset the env variable
+    const originalKey = process.env.HUGGINGFACE_API_KEY;
+    delete process.env.HUGGINGFACE_API_KEY;
+    const req = mockRequest({ body: { question: 'Who are you?' } });
+    const res = await POST(req);
+    expect(res.status).toBe(500);
+    const data = await res.json();
+    expect(data.error).toMatch(/Hugging Face API key not set/);
+    // Restore the env variable
+    if (originalKey !== undefined) process.env.HUGGINGFACE_API_KEY = originalKey;
+  });
+
+  it('returns 200 and answer on successful chat completion', async () => {
+    process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    jest.resetModules();
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        constructor() {}
+        async chatCompletion() {
+          return { choices: [{ message: { content: 'Hello from the bot!' } }] };
+        }
+      }
+    }), { virtual: true });
+    // Re-import POST after mocking
+    const { POST: MockedPOST } = await import('../route');
+    const req = mockRequest({ body: { question: 'Say hello' } });
+    const res = await MockedPOST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.answer).toBe('Hello from the bot!');
+    jest.dontMock('@huggingface/inference');
+  });
+
+  it('returns 402 and user-friendly error message if Hugging Face API quota is exceeded', async () => {
+    process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    jest.resetModules();
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        constructor() {}
+        async chatCompletion() {
+          const error: any = new Error('Payment required');
+          error.httpResponse = { status: 402 };
+          throw error;
+        }
+      }
+    }), { virtual: true });
+    const { POST: MockedPOST } = await import('../route');
+    const req = mockRequest({ body: { question: 'What is your message limit?' } });
+    const res = await MockedPOST(req);
+    expect(res.status).toBe(402);
+    const data = await res.json();
+    expect(data.error).toMatch(/hit my message limit for the month/i);
+    jest.dontMock('@huggingface/inference');
+  });
+
+  it('returns 500 and fallback error message on generic Hugging Face API error', async () => {
+    process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    jest.resetModules();
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        constructor() {}
+        async chatCompletion() {
+          throw new Error('Random server error');
+        }
+      }
+    }), { virtual: true });
+    const { POST: MockedPOST } = await import('../route');
+    const req = mockRequest({ body: { question: 'Trigger error' } });
+    const res = await MockedPOST(req);
+    expect(res.status).toBe(500);
+    const data = await res.json();
+    expect(data.error).toMatch(/Failed to process request via Hugging Face InferenceClient/);
+    jest.dontMock('@huggingface/inference');
+  });
 });

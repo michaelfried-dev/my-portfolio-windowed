@@ -15,13 +15,26 @@ import React from 'react'
 
 const PHONE = '856-905-0670'
 
-// Converts phone numbers in a string to a markdown link
-function linkifyPhone(text: string): string {
-  // Escape characters with special meaning in regex
-  const escapedPhone = PHONE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+// Converts phone numbers, URLs, and email addresses in a string into markdown links
+function linkifyText(text: string): string {
+  let result = text
+
+  // 1. Phone number linkification (specific configured phone)
+  const escapedPhone = PHONE.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')
   const phoneRegex = new RegExp(escapedPhone, 'g')
   const rawPhoneNumber = PHONE.replace(/\D/g, '')
-  return text.replace(phoneRegex, `[${PHONE}](tel:${rawPhoneNumber})`)
+  result = result.replace(phoneRegex, `[${PHONE}](tel:${rawPhoneNumber})`)
+
+  // 2. URL linkification – match http/https URLs not already in markdown links
+  //    This basic regex intentionally stops at whitespace or closing parenthesis.
+  const urlRegex = /(?<!\]\()https?:\/\/[^\s)]+/g
+  result = result.replace(urlRegex, (url) => `[${url}](${url})`)
+
+  // 3. Email linkification – match simple email patterns not already in markdown links
+  const emailRegex = /(?<!\]\()([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g
+  result = result.replace(emailRegex, (email) => `[${email}](mailto:${email})`)
+
+  return result
 }
 
 // Renders markdown and ensures links open in a new tab
@@ -231,7 +244,7 @@ export function Chatbot() {
                           <div className="prose dark:prose-invert max-w-none text-sm">
                             {typeof item.answer === 'string' ? (
                               <SafeMarkdown>
-                                {linkifyPhone(item.answer)}
+                                {linkifyText(item.answer)}
                               </SafeMarkdown>
                             ) : (
                               <span style={{ color: 'red' }}>
@@ -250,8 +263,10 @@ export function Chatbot() {
                 ))}
                 {error && (
                   <div className="mt-2 flex justify-center">
-                    <div className="bg-error text-error-foreground rounded-lg px-3 py-2">
-                      {error}
+                    <div className="bg-error text-error-foreground rounded-lg px-3 py-2 prose dark:prose-invert max-w-none text-sm">
+                      <SafeMarkdown>
+                        {linkifyText(error)}
+                      </SafeMarkdown>
                     </div>
                   </div>
                 )}

@@ -222,7 +222,7 @@ Feel free to reach out for professional networking, questions about my experienc
       // Robustly handle 402 errors from Hugging Face API
       if (err.httpResponse && err.httpResponse.status === 402) {
         return NextResponse.json(
-          { error: "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn (https://www.linkedin.com/in/michael-fried/) or email (email@michaelfried.info). Thank you for your understanding!" },
+          { error: "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!" },
           { status: 402 }
         );
       }

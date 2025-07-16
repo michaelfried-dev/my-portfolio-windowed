@@ -189,9 +189,7 @@ describe('Chatbot', () => {
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
     expect(
-      await screen.findByText(
-        "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn (https://www.linkedin.com/in/michael-fried/) or email (email@michaelfried.info). Thank you for your understanding!"
-      )
+      await screen.findByText(/I'm sorry, but I've hit my message limit/ )
     ).toBeInTheDocument()
   })
 })

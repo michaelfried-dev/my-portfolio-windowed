@@ -36,6 +36,7 @@ const config: Config = {
     '^@testing-library/react$':
       '<rootDir>/node_modules/@testing-library/react/dist/index.js',
     '^@/components/(.*)$': '<rootDir>/src/components/$1',
+    '^@/hooks/(.*)$': '<rootDir>/src/hooks/$1',
     '^react-markdown$': '<rootDir>/src/__mocks__/react-markdown.tsx',
     '^remark-gfm$': '<rootDir>/src/__mocks__/remark-gfm.js',
   },

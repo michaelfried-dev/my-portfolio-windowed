@@ -1,6 +1,8 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
+import { useWindowSize } from '@/hooks/useWindowSize'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { MessageSquare } from 'lucide-react'
@@ -49,6 +51,8 @@ function SafeMarkdown({ children }: { children: string }) {
 }
 
 export function Chatbot() {
+  const { width, height } = useWindowSize()
+  const isSmallScreen = (width || 0) < 448 || (height || 0) < 700 // max-w-md is 448px, 700px is arbitrary height
   const [open, setOpen] = useState(false)
   const [qa, setQa] = useState<Array<{ question: string; answer: string }>>([])
   const [input, setInput] = useState('')
@@ -107,7 +111,11 @@ export function Chatbot() {
       })
       if (!response.ok) {
         const errorData = await response.json()
-        setError(errorData.error || 'Failed to get answer')
+        if (response.status === 402) {
+          setError(errorData.error || "I've hit my message limit for the month. Please try again later.")
+        } else {
+          setError(errorData.error || 'Failed to get answer')
+        }
         setIsLoading(false)
         return
       }
@@ -176,9 +184,14 @@ export function Chatbot() {
               mass: 1.7,
             }}
             style={{ transformOrigin: 'bottom right' }}
-            className="fixed right-4 bottom-4 z-50 w-full max-w-md shadow-lg"
+            className={cn(
+              'fixed z-50 shadow-lg',
+              isSmallScreen
+                ? 'inset-0 h-full w-full'
+                : 'right-4 bottom-4 w-full max-w-md'
+            )}
           >
-            <Card>
+            <Card className={cn(isSmallScreen && 'h-full flex flex-col')}>
               <div className="border-border flex items-center gap-2 border-b p-4">
                 <MessageSquare className="text-primary h-5 w-5" />
                 <span className="flex-1 font-semibold">
@@ -197,7 +210,10 @@ export function Chatbot() {
               </div>
               <div
                 ref={chatAreaRef}
-                className="h-64 space-y-2 overflow-y-auto p-4"
+                className={cn(
+                'space-y-2 overflow-y-auto p-4',
+                isSmallScreen ? 'flex-grow' : 'h-64'
+              )}
               >
                 {qa.map((item, i: number) => (
                   <div key={i}>

@@ -1,5 +1,5 @@
 import { POST } from '../route';
-import { NextRequest } from 'next/server';
+import { Request } from 'undici';
 
 describe('POST /api/chat', () => {
   function mockRequest({

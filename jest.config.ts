@@ -29,7 +29,9 @@ const config: Config = {
   ],
   testEnvironment: 'jsdom',
   // Add more setup options before each test is run
+  setupFiles: ['<rootDir>/jest.globals-setup.js'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+
   moduleNameMapper: {
     '^react$': '<rootDir>/node_modules/react/index.js',
     '^react-dom$': '<rootDir>/node_modules/react-dom/index.js',

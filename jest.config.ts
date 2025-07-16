@@ -29,13 +29,16 @@ const config: Config = {
   ],
   testEnvironment: 'jsdom',
   // Add more setup options before each test is run
+  setupFiles: ['<rootDir>/jest.globals-setup.js'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+
   moduleNameMapper: {
     '^react$': '<rootDir>/node_modules/react/index.js',
     '^react-dom$': '<rootDir>/node_modules/react-dom/index.js',
     '^@testing-library/react$':
       '<rootDir>/node_modules/@testing-library/react/dist/index.js',
     '^@/components/(.*)$': '<rootDir>/src/components/$1',
+    '^@/hooks/(.*)$': '<rootDir>/src/hooks/$1',
     '^react-markdown$': '<rootDir>/src/__mocks__/react-markdown.tsx',
     '^remark-gfm$': '<rootDir>/src/__mocks__/remark-gfm.js',
   },

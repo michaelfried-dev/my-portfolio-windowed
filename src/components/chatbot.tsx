@@ -1,6 +1,8 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
+import { useWindowSize } from '@/hooks/useWindowSize'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { MessageSquare } from 'lucide-react'
@@ -13,13 +15,26 @@ import React from 'react'
 
 const PHONE = '856-905-0670'
 
-// Converts phone numbers in a string to a markdown link
-function linkifyPhone(text: string): string {
-  // Escape characters with special meaning in regex
-  const escapedPhone = PHONE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+// Converts phone numbers, URLs, and email addresses in a string into markdown links
+function linkifyText(text: string): string {
+  let result = text
+
+  // 1. Phone number linkification (specific configured phone)
+  const escapedPhone = PHONE.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')
   const phoneRegex = new RegExp(escapedPhone, 'g')
   const rawPhoneNumber = PHONE.replace(/\D/g, '')
-  return text.replace(phoneRegex, `[${PHONE}](tel:${rawPhoneNumber})`)
+  result = result.replace(phoneRegex, `[${PHONE}](tel:${rawPhoneNumber})`)
+
+  // 2. URL linkification – match http/https URLs not already in markdown links
+  //    This basic regex intentionally stops at whitespace or closing parenthesis.
+  const urlRegex = /(?<!\]\()https?:\/\/[^\s)]+/g
+  result = result.replace(urlRegex, (url) => `[${url}](${url})`)
+
+  // 3. Email linkification – match simple email patterns not already in markdown links
+  const emailRegex = /(?<!\]\()([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g
+  result = result.replace(emailRegex, (email) => `[${email}](mailto:${email})`)
+
+  return result
 }
 
 // Renders markdown and ensures links open in a new tab
@@ -49,6 +64,8 @@ function SafeMarkdown({ children }: { children: string }) {
 }
 
 export function Chatbot() {
+  const { width, height } = useWindowSize()
+  const isSmallScreen = (width || 0) < 448 || (height || 0) < 700 // max-w-md is 448px, 700px is arbitrary height
   const [open, setOpen] = useState(false)
   const [qa, setQa] = useState<Array<{ question: string; answer: string }>>([])
   const [input, setInput] = useState('')
@@ -107,7 +124,11 @@ export function Chatbot() {
       })
       if (!response.ok) {
         const errorData = await response.json()
-        setError(errorData.error || 'Failed to get answer')
+        if (response.status === 402) {
+          setError(errorData.error || "I've hit my message limit for the month. Please try again later.")
+        } else {
+          setError(errorData.error || 'Failed to get answer')
+        }
         setIsLoading(false)
         return
       }
@@ -176,9 +197,14 @@ export function Chatbot() {
               mass: 1.7,
             }}
             style={{ transformOrigin: 'bottom right' }}
-            className="fixed right-4 bottom-4 z-50 w-full max-w-md shadow-lg"
+            className={cn(
+              'fixed z-50 shadow-lg',
+              isSmallScreen
+                ? 'inset-0 h-full w-full'
+                : 'right-4 bottom-4 w-full max-w-md'
+            )}
           >
-            <Card>
+            <Card className={cn(isSmallScreen && 'h-full flex flex-col')}>
               <div className="border-border flex items-center gap-2 border-b p-4">
                 <MessageSquare className="text-primary h-5 w-5" />
                 <span className="flex-1 font-semibold">
@@ -197,7 +223,10 @@ export function Chatbot() {
               </div>
               <div
                 ref={chatAreaRef}
-                className="h-64 space-y-2 overflow-y-auto p-4"
+                className={cn(
+                'space-y-2 overflow-y-auto p-4',
+                isSmallScreen ? 'flex-grow' : 'h-64'
+              )}
               >
                 {qa.map((item, i: number) => (
                   <div key={i}>
@@ -215,7 +244,7 @@ export function Chatbot() {
                           <div className="prose dark:prose-invert max-w-none text-sm">
                             {typeof item.answer === 'string' ? (
                               <SafeMarkdown>
-                                {linkifyPhone(item.answer)}
+                                {linkifyText(item.answer)}
                               </SafeMarkdown>
                             ) : (
                               <span style={{ color: 'red' }}>
@@ -234,8 +263,10 @@ export function Chatbot() {
                 ))}
                 {error && (
                   <div className="mt-2 flex justify-center">
-                    <div className="bg-error text-error-foreground rounded-lg px-3 py-2">
-                      {error}
+                    <div className="bg-error text-error-foreground rounded-lg px-3 py-2 prose dark:prose-invert max-w-none text-sm">
+                      <SafeMarkdown>
+                        {linkifyText(error)}
+                      </SafeMarkdown>
                     </div>
                   </div>
                 )}

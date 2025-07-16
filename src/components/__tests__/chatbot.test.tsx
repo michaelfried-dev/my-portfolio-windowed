@@ -1,39 +1,76 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import '@testing-library/jest-dom'
-import { Chatbot } from '../chatbot'
-
-// Mock framer-motion for deterministic mount/unmount in tests
+// All mocks and requires at the top level
+jest.mock('@/hooks/useWindowSize', () => ({
+  useWindowSize: jest.fn(),
+}))
 jest.mock('framer-motion', () => {
-  const React = require('react')
+  const React = require('react');
   return {
-    AnimatePresence: ({ children }: any) => <>{children}</>,
+    AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
     motion: {
-      div: React.forwardRef((props: any, ref: any) => (
-        <div ref={ref} {...props} />
-      )),
+      div: React.forwardRef((props: any, ref: any) => React.createElement('div', { ref, ...props })),
     },
-  }
-})
+  };
+});
+const { render, screen, fireEvent, waitFor } = require('@testing-library/react');
+require('@testing-library/jest-dom');
+const { Chatbot } = require('../chatbot');
+const useWindowSizeModule = require('@/hooks/useWindowSize');
 
 // Mock scrollIntoView for jsdom
 beforeAll(() => {
-  window.HTMLElement.prototype.scrollIntoView = function () {}
-})
+  window.HTMLElement.prototype.scrollIntoView = function () {};
+});
 
-// Mock fetch for API calls
+// Mock fetch for API calls and window size
 beforeEach(() => {
   global.fetch = jest.fn(() =>
     Promise.resolve({
       ok: true,
       json: () => Promise.resolve({ answer: 'Test answer' }),
     }),
-  ) as jest.Mock
-})
+  ) as jest.Mock;
+  (useWindowSizeModule.useWindowSize as jest.Mock).mockReturnValue({ width: 1024, height: 768 });
+});
+
 afterEach(() => {
-  jest.resetAllMocks()
-})
+  jest.resetAllMocks();
+});
 
 describe('Chatbot', () => {
+
+  // Test for responsiveness
+  describe('when on a small screen', () => {
+    beforeEach(() => {
+      // Mock the useWindowSize hook to return a small screen size
+      (useWindowSizeModule.useWindowSize as jest.Mock).mockReturnValue({ width: 400, height: 600 })
+    })
+
+    it('renders in full-screen mode', () => {
+      render(<Chatbot />)
+      fireEvent.click(screen.getByLabelText('Open Chatbot'))
+
+      const widget = screen.getByTestId('chatbot-widget')
+      // Check for full-screen classes
+      expect(widget).toHaveClass('inset-0 h-full w-full')
+    })
+  })
+
+  describe('when on a large screen', () => {
+    beforeEach(() => {
+      // Mock the useWindowSize hook to return a large screen size
+      (useWindowSizeModule.useWindowSize as jest.Mock).mockReturnValue({ width: 1200, height: 800 })
+    })
+
+    it('renders as a pop-up widget', () => {
+      render(<Chatbot />)
+      fireEvent.click(screen.getByLabelText('Open Chatbot'))
+
+      const widget = screen.getByTestId('chatbot-widget')
+      // Check for pop-up classes
+      expect(widget).toHaveClass('right-4 bottom-4 w-full max-w-md')
+      expect(widget).not.toHaveClass('inset-0 h-full w-full')
+    })
+  });
   it('renders the floating open button', () => {
     render(<Chatbot />)
     // Button should be present with correct aria-label
@@ -79,7 +116,7 @@ describe('Chatbot', () => {
   })
 
   it('renders phone number as clickable tel: link in answer', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
+    ; (global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
         json: () =>
@@ -102,7 +139,7 @@ describe('Chatbot', () => {
   })
 
   it('shows a loading indicator while waiting for answer', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(
+    ; (global.fetch as jest.Mock).mockImplementationOnce(
       () =>
         new Promise((resolve) =>
           setTimeout(
@@ -132,11 +169,16 @@ describe('Chatbot', () => {
   })
 
   it('shows an error if the API fails', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
+    // Only mock the 402 error for this test
+    (global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         ok: false,
-        json: () => Promise.resolve({ error: 'API error' }),
-      }),
+        status: 402,
+        json: () => Promise.resolve({
+          error:
+            "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn (https://www.linkedin.com/in/michael-fried/) or email (email@michaelfried.info). Thank you for your understanding!",
+        }),
+      })
     )
     render(<Chatbot />)
     fireEvent.click(screen.getByLabelText('Open Chatbot'))
@@ -146,6 +188,8 @@ describe('Chatbot', () => {
     fireEvent.change(input, { target: { value: 'Trigger error' } })
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
-    expect(await screen.findByText('API error')).toBeInTheDocument()
+    expect(
+      await screen.findByText(/I'm sorry, but I've hit my message limit/ )
+    ).toBeInTheDocument()
   })
 })

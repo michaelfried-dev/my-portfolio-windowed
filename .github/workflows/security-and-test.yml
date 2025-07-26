@@ -1,0 +1,49 @@
+name: Security & Test Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - run: pnpm install
+      - run: npx audit-ci --moderate --allowlist GHSA-c76h-2ccp-4975 GHSA-67mh-4wv8-2f99 --audit-level=moderate
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - run: pnpm install
+      - run: pnpm test
+      - run: pnpm test:cov
+      - name: Wait for coverage report (up to 10 min)
+        run: |
+          TIMEOUT=600
+          INTERVAL=10
+          ELAPSED=0
+          while [ ! -f ./coverage/coverage-summary.json ] && [ $ELAPSED -lt $TIMEOUT ]; do
+            echo "Waiting for coverage/coverage-summary.json... ($ELAPSED/$TIMEOUT seconds)"
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED+INTERVAL))
+          done
+          if [ ! -f ./coverage/coverage-summary.json ]; then
+            echo "❌ coverage-summary.json not found after $TIMEOUT seconds. Did tests run and generate coverage?" >&2
+            exit 1
+          fi
+      - name: Check minimum coverage
+        run: |
+          COVERAGE=$(node -p "require('./coverage/coverage-summary.json').total.lines.pct")
+          echo "Coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < 91" | bc -l) )); then
+            echo "Test coverage ($COVERAGE%) is below the required minimum (91%)" >&2
+            exit 1
+          fi

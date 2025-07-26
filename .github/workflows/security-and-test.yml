@@ -25,8 +25,20 @@ jobs:
       - run: pnpm install
       - run: pnpm test
       - run: pnpm test:cov
-      - run: ls -l coverage
-      - run: cat coverage/coverage-summary.json || echo 'coverage-summary.json not found'
+      - name: Wait for coverage report (up to 10 min)
+        run: |
+          TIMEOUT=600
+          INTERVAL=10
+          ELAPSED=0
+          while [ ! -f ./coverage/coverage-summary.json ] && [ $ELAPSED -lt $TIMEOUT ]; do
+            echo "Waiting for coverage/coverage-summary.json... ($ELAPSED/$TIMEOUT seconds)"
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED+INTERVAL))
+          done
+          if [ ! -f ./coverage/coverage-summary.json ]; then
+            echo "❌ coverage-summary.json not found after $TIMEOUT seconds. Did tests run and generate coverage?" >&2
+            exit 1
+          fi
       - name: Check minimum coverage
         run: |
           COVERAGE=$(node -p "require('./coverage/coverage-summary.json').total.lines.pct")

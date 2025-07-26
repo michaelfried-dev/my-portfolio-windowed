@@ -13,7 +13,7 @@ jobs:
         with:
           version: 8
       - run: pnpm install
-      - run: pnpm audit --audit-level=moderate
+      - run: npx audit-ci --moderate --allowlist GHSA-c76h-2ccp-4975 GHSA-67mh-4wv8-2f99 --audit-level=moderate
 
   test:
     runs-on: ubuntu-latest

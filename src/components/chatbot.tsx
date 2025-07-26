@@ -20,7 +20,9 @@ function linkifyText(text: string): string {
   let result = text
 
   // 1. Phone number linkification (specific configured phone)
-  const escapedPhone = PHONE.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')
+  // Escape any regex meta characters that might appear in the phone string
+  // so that it can be safely used in a RegExp constructor.
+  const escapedPhone = PHONE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const phoneRegex = new RegExp(escapedPhone, 'g')
   const rawPhoneNumber = PHONE.replace(/\D/g, '')
   result = result.replace(phoneRegex, `[${PHONE}](tel:${rawPhoneNumber})`)

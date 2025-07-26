@@ -25,6 +25,8 @@ jobs:
       - run: pnpm install
       - run: pnpm test
       - run: pnpm test:cov
+      - run: ls -l coverage
+      - run: cat coverage/coverage-summary.json || echo 'coverage-summary.json not found'
       - name: Check minimum coverage
         run: |
           COVERAGE=$(node -p "require('./coverage/coverage-summary.json').total.lines.pct")

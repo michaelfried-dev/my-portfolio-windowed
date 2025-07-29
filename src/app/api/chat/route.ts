@@ -199,6 +199,8 @@ Feel free to reach out for professional networking, questions about my experienc
       '[DEBUG] Sending question to Hugging Face (InferenceClient):',
       question,
     )
+    // Try Hugging Face first
+    let hfError: any = null;
     try {
       const { InferenceClient } = await import('@huggingface/inference');
       const client = new InferenceClient(apiKey);
@@ -216,15 +218,53 @@ Feel free to reach out for professional networking, questions about my experienc
         { headers: { 'Content-Type': 'application/json' } },
       );
     } catch (err: any) {
-      console.log('CATCH block hit');
-      console.error('[DEBUG] Hugging Face InferenceClient error:', err);
-
-      // Robustly handle 402 errors from Hugging Face API
+      hfError = err;
+      // If 402, try LM Studio fallback
       if (err.httpResponse && err.httpResponse.status === 402) {
-        return NextResponse.json(
-          { error: "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!" },
-          { status: 402 }
-        );
+        // LM Studio fallback
+        const lmUrl = process.env.LMSTUDIO_API_URL;
+        const lmApiKey = process.env.LMSTUDIO_API_KEY;
+        const lmModel = process.env.LMSTUDIO_MODEL;
+        if (!lmUrl || !lmModel) {
+          // If LM Studio config missing, show the original HF error
+          return NextResponse.json(
+            { error: "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!" },
+            { status: 402 }
+          );
+        }
+        try {
+          const lmBody = {
+            model: lmModel,
+            messages: [
+              { role: 'system', content: `You are a helpful assistant that answers questions about the following resume and portfolio content. Context:\n${context}` },
+              { role: 'user', content: question },
+            ],
+          };
+          const lmHeaders: Record<string, string> = {
+            'Content-Type': 'application/json',
+          };
+          if (lmApiKey) lmHeaders['Authorization'] = `Bearer ${lmApiKey}`;
+          const lmResp = await fetch(lmUrl, {
+            method: 'POST',
+            headers: lmHeaders,
+            body: JSON.stringify(lmBody),
+          });
+          if (!lmResp.ok) {
+            throw new Error(`LM Studio error: ${lmResp.status}`);
+          }
+          const lmData = await lmResp.json();
+          let answer = lmData.choices?.[0]?.message?.content || 'No answer found.';
+          return NextResponse.json(
+            { answer },
+            { headers: { 'Content-Type': 'application/json' } },
+          );
+        } catch (lmErr) {
+          // If LM Studio fails, show original HF error message
+          return NextResponse.json(
+            { error: "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!" },
+            { status: 402 }
+          );
+        }
       }
       // All other errors
       return NextResponse.json(

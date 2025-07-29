@@ -186,8 +186,10 @@ describe('POST /api/chat', () => {
     jest.dontMock('@huggingface/inference');
   });
 
-  it('returns 402 and user-friendly error message if Hugging Face API quota is exceeded', async () => {
+  it('falls back to LM Studio on Hugging Face 402 error and returns LM Studio answer', async () => {
     process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
+    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
     jest.resetModules();
     jest.doMock('@huggingface/inference', () => ({
       InferenceClient: class {
@@ -199,6 +201,91 @@ describe('POST /api/chat', () => {
         }
       }
     }), { virtual: true });
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: 'LM Studio fallback answer' } }] })
+    });
+    const { POST: MockedPOST } = await import('../route');
+    const req = mockRequest({ body: { question: 'What is your message limit?' } });
+    const res = await MockedPOST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.answer).toBe('LM Studio fallback answer');
+    jest.dontMock('@huggingface/inference');
+    delete global.fetch;
+  });
+
+  it('falls back to LM Studio on generic Hugging Face error and returns LM Studio answer', async () => {
+    process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
+    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
+    jest.resetModules();
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        constructor() {}
+        async chatCompletion() {
+          throw new Error('Random server error');
+        }
+      }
+    }), { virtual: true });
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: 'LM Studio fallback generic' } }] })
+    });
+    const { POST: MockedPOST } = await import('../route');
+    const req = mockRequest({ body: { question: 'Trigger error' } });
+    const res = await MockedPOST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.answer).toBe('LM Studio fallback generic');
+    jest.dontMock('@huggingface/inference');
+    delete global.fetch;
+  });
+
+  it('returns error if both Hugging Face and LM Studio fail', async () => {
+    process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
+    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
+    jest.resetModules();
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        constructor() {}
+        async chatCompletion() {
+          throw new Error('Random server error');
+        }
+      }
+    }), { virtual: true });
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: 'LM Studio error' })
+    });
+    const { POST: MockedPOST } = await import('../route');
+    const req = mockRequest({ body: { question: 'Trigger error' } });
+    const res = await MockedPOST(req);
+    expect(res.status).toBe(500);
+    const data = await res.json();
+    expect(data.error).toMatch(/Failed to process request via Hugging Face and LM Studio/);
+    jest.dontMock('@huggingface/inference');
+    delete global.fetch;
+  });
+
+  it('returns 402 and user-friendly error message if both Hugging Face and LM Studio quota is exceeded', async () => {
+    process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
+    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
+    jest.resetModules();
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        constructor() {}
+        async chatCompletion() {
+          const error: any = new Error('Payment required');
+          error.httpResponse = { status: 402 };
+          throw error;
+        }
+      }
+    }), { virtual: true });
+    global.fetch = jest.fn().mockImplementation(() => { throw new Error('LM Studio quota exceeded'); });
     const { POST: MockedPOST } = await import('../route');
     const req = mockRequest({ body: { question: 'What is your message limit?' } });
     const res = await MockedPOST(req);
@@ -206,6 +293,7 @@ describe('POST /api/chat', () => {
     const data = await res.json();
     expect(data.error).toMatch(/hit my message limit for the month/i);
     jest.dontMock('@huggingface/inference');
+    delete global.fetch;
   });
 
   it('returns 500 and fallback error message on generic Hugging Face API error', async () => {
@@ -224,7 +312,7 @@ describe('POST /api/chat', () => {
     const res = await MockedPOST(req);
     expect(res.status).toBe(500);
     const data = await res.json();
-    expect(data.error).toMatch(/Failed to process request via Hugging Face InferenceClient/);
+    expect(data.error).toMatch(/Failed to process request via Hugging Face and LM Studio/);
     jest.dontMock('@huggingface/inference');
   });
 });

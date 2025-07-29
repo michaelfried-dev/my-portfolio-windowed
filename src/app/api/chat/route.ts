@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { InferenceClientHubApiError } from '@huggingface/inference';
 export const runtime = 'edge'
 
 export async function POST(req: Request) {
@@ -183,52 +182,55 @@ Feel free to reach out for professional networking, questions about my experienc
       )
     }
 
-    // Use Hugging Face InferenceClient for chatCompletion
-    const apiKey = process.env.HUGGINGFACE_API_KEY
-    if (!apiKey) {
-      console.error('[DEBUG] HUGGINGFACE_API_KEY is missing or not loaded')
+    // Use LM Studio local API for chatCompletion
+    const apiUrl = process.env.LMSTUDIO_API_URL;
+    const apiKey = process.env.LMSTUDIO_API_KEY || '';
+    if (!apiUrl) {
+      console.error('[DEBUG] LMSTUDIO_API_URL is missing or not loaded');
       return NextResponse.json(
-        { error: 'Hugging Face API key not set' },
+        { error: 'LM Studio API URL not set' },
         { status: 500 },
-      )
+      );
     }
-    console.log(
-      `[DEBUG] HUGGINGFACE_API_KEY loaded: ${apiKey.slice(0, 6)}... (length: ${apiKey.length})`,
-    )
-    console.log(
-      '[DEBUG] Sending question to Hugging Face (InferenceClient):',
-      question,
-    )
+    const systemPrompt = `You are a helpful assistant that answers questions about the following resume and portfolio content. Context:\n${context}`;
     try {
-      const { InferenceClient } = await import('@huggingface/inference');
-      const client = new InferenceClient(apiKey);
-      const systemPrompt = `You are a helpful assistant that answers questions about the following resume and portfolio content. Context:\n${context}`;
-      const result = await client.chatCompletion({
-        model: 'deepseek-ai/DeepSeek-V3-0324',
+      const body = {
+        model: 'qwen/qwen3-4b', // Replace this with your LM Studio model name if needed
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: question },
         ],
+      };
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+      const resp = await fetch(apiUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
       });
-      let answer = result.choices?.[0]?.message?.content || 'No answer found.';
+      if (resp.status === 402) {
+        return NextResponse.json(
+          { error: "I've hit my message limit for the month. Please try again later." },
+          { status: 402 }
+        );
+      }
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(`LM Studio API error: ${resp.status} ${text}`);
+      }
+      const data = await resp.json();
+      let answer = data.choices?.[0]?.message?.content || 'No answer found.';
       return NextResponse.json(
         { answer },
         { headers: { 'Content-Type': 'application/json' } },
       );
     } catch (err: any) {
       console.log('CATCH block hit');
-      console.error('[DEBUG] Hugging Face InferenceClient error:', err);
-
-      // Robustly handle 402 errors from Hugging Face API
-      if (err.httpResponse && err.httpResponse.status === 402) {
-        return NextResponse.json(
-          { error: "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!" },
-          { status: 402 }
-        );
-      }
-      // All other errors
+      console.error('[DEBUG] LM Studio API error:', err);
       return NextResponse.json(
-        { error: 'Failed to process request via Hugging Face InferenceClient' },
+        { error: 'Failed to process request via LM Studio API' },
         { status: 500 }
       );
     }

@@ -277,7 +277,16 @@ Feel free to reach out for professional networking, questions about my experienc
           { headers: { 'Content-Type': 'application/json' } },
         );
       } catch (lmErr) {
-        // If LM Studio fails, show original HF error message or generic fallback
+        // If LM Studio fails, inspect the error to decide on the response
+        if (lmErr instanceof Error && lmErr.message.includes('fetch failed')) {
+          // This indicates a network error, so LM Studio is likely unavailable
+          return NextResponse.json(
+            { error: 'The primary service is unavailable, and the fallback service also failed.' },
+            { status: 503 }
+          );
+        }
+
+        // For other LM Studio errors, revert to the original Hugging Face error
         let errorMsg = 'Failed to process request via Hugging Face and LM Studio.';
         let status = 500;
         if (err.httpResponse && err.httpResponse.status === 402) {

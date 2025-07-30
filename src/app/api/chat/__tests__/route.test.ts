@@ -1,22 +1,19 @@
 import { POST } from '../route';
-import { Request } from 'undici';
+
+declare let global: { fetch: jest.Mock };
 
 describe('POST /api/chat', () => {
   let originalEnv: NodeJS.ProcessEnv;
-  const unmockFetch = () => { if (global.fetch) { (global.fetch as jest.Mock).mockReset?.(); delete (global as any).fetch; } };
 
   beforeEach(() => {
     originalEnv = { ...process.env };
     jest.resetModules();
     jest.clearAllMocks();
-    unmockFetch();
+    global.fetch = jest.fn();
   });
 
   afterEach(() => {
     process.env = { ...originalEnv };
-    jest.resetModules();
-    jest.clearAllMocks();
-    unmockFetch();
   });
 
   // Helper to import POST after mocks
@@ -29,7 +26,7 @@ describe('POST /api/chat', () => {
   }: {
     body: any;
     contentType?: string;
-  }) {
+  }): Request {
     return {
       headers: {
         get: (key: string) => (key === 'content-type' ? contentType : undefined),
@@ -293,7 +290,7 @@ describe('POST /api/chat', () => {
     const data = await res.json();
     expect(data.answer).toBe('LM Studio fallback generic');
     jest.dontMock('@huggingface/inference');
-    delete global.fetch;
+    
   });
 
   it('returns error if both Hugging Face and LM Studio fail', async () => {
@@ -321,7 +318,7 @@ describe('POST /api/chat', () => {
     const data = await res.json();
     expect(data.error).toMatch(/Failed to process request via Hugging Face and LM Studio/);
     jest.dontMock('@huggingface/inference');
-    delete global.fetch;
+    
   });
 
   it('returns 402 and user-friendly error message if both Hugging Face and LM Studio quota is exceeded', async () => {
@@ -372,5 +369,33 @@ describe('POST /api/chat', () => {
     expect(res.status).toBe(500);
     const data = await res.json();
     expect(data.error).toMatch(/Failed to process request via Hugging Face and LM Studio/);
+  });
+
+  it('returns 503 if both Hugging Face and LM Studio are unavailable', async () => {
+    process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
+    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
+
+    // Mock Hugging Face to throw an error
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        async chatCompletion() {
+          const error: any = new Error('Service unavailable');
+          error.httpResponse = { status: 503 };
+          throw error;
+        }
+      }
+    }), { virtual: true });
+
+    // Mock fetch to simulate LM Studio failure
+    global.fetch = jest.fn().mockRejectedValue(new Error('fetch failed'));
+
+    const POST = await importPOST();
+    const req = mockRequest({ body: { question: 'Trigger failure' } });
+    const res = await POST(req);
+
+    expect(res.status).toBe(503);
+    const data = await res.json();
+    expect(data.error).toBe('The primary service is unavailable, and the fallback service also failed.');
   });
 });

@@ -219,10 +219,24 @@ Feel free to reach out for professional networking, questions about my experienc
       );
     } catch (err: any) {
       hfError = err;
-      // On ANY error, try LM Studio fallback
+      // Feature flag: disable LM Studio fallback if env var is set
+      const fallbackDisabled = process.env.LMSTUDIO_FALLBACK_DISABLED === 'true';
       const lmUrl = process.env.LMSTUDIO_API_URL;
       const lmApiKey = process.env.LMSTUDIO_API_KEY;
       const lmModel = process.env.LMSTUDIO_MODEL;
+      if (fallbackDisabled) {
+        // If fallback is disabled, return the original Hugging Face error or generic
+        let errorMsg = "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!";
+        let status = 500;
+        if (err.httpResponse && err.httpResponse.status === 402) {
+          errorMsg = "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!";
+          status = 402;
+        }
+        return NextResponse.json(
+          { error: errorMsg },
+          { status }
+        );
+      }
       if (!lmUrl || !lmModel) {
         // If LM Studio config missing, show the original HF error (or generic)
         let errorMsg = "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!";

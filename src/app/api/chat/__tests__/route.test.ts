@@ -2,6 +2,22 @@ import { POST } from '../route';
 import { Request } from 'undici';
 
 describe('POST /api/chat', () => {
+  let envBackup: NodeJS.ProcessEnv;
+
+  beforeEach(() => {
+    envBackup = { ...process.env };
+    jest.resetModules();
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    process.env = { ...envBackup };
+    jest.resetModules();
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+    jest.dontMock('@huggingface/inference');
+  });
   function mockRequest({
     body,
     contentType = 'application/json',
@@ -167,6 +183,8 @@ describe('POST /api/chat', () => {
 
   it('returns 200 and answer on successful chat completion', async () => {
     process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
+    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
     jest.resetModules();
     jest.doMock('@huggingface/inference', () => ({
       InferenceClient: class {
@@ -176,14 +194,79 @@ describe('POST /api/chat', () => {
         }
       }
     }), { virtual: true });
-    // Re-import POST after mocking
     const { POST: MockedPOST } = await import('../route');
     const req = mockRequest({ body: { question: 'Say hello' } });
     const res = await MockedPOST(req);
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.answer).toBe('Hello from the bot!');
-    jest.dontMock('@huggingface/inference');
+  });
+
+  it('returns 200 and answer for extra fields', async () => {
+    process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
+    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
+    jest.resetModules();
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        constructor() {}
+        async chatCompletion() {
+          return { choices: [{ message: { content: 'extra ok' } }] };
+        }
+      }
+    }), { virtual: true });
+    const { POST: MockedPOST } = await import('../route');
+    const req = mockRequest({ body: { question: 'extra', foo: 42, bar: 'baz' } });
+    const res = await MockedPOST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.answer).toBe('extra ok');
+  });
+
+  it('does NOT fallback to LM Studio when LMSTUDIO_FALLBACK_DISABLED is true (402)', async () => {
+    process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
+    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
+    process.env.LMSTUDIO_FALLBACK_DISABLED = 'true';
+    jest.resetModules();
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        constructor() {}
+        async chatCompletion() {
+          const error: any = new Error('Payment required');
+          error.httpResponse = { status: 402 };
+          throw error;
+        }
+      }
+    }), { virtual: true });
+    const { POST: MockedPOST } = await import('../route');
+    const req = mockRequest({ body: { question: 'What is your message limit?' } });
+    const res = await MockedPOST(req);
+    expect(res.status).toBe(402);
+    const data = await res.json();
+    expect(data.error).toMatch(/hit my message limit for the month/i);
+  });
+
+  it('does NOT fallback to LM Studio when LMSTUDIO_FALLBACK_DISABLED is true (generic error)', async () => {
+    process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
+    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
+    process.env.LMSTUDIO_FALLBACK_DISABLED = 'true';
+    jest.resetModules();
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        constructor() {}
+        async chatCompletion() {
+          throw new Error('Random server error');
+        }
+      }
+    }), { virtual: true });
+    const { POST: MockedPOST } = await import('../route');
+    const req = mockRequest({ body: { question: 'Trigger error' } });
+    const res = await MockedPOST(req);
+    expect(res.status).toBe(500);
+    const data = await res.json();
+    expect(data.error).toMatch(/Internal server error|Failed to process request|hit my message limit/i);
   });
 
   it('falls back to LM Studio on Hugging Face 402 error and returns LM Studio answer', async () => {
@@ -211,8 +294,6 @@ describe('POST /api/chat', () => {
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.answer).toBe('LM Studio fallback answer');
-    jest.dontMock('@huggingface/inference');
-    delete global.fetch;
   });
 
   it('falls back to LM Studio on generic Hugging Face error and returns LM Studio answer', async () => {
@@ -298,6 +379,8 @@ describe('POST /api/chat', () => {
 
   it('returns 500 and fallback error message on generic Hugging Face API error', async () => {
     process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
+    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
     jest.resetModules();
     jest.doMock('@huggingface/inference', () => ({
       InferenceClient: class {
@@ -307,6 +390,11 @@ describe('POST /api/chat', () => {
         }
       }
     }), { virtual: true });
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: 'LM Studio internal error' })
+    });
     const { POST: MockedPOST } = await import('../route');
     const req = mockRequest({ body: { question: 'Trigger error' } });
     const res = await MockedPOST(req);

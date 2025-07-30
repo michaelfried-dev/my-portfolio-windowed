@@ -199,12 +199,12 @@ Feel free to reach out for professional networking, questions about my experienc
       '[DEBUG] Sending question to Hugging Face (InferenceClient):',
       question,
     )
-    // Try Hugging Face first
-    let hfError: any = null;
     try {
+      // Primary Service: Hugging Face
       const { InferenceClient } = await import('@huggingface/inference');
       const client = new InferenceClient(apiKey);
       const systemPrompt = `You are a helpful assistant that answers questions about the following resume and portfolio content. Context:\n${context}`;
+
       const result = await client.chatCompletion({
         model: 'deepseek-ai/DeepSeek-V3-0324',
         messages: [
@@ -212,102 +212,82 @@ Feel free to reach out for professional networking, questions about my experienc
           { role: 'user', content: question },
         ],
       });
-      let answer = result.choices?.[0]?.message?.content || 'No answer found.';
-      return NextResponse.json(
-        { answer },
-        { headers: { 'Content-Type': 'application/json' } },
-      );
+
+      const answer = result.choices?.[0]?.message?.content || 'No answer found.';
+      return NextResponse.json({ answer });
+
     } catch (err: any) {
-      hfError = err;
-      // Feature flag: disable LM Studio fallback if env var is set
+      // If Hugging Face fails, attempt to use the LM Studio fallback
       const fallbackDisabled = process.env.LMSTUDIO_FALLBACK_DISABLED === 'true';
       const lmUrl = process.env.LMSTUDIO_API_URL;
-      const lmApiKey = process.env.LMSTUDIO_API_KEY;
       const lmModel = process.env.LMSTUDIO_MODEL;
-      if (fallbackDisabled) {
-        // If fallback is disabled, return the original Hugging Face error or generic
-        let errorMsg = "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!";
-        let status = 500;
-        if (err.httpResponse && err.httpResponse.status === 402) {
-          errorMsg = "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!";
-          status = 402;
-        }
-        return NextResponse.json(
-          { error: errorMsg },
-          { status }
-        );
+
+      if (fallbackDisabled || !lmUrl || !lmModel) {
+        // If fallback is disabled or not configured, return the original error
+        throw err; // Re-throw to be caught by the final catch block
       }
-      if (!lmUrl || !lmModel) {
-        // If LM Studio config missing, show the original HF error (or generic)
-        let errorMsg = "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!";
-        let status = 500;
-        if (err.httpResponse && err.httpResponse.status === 402) {
-          errorMsg = "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!";
-          status = 402;
-        }
-        return NextResponse.json(
-          { error: errorMsg },
-          { status }
-        );
-      }
+
       try {
-        const lmBody = {
-          model: lmModel,
-          messages: [
-            { role: 'system', content: `You are a helpful assistant that answers questions about the following resume and portfolio content. Context:\n${context}` },
-            { role: 'user', content: question },
-          ],
-        };
-        const lmHeaders: Record<string, string> = {
-          'Content-Type': 'application/json',
-        };
-        if (lmApiKey) lmHeaders['Authorization'] = `Bearer ${lmApiKey}`;
+        // Secondary Service: LM Studio
         const lmResp = await fetch(lmUrl, {
           method: 'POST',
-          headers: lmHeaders,
-          body: JSON.stringify(lmBody),
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.LMSTUDIO_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: lmModel,
+            messages: [{ role: 'user', content: question }],
+            stream: false,
+          }),
         });
+
         if (!lmResp.ok) {
-          throw new Error(`LM Studio error: ${lmResp.status}`);
+          // If LM Studio also fails, throw an error to be handled below
+          throw new Error('LM Studio fallback failed');
         }
+
         const lmData = await lmResp.json();
-        let answer = lmData.choices?.[0]?.message?.content || 'No answer found.';
-        return NextResponse.json(
-          { answer },
-          { headers: { 'Content-Type': 'application/json' } },
-        );
-      } catch (lmErr) {
-        // If LM Studio fails, inspect the error to decide on the response
-        // For other LM Studio errors, revert to the original Hugging Face error
-        let errorMsg = 'Failed to process request via Hugging Face and LM Studio.';
-        let status = 500;
+        const answer = lmData.choices[0]?.message?.content;
 
-        if (err.httpResponse) {
-          status = err.httpResponse.status;
-          if (status === 402) {
-            errorMsg = "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!";
-          }
+        if (answer) {
+          return NextResponse.json({ answer }); // Success from fallback
         }
+        throw new Error('No answer from LM Studio');
 
-        if (lmErr instanceof Error && lmErr.message.includes('fetch failed')) {
-          // This indicates a network error, so LM Studio is likely unavailable
+      } catch (fallbackErr: any) {
+        // This catches failures in the fallback logic itself (e.g., network error)
+        if (fallbackErr.cause?.message.includes('fetch failed')) {
           return NextResponse.json(
             { error: 'The primary service is unavailable, and the fallback service also failed.' },
             { status: 503 }
           );
         }
-
-        return NextResponse.json({ error: errorMsg }, { status });
+        // For other fallback errors, throw the *original* Hugging Face error
+        throw err;
       }
     }
-  } catch (error) {
-    console.error('Chat API error:', error)
+  } catch (err: any) {
+    // Final catch-all for any errors thrown from the primary or fallback logic
+    console.error('Chat API error:', err);
+
+    let errorMsg = 'Failed to process request.';
+    let status = 500;
+
+    if (err instanceof InferenceClientHubApiError || (err.httpResponse && typeof err.httpResponse.status === 'number')) {
+        status = err.httpResponse.status;
+        if (status === 402) {
+            errorMsg = "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!";
+        } else if (err.message) {
+            errorMsg = err.message;
+        }
+    } else if (err.message) {
+        errorMsg = err.message;
+    }
+
     return NextResponse.json(
-      { error: 'Failed to process request' },
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      },
-    )
+      { error: errorMsg },
+      { status, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 }

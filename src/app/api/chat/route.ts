@@ -278,6 +278,17 @@ Feel free to reach out for professional networking, questions about my experienc
         );
       } catch (lmErr) {
         // If LM Studio fails, inspect the error to decide on the response
+        // For other LM Studio errors, revert to the original Hugging Face error
+        let errorMsg = 'Failed to process request via Hugging Face and LM Studio.';
+        let status = 500;
+
+        if (err.httpResponse) {
+          status = err.httpResponse.status;
+          if (status === 402) {
+            errorMsg = "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!";
+          }
+        }
+
         if (lmErr instanceof Error && lmErr.message.includes('fetch failed')) {
           // This indicates a network error, so LM Studio is likely unavailable
           return NextResponse.json(
@@ -286,17 +297,7 @@ Feel free to reach out for professional networking, questions about my experienc
           );
         }
 
-        // For other LM Studio errors, revert to the original Hugging Face error
-        let errorMsg = 'Failed to process request via Hugging Face and LM Studio.';
-        let status = 500;
-        if (err.httpResponse && err.httpResponse.status === 402) {
-          errorMsg = "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!";
-          status = 402;
-        }
-        return NextResponse.json(
-          { error: errorMsg },
-          { status }
-        );
+        return NextResponse.json({ error: errorMsg }, { status });
       }
     }
   } catch (error) {

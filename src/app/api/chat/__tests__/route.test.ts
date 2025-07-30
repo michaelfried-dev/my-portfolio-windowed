@@ -254,10 +254,8 @@ describe('POST /api/chat', () => {
     }), { virtual: true });
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({
-        choices: [{ message: { content: 'Fallback answer from LM Studio' } }]
-      })
-    });
+      json: () => Promise.resolve({ choices: [{ message: { content: 'Fallback answer from LM Studio' } }] }),
+    } as Response);
     const POST = await importPOST();
     const req = mockRequest({ body: { question: 'What is your message limit?' } });
     const res = await POST(req);
@@ -281,8 +279,8 @@ describe('POST /api/chat', () => {
     }), { virtual: true });
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ choices: [{ message: { content: 'LM Studio fallback generic' } }] })
-    });
+      json: () => Promise.resolve({ choices: [{ message: { content: 'LM Studio fallback generic' } }] }),
+    } as Response);
     const { POST: MockedPOST } = await import('../route');
     const req = mockRequest({ body: { question: 'Trigger error' } });
     const res = await MockedPOST(req);
@@ -388,7 +386,7 @@ describe('POST /api/chat', () => {
     }), { virtual: true });
 
     // Mock fetch to simulate LM Studio failure
-    global.fetch = jest.fn().mockRejectedValue(new Error('fetch failed'));
+    global.fetch = jest.fn(() => Promise.reject(new Error('fetch failed')));
 
     const POST = await importPOST();
     const req = mockRequest({ body: { question: 'Trigger failure' } });

@@ -16,16 +16,20 @@ describe('Page', () => {
   it('renders all social and contact links', () => {
     render(<Page />)
 
-    // Check for the GitHub link
-    const githubLink = screen.getByRole('link', { name: /github/i })
-    expect(githubLink).toBeInTheDocument()
-    expect(githubLink).toHaveAttribute(
+    // Check for the GitHub contact link
+    const githubContactLink = screen.getByRole('link', {
+      name: /Contact Michael Fried via GitHub/i,
+    })
+    expect(githubContactLink).toBeInTheDocument()
+    expect(githubContactLink).toHaveAttribute(
       'href',
       'https://github.com/michaelfried-dev',
     )
 
-    // Check for the new repository link in the text
-    const repoLink = screen.getByRole('link', { name: /here/i })
+    // Check for the repository link in the text
+    const repoLink = screen.getByRole('link', {
+      name: /View the source code for this portfolio website on GitHub/i,
+    })
     expect(repoLink).toBeInTheDocument()
     expect(repoLink).toHaveAttribute(
       'href',
@@ -33,8 +37,12 @@ describe('Page', () => {
     )
     expect(repoLink).toHaveClass('underline')
 
-    // Check for other links to ensure they are still present
-    expect(screen.getByRole('link', { name: /email/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /linkedin/i })).toBeInTheDocument()
+    // Check for other contact links to ensure they are still present
+    expect(
+      screen.getByRole('link', { name: /Contact Michael Fried via Email/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: /Contact Michael Fried via LinkedIn/i }),
+    ).toBeInTheDocument()
   })
 })

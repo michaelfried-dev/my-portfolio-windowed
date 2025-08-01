@@ -31,7 +31,10 @@ export default function Home() {
         <div className="flex w-full flex-col items-center md:order-2 md:w-1/3 md:pt-10">
           <div className="flex w-full flex-row items-center justify-center gap-4 md:flex-col">
             <Avatar className="rounded-base border-border size-[200px] border-4 shadow-[8px_8px_0_0_#000]">
-              <AvatarImage src="/profile.jpg" />
+              <AvatarImage
+                src="/profile.jpg"
+                alt="Michael Fried - Software Engineer profile photo"
+              />
               <AvatarFallback className="text-6xl">MF</AvatarFallback>
             </Avatar>
             <div className="flex flex-1 flex-col gap-4 md:mt-4 md:w-[200px] md:flex-none">
@@ -42,8 +45,14 @@ export default function Home() {
                   variant="neutral"
                   className="flex w-full items-center justify-center gap-2"
                 >
-                  <Link href={href}>
-                    <Icon className="size-5" />
+                  <Link
+                    href={href}
+                    aria-label={`Contact Michael Fried via ${label}`}
+                    {...(href.startsWith('http')
+                      ? { target: '_blank', rel: 'noopener noreferrer' }
+                      : {})}
+                  >
+                    <Icon className="size-5" aria-hidden="true" />
                     <span>{label}</span>
                   </Link>
                 </Button>
@@ -81,6 +90,9 @@ export default function Home() {
                 <Link
                   href="https://github.com/michaelfried-dev/my-portfolio-windowed"
                   className="underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="View the source code for this portfolio website on GitHub"
                 >
                   here
                 </Link>

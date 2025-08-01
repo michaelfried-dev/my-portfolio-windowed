@@ -226,4 +226,52 @@ describe('POST /api/chat', () => {
     expect(data.error).toMatch(/Failed to process request via Hugging Face InferenceClient/);
     jest.dontMock('@huggingface/inference');
   });
+
+  // Note: Lines 176-184 (context extraction error) and 236-244 (generic error handler) 
+  // are difficult to test in isolation due to complex module loading and error handling.
+  // These represent edge cases that would require very specific failure conditions 
+  // that are hard to reproduce reliably in tests.
+
+  it('handles malformed JSON in request body', async () => {
+    const req = {
+      headers: { get: () => 'application/json' },
+      json: async () => { throw new SyntaxError('Unexpected token in JSON'); },
+    } as unknown as Request;
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/Invalid JSON format/);
+  });
+
+  it('handles question that is null', async () => {
+    const req = mockRequest({ body: { question: null } });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/Request must include a string question/);
+  });
+
+  it('handles question that is undefined', async () => {
+    const req = mockRequest({ body: { question: undefined } });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/Request must include a string question/);
+  });
+
+  it('handles question that is an array', async () => {
+    const req = mockRequest({ body: { question: ['not', 'a', 'string'] } });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/Request must include a string question/);
+  });
+
+  it('handles question that is a boolean', async () => {
+    const req = mockRequest({ body: { question: true } });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/Request must include a string question/);
+  });
 });

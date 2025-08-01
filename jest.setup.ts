@@ -28,3 +28,19 @@ globalThis.Request = Request as typeof globalThis.Request;
 globalThis.Response = Response as typeof globalThis.Response;
 globalThis.Headers = Headers as typeof globalThis.Headers;
 
+// Cleanup for React 19 concurrent features
+beforeEach(() => {
+  // Clear any pending timers if fake timers are enabled
+  if (jest.isMockFunction(setTimeout)) {
+    jest.clearAllTimers();
+  }
+});
+
+afterEach(() => {
+  // Clean up any remaining timers or async operations if fake timers are enabled
+  if (jest.isMockFunction(setTimeout)) {
+    jest.runOnlyPendingTimers();
+    jest.clearAllTimers();
+  }
+});
+

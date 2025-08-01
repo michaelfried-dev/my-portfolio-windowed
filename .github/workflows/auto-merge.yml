@@ -20,9 +20,7 @@ jobs:
           node-version: '20.x'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
+        uses: pnpm/action-setup@v4
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -49,12 +47,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Auto-merge PR
+      - name: Enable auto-merge
         if: success()
-        uses: pascalgn/merge-action@v0.15.6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          merge_method: squash
-          merge_commit_message: pull-request-title-and-description
+        run: |
+          gh pr merge --auto --squash "${{ github.event.pull_request.number }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

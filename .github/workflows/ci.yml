@@ -25,9 +25,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
+        uses: pnpm/action-setup@v4
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -74,9 +72,7 @@ jobs:
           node-version: '20.x'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
+        uses: pnpm/action-setup@v4
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -116,9 +112,7 @@ jobs:
           node-version: '20.x'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
+        uses: pnpm/action-setup@v4
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

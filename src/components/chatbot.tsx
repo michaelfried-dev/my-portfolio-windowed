@@ -12,8 +12,7 @@ import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 
 import React from 'react'
-
-const PHONE = '856-905-0670'
+import { CONTACT_INFO } from '@/lib/constants'
 
 // Converts phone numbers, URLs, and email addresses in a string into markdown links
 function linkifyText(text: string): string {
@@ -22,10 +21,10 @@ function linkifyText(text: string): string {
   // 1. Phone number linkification (specific configured phone)
   // Escape any regex meta characters that might appear in the phone string
   // so that it can be safely used in a RegExp constructor.
-  const escapedPhone = PHONE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const escapedPhone = CONTACT_INFO.phone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const phoneRegex = new RegExp(escapedPhone, 'g')
-  const rawPhoneNumber = PHONE.replace(/\D/g, '')
-  result = result.replace(phoneRegex, `[${PHONE}](tel:${rawPhoneNumber})`)
+  const rawPhoneNumber = CONTACT_INFO.phone.replace(/\D/g, '')
+  result = result.replace(phoneRegex, `[${CONTACT_INFO.phone}](tel:${rawPhoneNumber})`)
 
   // 2. URL linkification – match http/https URLs not already in markdown links
   //    This basic regex intentionally stops at whitespace or closing parenthesis.
@@ -244,15 +243,9 @@ export function Chatbot() {
                       >
                         {item.answer ? (
                           <div className="prose dark:prose-invert max-w-none text-sm">
-                            {typeof item.answer === 'string' ? (
-                              <SafeMarkdown>
-                                {linkifyText(item.answer)}
-                              </SafeMarkdown>
-                            ) : (
-                              <span style={{ color: 'red' }}>
-                                [Chatbot error: answer is not a string]
-                              </span>
-                            )}
+                            <SafeMarkdown>
+                              {linkifyText(item.answer)}
+                            </SafeMarkdown>
                           </div>
                         ) : isLoading && i === qa.length - 1 ? (
                           <span className="text-muted animate-pulse">

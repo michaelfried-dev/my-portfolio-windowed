@@ -28,6 +28,8 @@ const config: Config = {
     '!<rootDir>/coverage/**',
   ],
   testEnvironment: 'jsdom',
+  // Prevent hanging tests due to React 19 MESSAGEPORT handles
+  testTimeout: 10000,
   // Add more setup options before each test is run
   setupFiles: ['<rootDir>/jest.globals-setup.js'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],

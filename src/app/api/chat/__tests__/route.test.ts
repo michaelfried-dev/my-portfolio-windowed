@@ -448,6 +448,22 @@ describe('POST /api/chat', () => {
       expect(mockFetch).not.toHaveBeenCalled();
     });
 
+    it('handles undefined response from LM Studio fetch (Cloudflare environment)', async () => {
+      process.env.HUGGINGFACE_API_KEY = 'test-key';
+      process.env.FORCE_HUGGINGFACE_402 = 'true';
+      process.env.ENABLE_LM_STUDIO_FALLBACK = 'true';
+      process.env.LM_STUDIO_URL = 'http://localhost:1234';
+
+      // Mock fetch returning undefined (can happen in Cloudflare environment)
+      mockFetch.mockResolvedValueOnce(undefined as any);
+
+      const req = mockRequest({ body: { question: 'test question' } });
+      const res = await POST(req);
+      expect(res.status).toBe(402);
+      const data = await res.json();
+      expect(data.error).toContain('hit my message limit');
+    });
+
     it('handles LM Studio response with missing content gracefully', async () => {
       process.env.HUGGINGFACE_API_KEY = 'test-key';
       process.env.FORCE_HUGGINGFACE_402 = 'true';

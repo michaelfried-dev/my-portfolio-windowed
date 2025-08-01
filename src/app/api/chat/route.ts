@@ -85,6 +85,12 @@ Context:\n${context}`;
       }),
     });
     
+    // Handle cases where response is undefined (can happen in Cloudflare environment)
+    if (!response) {
+      console.error('[DEBUG] LM Studio API error: Response is undefined');
+      return null;
+    }
+    
     if (!response.ok) {
       console.error('[DEBUG] LM Studio API error:', response.status, response.statusText);
       return null;

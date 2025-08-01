@@ -9,11 +9,9 @@ const createJestConfig = nextJest({
 // Add any custom config to be passed to Jest
 const config: Config = {
   // Allow ESM modules in node_modules to be transpiled (for react-markdown, remark-gfm)
-  transformIgnorePatterns: [
-    "/node_modules/(?!react-markdown|remark-gfm)/"
-  ],
+  transformIgnorePatterns: ['/node_modules/(?!react-markdown|remark-gfm)/'],
   transform: {
-    "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
+    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
   collectCoverage: true,
   coverageProvider: 'v8',

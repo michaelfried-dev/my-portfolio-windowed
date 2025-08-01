@@ -1,8 +1,8 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import { Chatbot } from '../chatbot';
-import * as useWindowSizeModule from '@/hooks/useWindowSize';
+import React from 'react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import '@testing-library/jest-dom'
+import { Chatbot } from '../chatbot'
+import * as useWindowSizeModule from '@/hooks/useWindowSize'
 
 // All mocks at the top level
 jest.mock('@/hooks/useWindowSize', () => ({
@@ -10,16 +10,19 @@ jest.mock('@/hooks/useWindowSize', () => ({
 }))
 
 jest.mock('framer-motion', () => ({
-  AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
+  AnimatePresence: ({ children }: any) =>
+    React.createElement(React.Fragment, null, children),
   motion: {
-    div: React.forwardRef((props: any, ref: any) => React.createElement('div', { ref, ...props })),
+    div: React.forwardRef((props: any, ref: any) =>
+      React.createElement('div', { ref, ...props }),
+    ),
   },
-}));
+}))
 
 // Mock scrollIntoView for jsdom
 beforeAll(() => {
-  window.HTMLElement.prototype.scrollIntoView = function () {};
-});
+  window.HTMLElement.prototype.scrollIntoView = function () {}
+})
 
 // Mock fetch for API calls and window size
 beforeEach(() => {
@@ -28,21 +31,26 @@ beforeEach(() => {
       ok: true,
       json: () => Promise.resolve({ answer: 'Test answer' }),
     }),
-  ) as jest.Mock;
-  (useWindowSizeModule.useWindowSize as jest.Mock).mockReturnValue({ width: 1024, height: 768 });
-});
+  ) as jest.Mock
+  ;(useWindowSizeModule.useWindowSize as jest.Mock).mockReturnValue({
+    width: 1024,
+    height: 768,
+  })
+})
 
 afterEach(() => {
-  jest.resetAllMocks();
-});
+  jest.resetAllMocks()
+})
 
 describe('Chatbot', () => {
-
   // Test for responsiveness
   describe('when on a small screen', () => {
     beforeEach(() => {
       // Mock the useWindowSize hook to return a small screen size
-      (useWindowSizeModule.useWindowSize as jest.Mock).mockReturnValue({ width: 400, height: 600 })
+      ;(useWindowSizeModule.useWindowSize as jest.Mock).mockReturnValue({
+        width: 400,
+        height: 600,
+      })
     })
 
     it('renders in full-screen mode', () => {
@@ -58,7 +66,10 @@ describe('Chatbot', () => {
   describe('when on a large screen', () => {
     beforeEach(() => {
       // Mock the useWindowSize hook to return a large screen size
-      (useWindowSizeModule.useWindowSize as jest.Mock).mockReturnValue({ width: 1200, height: 800 })
+      ;(useWindowSizeModule.useWindowSize as jest.Mock).mockReturnValue({
+        width: 1200,
+        height: 800,
+      })
     })
 
     it('renders as a pop-up widget', () => {
@@ -70,7 +81,7 @@ describe('Chatbot', () => {
       expect(widget).toHaveClass('right-4 bottom-4 w-full max-w-md')
       expect(widget).not.toHaveClass('inset-0 h-full w-full')
     })
-  });
+  })
   it('renders the floating open button', () => {
     render(<Chatbot />)
     // Button should be present with correct aria-label
@@ -80,9 +91,7 @@ describe('Chatbot', () => {
   it('opens the chatbot widget with animation', async () => {
     render(<Chatbot />)
     fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    expect(
-      await screen.findByText('AI Assistant'),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('AI Assistant')).toBeInTheDocument()
   })
 
   it('closes the chatbot widget when close button is clicked', async () => {
@@ -116,7 +125,7 @@ describe('Chatbot', () => {
   })
 
   it('renders phone number as clickable tel: link in answer', async () => {
-    ; (global.fetch as jest.Mock).mockImplementationOnce(() =>
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
         json: () =>
@@ -139,7 +148,7 @@ describe('Chatbot', () => {
   })
 
   it('shows a loading indicator while waiting for answer', async () => {
-    ; (global.fetch as jest.Mock).mockImplementationOnce(
+    ;(global.fetch as jest.Mock).mockImplementationOnce(
       () =>
         new Promise((resolve) =>
           setTimeout(
@@ -161,7 +170,11 @@ describe('Chatbot', () => {
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
     await waitFor(() => {
-      expect(screen.getByText(/Thinking.*Hugging Face.*local LM Studio API.*DeepSeek/)).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          /Thinking.*Hugging Face.*local LM Studio API.*DeepSeek/,
+        ),
+      ).toBeInTheDocument()
     })
     await waitFor(() => {
       expect(screen.getByText('Delayed answer')).toBeInTheDocument()
@@ -170,15 +183,16 @@ describe('Chatbot', () => {
 
   it('shows an error if the API fails', async () => {
     // Only mock the 402 error for this test
-    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         ok: false,
         status: 402,
-        json: () => Promise.resolve({
-          error:
-            "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn (https://www.linkedin.com/in/michael-fried/) or email (email@michaelfried.info). Thank you for your understanding!",
-        }),
-      })
+        json: () =>
+          Promise.resolve({
+            error:
+              "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn (https://www.linkedin.com/in/michael-fried/) or email (email@michaelfried.info). Thank you for your understanding!",
+          }),
+      }),
     )
     render(<Chatbot />)
     fireEvent.click(screen.getByLabelText('Open AI Assistant'))
@@ -189,13 +203,13 @@ describe('Chatbot', () => {
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
     expect(
-      await screen.findByText(/I'm sorry, but I've hit my message limit/ )
+      await screen.findByText(/I'm sorry, but I've hit my message limit/),
     ).toBeInTheDocument()
   })
 
   it('handles network errors gracefully', async () => {
-    (global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.reject(new Error('Network error'))
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
+      Promise.reject(new Error('Network error')),
     )
     render(<Chatbot />)
     fireEvent.click(screen.getByLabelText('Open AI Assistant'))
@@ -205,11 +219,9 @@ describe('Chatbot', () => {
     fireEvent.change(input, { target: { value: 'Network test' } })
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
-    
+
     // Should show error message in error section
-    expect(
-      await screen.findByText(/Network error/)
-    ).toBeInTheDocument()
+    expect(await screen.findByText(/Network error/)).toBeInTheDocument()
   })
 
   it('handles empty input submission gracefully', async () => {
@@ -238,7 +250,7 @@ describe('Chatbot', () => {
   })
 
   it('disables input and button while loading', async () => {
-    (global.fetch as jest.Mock).mockImplementationOnce(
+    ;(global.fetch as jest.Mock).mockImplementationOnce(
       () =>
         new Promise((resolve) =>
           setTimeout(
@@ -259,7 +271,7 @@ describe('Chatbot', () => {
     fireEvent.change(input, { target: { value: 'Test loading state' } })
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
-    
+
     // Check that input and button are disabled during loading
     expect(input).toBeDisabled()
     const sendButton = screen.getByRole('button', { name: /\.\.\.|Send/ })
@@ -267,11 +279,13 @@ describe('Chatbot', () => {
   })
 
   it('renders email addresses as clickable mailto links', async () => {
-    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
         json: () =>
-          Promise.resolve({ answer: 'Contact me at test@example.com for more info.' }),
+          Promise.resolve({
+            answer: 'Contact me at test@example.com for more info.',
+          }),
       }),
     )
     render(<Chatbot />)
@@ -290,11 +304,13 @@ describe('Chatbot', () => {
   })
 
   it('renders URLs as clickable links', async () => {
-    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
         json: () =>
-          Promise.resolve({ answer: 'Check out https://example.com for details.' }),
+          Promise.resolve({
+            answer: 'Check out https://example.com for details.',
+          }),
       }),
     )
     render(<Chatbot />)
@@ -313,11 +329,10 @@ describe('Chatbot', () => {
   })
 
   it('handles non-string answer gracefully', async () => {
-    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
-        json: () =>
-          Promise.resolve({ answer: { invalid: 'object' } }),
+        json: () => Promise.resolve({ answer: { invalid: 'object' } }),
       }),
     )
     render(<Chatbot />)
@@ -330,7 +345,7 @@ describe('Chatbot', () => {
     if (form) fireEvent.submit(form)
     // Should show error message for non-string answer
     expect(
-      await screen.findByText(/\[Invalid answer type: object\]/)
+      await screen.findByText(/\[Invalid answer type: object\]/),
     ).toBeInTheDocument()
   })
 
@@ -352,7 +367,7 @@ describe('Chatbot', () => {
     fireEvent.change(input, { target: { value: 'Test focus' } })
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
-    
+
     // Input should maintain focus after submission
     await waitFor(() => {
       expect(input).toHaveFocus()
@@ -368,7 +383,7 @@ describe('Chatbot', () => {
     fireEvent.change(input, { target: { value: 'Test clear input' } })
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
-    
+
     // Input should be cleared after submission
     expect(input).toHaveValue('')
   })
@@ -379,24 +394,24 @@ describe('Chatbot', () => {
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
-    
+
     // First question
     fireEvent.change(input, { target: { value: 'First question' } })
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
     expect(await screen.findByText('Test answer')).toBeInTheDocument()
-    
+
     // Second question
     fireEvent.change(input, { target: { value: 'Second question' } })
     if (form) fireEvent.submit(form)
-    
+
     // Both questions should be visible
     expect(screen.getByText('First question')).toBeInTheDocument()
     expect(screen.getByText('Second question')).toBeInTheDocument()
   })
 
   it('handles API response without answer field', async () => {
-    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({}), // No answer field
@@ -410,24 +425,29 @@ describe('Chatbot', () => {
     fireEvent.change(input, { target: { value: 'No answer test' } })
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
-    
+
     // Should handle missing answer gracefully
     expect(
-      await screen.findByText(/\[No answer received\]/)
+      await screen.findByText(/\[No answer received\]/),
     ).toBeInTheDocument()
   })
 
   it('displays enhanced thinking message about LM Studio fallback', async () => {
     // Mock a delayed fetch to ensure loading state persists
-    (global.fetch as jest.Mock).mockImplementationOnce(() =>
-      new Promise(resolve => 
-        setTimeout(() => resolve({
-          ok: true,
-          json: () => Promise.resolve({ answer: 'Test answer' }),
-        }), 100)
-      )
+    ;(global.fetch as jest.Mock).mockImplementationOnce(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                json: () => Promise.resolve({ answer: 'Test answer' }),
+              }),
+            100,
+          ),
+        ),
     )
-    
+
     render(<Chatbot />)
     fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
@@ -436,24 +456,27 @@ describe('Chatbot', () => {
     fireEvent.change(input, { target: { value: 'Test question' } })
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
-    
+
     // Should show enhanced thinking message about LM Studio fallback
-    expect(await screen.findByText(
-      /Thinking.*Hugging Face.*local LM Studio API.*DeepSeek/
-    )).toBeInTheDocument()
+    expect(
+      await screen.findByText(
+        /Thinking.*Hugging Face.*local LM Studio API.*DeepSeek/,
+      ),
+    ).toBeInTheDocument()
   })
 
   it('displays LM Studio usage indicator when usedLmStudio flag is true', async () => {
-    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({ 
-          answer: 'LM Studio response',
-          usedLmStudio: true 
-        }),
+        json: () =>
+          Promise.resolve({
+            answer: 'LM Studio response',
+            usedLmStudio: true,
+          }),
       }),
     )
-    
+
     render(<Chatbot />)
     fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
@@ -462,23 +485,28 @@ describe('Chatbot', () => {
     fireEvent.change(input, { target: { value: 'Test question' } })
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
-    
+
     // Should show LM Studio usage indicator
-    expect(await screen.findByText(/Response generated using my local LM Studio API/)).toBeInTheDocument()
+    expect(
+      await screen.findByText(
+        /Response generated using my local LM Studio API/,
+      ),
+    ).toBeInTheDocument()
     expect(screen.getByText(/LM Studio response/)).toBeInTheDocument()
   })
 
   it('does not display LM Studio usage indicator when usedLmStudio flag is false', async () => {
-    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({ 
-          answer: 'Regular response',
-          usedLmStudio: false 
-        }),
+        json: () =>
+          Promise.resolve({
+            answer: 'Regular response',
+            usedLmStudio: false,
+          }),
       }),
     )
-    
+
     render(<Chatbot />)
     fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
@@ -487,9 +515,11 @@ describe('Chatbot', () => {
     fireEvent.change(input, { target: { value: 'Test question' } })
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
-    
+
     // Should not show LM Studio usage indicator
     expect(await screen.findByText('Regular response')).toBeInTheDocument()
-    expect(screen.queryByText(/Response generated using my local LM Studio API/)).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(/Response generated using my local LM Studio API/),
+    ).not.toBeInTheDocument()
   })
 })

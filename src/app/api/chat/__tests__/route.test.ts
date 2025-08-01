@@ -332,6 +332,7 @@ describe('POST /api/chat', () => {
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.answer).toBe('LM Studio response');
+      expect(data.usedLmStudio).toBe(true);
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:1234/v1/chat/completions',
         expect.objectContaining({
@@ -406,6 +407,7 @@ describe('POST /api/chat', () => {
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.answer).toBe('LM Studio fallback response');
+      expect(data.usedLmStudio).toBe(true);
     });
 
     it('returns 500 error when both Hugging Face and LM Studio fail', async () => {

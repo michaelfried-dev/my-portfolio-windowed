@@ -232,7 +232,10 @@ Feel free to reach out for professional networking, questions about my experienc
           
           if (fallbackResult) {
             return NextResponse.json(
-              { answer: fallbackResult.answer },
+              { 
+                answer: fallbackResult.answer,
+                usedLmStudio: true
+              },
               { headers: { 'Content-Type': 'application/json' } },
             );
           }
@@ -253,7 +256,10 @@ Feel free to reach out for professional networking, questions about my experienc
         
         if (fallbackResult) {
           return NextResponse.json(
-            { answer: fallbackResult.answer },
+            { 
+              answer: fallbackResult.answer,
+              usedLmStudio: true
+            },
             { headers: { 'Content-Type': 'application/json' } },
           );
         }

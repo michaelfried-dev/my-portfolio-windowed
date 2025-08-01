@@ -147,6 +147,12 @@ export function Chatbot() {
       } else {
         safeAnswer = '[No answer received]'
       }
+      
+      // Add a note if LM Studio was used
+      if (data.usedLmStudio) {
+        safeAnswer = `*Response generated using my local LM Studio API*\n\n${safeAnswer}`
+      }
+      
       // Update the last QA pair with the answer
       setQa((prev) => {
         const updated = [...prev]
@@ -249,7 +255,7 @@ export function Chatbot() {
                           </div>
                         ) : isLoading && i === qa.length - 1 ? (
                           <span className="text-muted animate-pulse">
-                            Thinking...
+                            Thinking... trying Hugging Face first, then my local LM Studio API with DeepSeek if needed
                           </span>
                         ) : null}
                       </div>

@@ -161,7 +161,7 @@ describe('Chatbot', () => {
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
     await waitFor(() => {
-      expect(screen.getByText('Thinking...')).toBeInTheDocument()
+      expect(screen.getByText(/Thinking.*Hugging Face.*local LM Studio API.*DeepSeek/)).toBeInTheDocument()
     })
     await waitFor(() => {
       expect(screen.getByText('Delayed answer')).toBeInTheDocument()
@@ -415,5 +415,81 @@ describe('Chatbot', () => {
     expect(
       await screen.findByText(/\[No answer received\]/)
     ).toBeInTheDocument()
+  })
+
+  it('displays enhanced thinking message about LM Studio fallback', async () => {
+    // Mock a delayed fetch to ensure loading state persists
+    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+      new Promise(resolve => 
+        setTimeout(() => resolve({
+          ok: true,
+          json: () => Promise.resolve({ answer: 'Test answer' }),
+        }), 100)
+      )
+    )
+    
+    render(<Chatbot />)
+    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    const input = await screen.findByPlaceholderText(
+      'e.g. Where did Michael Fried work in 2023?',
+    )
+    fireEvent.change(input, { target: { value: 'Test question' } })
+    const form = input.closest('form')
+    if (form) fireEvent.submit(form)
+    
+    // Should show enhanced thinking message about LM Studio fallback
+    expect(await screen.findByText(
+      /Thinking.*Hugging Face.*local LM Studio API.*DeepSeek/
+    )).toBeInTheDocument()
+  })
+
+  it('displays LM Studio usage indicator when usedLmStudio flag is true', async () => {
+    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ 
+          answer: 'LM Studio response',
+          usedLmStudio: true 
+        }),
+      }),
+    )
+    
+    render(<Chatbot />)
+    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    const input = await screen.findByPlaceholderText(
+      'e.g. Where did Michael Fried work in 2023?',
+    )
+    fireEvent.change(input, { target: { value: 'Test question' } })
+    const form = input.closest('form')
+    if (form) fireEvent.submit(form)
+    
+    // Should show LM Studio usage indicator
+    expect(await screen.findByText(/Response generated using my local LM Studio API/)).toBeInTheDocument()
+    expect(screen.getByText(/LM Studio response/)).toBeInTheDocument()
+  })
+
+  it('does not display LM Studio usage indicator when usedLmStudio flag is false', async () => {
+    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ 
+          answer: 'Regular response',
+          usedLmStudio: false 
+        }),
+      }),
+    )
+    
+    render(<Chatbot />)
+    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    const input = await screen.findByPlaceholderText(
+      'e.g. Where did Michael Fried work in 2023?',
+    )
+    fireEvent.change(input, { target: { value: 'Test question' } })
+    const form = input.closest('form')
+    if (form) fireEvent.submit(form)
+    
+    // Should not show LM Studio usage indicator
+    expect(await screen.findByText('Regular response')).toBeInTheDocument()
+    expect(screen.queryByText(/Response generated using my local LM Studio API/)).not.toBeInTheDocument()
   })
 })

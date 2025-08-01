@@ -534,11 +534,12 @@ describe('cleanThinkingContent function', () => {
       throw { httpResponse: { status: 402 } };
     });
 
-    const response = await POST(new Request('http://localhost:3000/api/chat', {
+    const request = {
+      json: async () => ({ question: 'Hello' }),
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: 'Hello' })
-    }));
+      headers: new Headers({ 'Content-Type': 'application/json' })
+    } as any;
+    const response = await POST(request);
 
     const data = await response.json();
     expect(data.answer).toBe('Hello! I can help you with questions about this resume and portfolio.');
@@ -563,11 +564,12 @@ describe('cleanThinkingContent function', () => {
       throw { httpResponse: { status: 402 } };
     });
 
-    const response = await POST(new Request('http://localhost:3000/api/chat', {
+    const request = {
+      json: async () => ({ question: 'Tell me about experience' }),
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: 'Tell me about experience' })
-    }));
+      headers: new Headers({ 'Content-Type': 'application/json' })
+    } as any;
+    const response = await POST(request);
 
     const data = await response.json();
     expect(data.answer).toBe('I have extensive experience in software development.');
@@ -591,11 +593,12 @@ describe('cleanThinkingContent function', () => {
       throw { httpResponse: { status: 402 } };
     });
 
-    const response = await POST(new Request('http://localhost:3000/api/chat', {
+    const request = {
+      json: async () => ({ question: 'What is the answer?' }),
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: 'What is the answer?' })
-    }));
+      headers: new Headers({ 'Content-Type': 'application/json' })
+    } as any;
+    const response = await POST(request);
 
     const data = await response.json();
     // Test that clean responses pass through unchanged
@@ -619,11 +622,12 @@ describe('cleanThinkingContent function', () => {
       throw { httpResponse: { status: 402 } };
     });
 
-    const response = await POST(new Request('http://localhost:3000/api/chat', {
+    const request = {
+      json: async () => ({ question: 'Short question' }),
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: 'Short question' })
-    }));
+      headers: new Headers({ 'Content-Type': 'application/json' })
+    } as any;
+    const response = await POST(request);
 
     const data = await response.json();
     // Should preserve original since cleanup would remove everything
@@ -647,11 +651,12 @@ describe('cleanThinkingContent function', () => {
       throw { httpResponse: { status: 402 } };
     });
 
-    const response = await POST(new Request('http://localhost:3000/api/chat', {
+    const request = {
+      json: async () => ({ question: 'Empty response test' }),
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: 'Empty response test' })
-    }));
+      headers: new Headers({ 'Content-Type': 'application/json' })
+    } as any;
+    const response = await POST(request);
 
     const data = await response.json();
     expect(data.answer).toBe('No answer found from LM Studio.');
@@ -674,11 +679,12 @@ describe('cleanThinkingContent function', () => {
       throw { httpResponse: { status: 402 } };
     });
 
-    const response = await POST(new Request('http://localhost:3000/api/chat', {
+    const request = {
+      json: async () => ({ question: 'Whitespace test' }),
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: 'Whitespace test' })
-    }));
+      headers: new Headers({ 'Content-Type': 'application/json' })
+    } as any;
+    const response = await POST(request);
 
     const data = await response.json();
     expect(data.answer).toBe('First paragraph.\n\nSecond paragraph.\n\nThird paragraph.');

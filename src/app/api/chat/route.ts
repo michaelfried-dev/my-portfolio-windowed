@@ -44,20 +44,16 @@ function cleanThinkingContent(content: string): string {
 }
 
 // LM Studio fallback function
-async function tryLmStudioFallback(question: string, context: string): Promise<{ answer: string; debugInfo?: string[] } | null> {
+async function tryLmStudioFallback(question: string, context: string): Promise<{ answer: string } | null> {
   const lmStudioUrl = process.env.LM_STUDIO_URL;
   const lmStudioModel = process.env.LM_STUDIO_MODEL || 'local-model';
-  const debugInfo: string[] = [];
   
   if (!lmStudioUrl) {
     console.log('[DEBUG] LM Studio URL not configured, skipping fallback');
-    debugInfo.push('LM Studio URL not configured in environment variables');
     return null;
   }
   
   console.log('[DEBUG] Attempting LM Studio fallback:', lmStudioUrl);
-  debugInfo.push(`Attempting LM Studio connection to: ${lmStudioUrl}`);
-  debugInfo.push(`Using model: ${lmStudioModel}`);
   
   try {
     const systemPrompt = `You are a helpful assistant that answers questions about the following resume and portfolio content. Provide direct, concise answers.
@@ -92,15 +88,11 @@ Context:\n${context}`;
     // Handle cases where response is undefined (can happen in Cloudflare environment)
     if (!response) {
       console.log('[DEBUG] LM Studio API error: Response is undefined');
-      debugInfo.push('LM Studio API returned undefined response (possible network/CORS issue)');
-      console.log('[DEBUG] LM Studio fallback failed with debug info:', debugInfo);
       return null;
     }
     
     if (!response.ok) {
       console.log('[DEBUG] LM Studio API error:', response.status, response.statusText);
-      debugInfo.push(`LM Studio API error: ${response.status} ${response.statusText}`);
-      console.log('[DEBUG] LM Studio fallback failed with debug info:', debugInfo);
       return null;
     }
     
@@ -111,16 +103,9 @@ Context:\n${context}`;
     answer = cleanThinkingContent(answer);
     
     console.log('[DEBUG] LM Studio fallback successful');
-    debugInfo.push('LM Studio connection successful, received response');
-    debugInfo.push(`Response length: ${answer.length} characters`);
-    return { answer, debugInfo };
+    return { answer };
   } catch (error) {
     console.log('[DEBUG] LM Studio fallback failed:', error);
-    debugInfo.push(`LM Studio connection failed with error: ${error}`);
-    if (error instanceof TypeError) {
-      debugInfo.push('This might be a network connectivity or CORS issue');
-    }
-    console.log('[DEBUG] LM Studio fallback failed with debug info:', debugInfo);
     return null;
   }
 }
@@ -247,7 +232,6 @@ Feel free to reach out for professional networking, questions about my experienc
         console.log('[DEBUG] Hugging Face 402 error detected');
         
         // Try LM Studio fallback if enabled
-        let debugInfo: string[] = [];
         if (enableLmStudioFallback) {
           console.log('[DEBUG] Attempting LM Studio fallback due to 402 error');
           const fallbackResult = await tryLmStudioFallback(question, context);
@@ -256,32 +240,22 @@ Feel free to reach out for professional networking, questions about my experienc
             return NextResponse.json(
               { 
                 answer: fallbackResult.answer,
-                usedLmStudio: true,
-                debugInfo: fallbackResult.debugInfo
+                usedLmStudio: true
               },
               { headers: { 'Content-Type': 'application/json' } },
             );
-          } else {
-            // Collect debug info even when fallback fails
-            debugInfo.push('LM Studio fallback was attempted but failed');
-            debugInfo.push(`LM Studio URL: ${process.env.LM_STUDIO_URL || 'not configured'}`);
-            debugInfo.push(`LM Studio Model: ${process.env.LM_STUDIO_MODEL || 'local-model'}`);
           }
           
           console.log('[DEBUG] LM Studio fallback failed, returning 402 error');
         }
         
         return NextResponse.json(
-          { 
-            error: "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!",
-            debugInfo: debugInfo.length > 0 ? debugInfo : undefined
-          },
+          { error: "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!" },
           { status: 402 }
         );
       }
       
       // For other errors, try LM Studio fallback if enabled
-      let debugInfo: string[] = [];
       if (enableLmStudioFallback) {
         console.log('[DEBUG] Attempting LM Studio fallback due to other Hugging Face error');
         const fallbackResult = await tryLmStudioFallback(question, context);
@@ -290,25 +264,16 @@ Feel free to reach out for professional networking, questions about my experienc
           return NextResponse.json(
             { 
               answer: fallbackResult.answer,
-              usedLmStudio: true,
-              debugInfo: fallbackResult.debugInfo
+              usedLmStudio: true
             },
             { headers: { 'Content-Type': 'application/json' } },
           );
-        } else {
-          // Collect debug info even when fallback fails
-          debugInfo.push('LM Studio fallback was attempted but failed');
-          debugInfo.push(`LM Studio URL: ${process.env.LM_STUDIO_URL || 'not configured'}`);
-          debugInfo.push(`LM Studio Model: ${process.env.LM_STUDIO_MODEL || 'local-model'}`);
         }
       }
       
       // All other errors - provide friendly message with contact info
       return NextResponse.json(
-        { 
-          error: "I'm experiencing some technical difficulties right now and can't answer your question. Please feel free to reach out to me directly via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. I'd be happy to help you personally!",
-          debugInfo: debugInfo.length > 0 ? debugInfo : undefined
-        },
+        { error: "I'm experiencing some technical difficulties right now and can't answer your question. Please feel free to reach out to me directly via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. I'd be happy to help you personally!" },
         { status: 500 }
       );
     }

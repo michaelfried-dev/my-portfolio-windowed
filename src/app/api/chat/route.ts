@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { InferenceClientHubApiError } from '@huggingface/inference';
 import { CONTACT_INFO, PERSONAL_INFO, EDUCATION, CERTIFICATIONS, EXPERIENCE } from '@/lib/constants';
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 // Function to clean thinking/reasoning content from responses
 function cleanThinkingContent(content: string): string {

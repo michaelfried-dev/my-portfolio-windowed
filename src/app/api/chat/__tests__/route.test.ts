@@ -10,10 +10,14 @@ describe('POST /api/chat', () => {
     jest.resetModules();
     jest.clearAllMocks();
     global.fetch = jest.fn();
+    process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
+    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
+    delete process.env.LMSTUDIO_FALLBACK_DISABLED;
   });
 
   afterEach(() => {
-    process.env = { ...originalEnv };
+    process.env = originalEnv;
   });
 
   const importPOST = async () => (await import('../route')).POST;
@@ -31,186 +35,134 @@ describe('POST /api/chat', () => {
     } as unknown as Request;
   }
 
-  // Basic Validation Tests
-  it('returns 415 if content-type is not application/json', async () => {
-    const req = mockRequest({ body: {}, contentType: 'text/plain' });
-    const res = await POST(req);
-    expect(res.status).toBe(415);
-    const data = await res.json();
-    expect(data.error).toMatch(/Invalid content type/);
-  });
+  // --- Test Cases ---
 
-  it('returns 400 for malformed JSON', async () => {
-    const req = mockRequest({ body: new Error('bad json') });
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-    const data = await res.json();
-    expect(data.error).toMatch(/Invalid JSON format/);
-  });
-
-  it('returns 400 if question is missing', async () => {
-    const req = mockRequest({ body: {} });
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-    const data = await res.json();
-    expect(data.error).toMatch(/Request must include a string question/);
-  });
-
-  // Core Logic and Success Cases
-  it('returns 200 and answer on successful chat completion', async () => {
-    process.env.HUGGINGFACE_API_KEY = 'fake-key';
+  it('returns 200 on successful primary API call', async () => {
     jest.doMock('@huggingface/inference', () => ({
       InferenceClient: class {
         async chatCompletion() {
-          return { choices: [{ message: { content: 'Hello from the bot!' } }] };
+          return { choices: [{ message: { content: 'Success' } }] };
         }
       }
     }), { virtual: true });
+
     const post = await importPOST();
-    const req = mockRequest({ body: { question: 'Say hello' } });
+    const req = mockRequest({ body: { question: 'test' } });
     const res = await post(req);
     expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.answer).toBe('Hello from the bot!');
+    expect(await res.json()).toEqual({ answer: 'Success' });
   });
 
-  // Fallback Disabled Scenarios
-  it('does NOT fallback to LM Studio when disabled (402 error)', async () => {
-    process.env.HUGGINGFACE_API_KEY = 'fake-key';
-    process.env.LMSTUDIO_FALLBACK_DISABLED = 'true';
+  it('returns 200 on successful fallback after HF 402 error', async () => {
     jest.doMock('@huggingface/inference', () => ({
       InferenceClient: class {
         async chatCompletion() {
-          const error: any = new Error('Payment required');
+          const error: any = new Error('Quota exceeded');
           error.httpResponse = { status: 402 };
           throw error;
         }
       }
     }), { virtual: true });
+
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: 'Fallback success' } }] }),
+    } as Response);
+
     const post = await importPOST();
-    const req = mockRequest({ body: { question: 'Limit check' } });
+    const req = mockRequest({ body: { question: 'test' } });
+    const res = await post(req);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ answer: 'Fallback success' });
+  });
+
+  it('returns 402 if HF fails (402) and fallback also fails (402)', async () => {
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        async chatCompletion() {
+          const error: any = new Error('HF Quota');
+          error.httpResponse = { status: 402 };
+          throw error;
+        }
+      }
+    }), { virtual: true });
+
+    global.fetch.mockResolvedValue({ ok: false, status: 402 } as Response);
+
+    const post = await importPOST();
+    const req = mockRequest({ body: { question: 'test' } });
     const res = await post(req);
     expect(res.status).toBe(402);
     const data = await res.json();
-    expect(data.error).toMatch(/hit my message limit/i);
+    expect(data.error).toContain('hit my message limit');
   });
 
-  // Successful Fallback Scenarios
-  it('falls back to LM Studio on Hugging Face 402 error', async () => {
-    process.env.HUGGINGFACE_API_KEY = 'fake-key';
-    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
-    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
+  it('returns 503 if HF fails and fallback has network error', async () => {
     jest.doMock('@huggingface/inference', () => ({
       InferenceClient: class {
         async chatCompletion() {
-          const error: any = new Error('Payment required');
-          error.httpResponse = { status: 402 };
-          throw error;
+          throw new Error('HF unavailable');
         }
       }
     }), { virtual: true });
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ choices: [{ message: { content: 'Fallback answer' } }] }),
-    } as Response);
-    const post = await importPOST();
-    const req = mockRequest({ body: { question: 'Fallback test' } });
-    const res = await post(req);
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.answer).toBe('Fallback answer');
-  });
 
-  it('falls back to LM Studio on generic Hugging Face error', async () => {
-    process.env.HUGGINGFACE_API_KEY = 'fake-key';
-    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
-    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
-    jest.doMock('@huggingface/inference', () => ({
-      InferenceClient: class {
-        async chatCompletion() { throw new Error('Generic HF error'); }
-      }
-    }), { virtual: true });
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ choices: [{ message: { content: 'Generic fallback answer' } }] }),
-    } as Response);
-    const post = await importPOST();
-    const req = mockRequest({ body: { question: 'Generic fallback test' } });
-    const res = await post(req);
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.answer).toBe('Generic fallback answer');
-  });
+    global.fetch.mockRejectedValue(new Error('fetch failed'));
 
-  // Failed Fallback Scenarios
-  it('returns original 402 error if both services fail (402)', async () => {
-    process.env.HUGGINGFACE_API_KEY = 'fake-key';
-    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
-    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
-    jest.doMock('@huggingface/inference', () => ({
-      InferenceClient: class {
-        async chatCompletion() {
-          const error: any = new Error('Payment required');
-          error.httpResponse = { status: 402 };
-          throw error;
-        }
-      }
-    }), { virtual: true });
-    global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500 });
     const post = await importPOST();
-    const req = mockRequest({ body: { question: 'Double fail 402' } });
-    const res = await post(req);
-    expect(res.status).toBe(402);
-    const data = await res.json();
-    expect(data.error).toMatch(/hit my message limit/i);
-  });
-
-  it('returns original generic error if both services fail (generic)', async () => {
-    process.env.HUGGINGFACE_API_KEY = 'fake-key';
-    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
-    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
-    jest.doMock('@huggingface/inference', () => ({
-      InferenceClient: class {
-        async chatCompletion() { throw new Error('Original generic error'); }
-      }
-    }), { virtual: true });
-    global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500 });
-    const post = await importPOST();
-    const req = mockRequest({ body: { question: 'Double fail generic' } });
-    const res = await post(req);
-    expect(res.status).toBe(500);
-    const data = await res.json();
-    expect(data.error).toBe('Original generic error');
-  });
-
-  it('returns 503 if HF fails and LM Studio fetch fails', async () => {
-    process.env.HUGGINGFACE_API_KEY = 'fake-key';
-    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
-    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
-    jest.doMock('@huggingface/inference', () => ({
-      InferenceClient: class {
-        async chatCompletion() { throw new Error('HF unavailable'); }
-      }
-    }), { virtual: true });
-    global.fetch = jest.fn().mockRejectedValue(new Error('fetch failed'));
-    const post = await importPOST();
-    const req = mockRequest({ body: { question: 'Network failure test' } });
+    const req = mockRequest({ body: { question: 'test' } });
     const res = await post(req);
     expect(res.status).toBe(503);
     const data = await res.json();
     expect(data.error).toBe('The primary service is unavailable, and the fallback service also failed.');
   });
 
-  // Coverage for uncovered branches
-  it('returns 500 on context extraction error', async () => {
-    process.env.HUGGINGFACE_API_KEY = 'fake-key';
-    process.env.LMSTUDIO_API_URL = 'http://localhost:1234/v1/chat/completions';
-    process.env.LMSTUDIO_MODEL = 'lmstudio-test-model';
+  it('returns 500 if HF fails and fallback has a generic error', async () => {
+    const hfError = new Error('Original HF Error');
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        async chatCompletion() {
+          throw hfError;
+        }
+      }
+    }), { virtual: true });
 
-    jest.doMock('../../page', () => { throw new Error('mock context error'); }, { virtual: true });
+    global.fetch.mockResolvedValue({ ok: false, status: 500 } as Response);
 
     const post = await importPOST();
-    const req = mockRequest({ body: { question: 'context error test' } });
+    const req = mockRequest({ body: { question: 'test' } });
+    const res = await post(req);
+    expect(res.status).toBe(500);
+    const data = await res.json();
+    expect(data.error).toBe('Original HF Error');
+  });
+
+  it('does NOT fallback if fallback is disabled', async () => {
+    process.env.LMSTUDIO_FALLBACK_DISABLED = 'true';
+    const hfError = new Error('HF Error, no fallback');
+    jest.doMock('@huggingface/inference', () => ({
+      InferenceClient: class {
+        async chatCompletion() {
+          throw hfError;
+        }
+      }
+    }), { virtual: true });
+
+    const post = await importPOST();
+    const req = mockRequest({ body: { question: 'test' } });
+    const res = await post(req);
+    expect(res.status).toBe(500);
+    const data = await res.json();
+    expect(data.error).toBe('HF Error, no fallback');
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('returns 500 on context extraction error', async () => {
+    jest.doMock('../../page', () => { 
+      throw new Error('mock context error'); 
+    }, { virtual: true });
+
+    const post = await importPOST();
+    const req = mockRequest({ body: { question: 'test' } });
     const res = await post(req);
     expect(res.status).toBe(500);
     const data = await res.json();

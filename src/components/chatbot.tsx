@@ -155,9 +155,11 @@ export function Chatbot() {
         return updated
       })
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'An unexpected error occurred',
-      )
+      if (err instanceof Error && err.message.toLowerCase().includes('fetch')) {
+        setError('The chat service is currently unavailable. Please try again later.');
+      } else {
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      }
     } finally {
       setIsLoading(false)
     }

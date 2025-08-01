@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { InferenceClientHubApiError } from '@huggingface/inference';
 import { CONTACT_INFO, PERSONAL_INFO, EDUCATION, CERTIFICATIONS, EXPERIENCE } from '@/lib/constants';
-export const runtime = 'nodejs'
+export const runtime = 'edge'
 
 // Function to clean thinking/reasoning content from responses
 function cleanThinkingContent(content: string): string {
@@ -113,6 +113,17 @@ Context:\n${context}`;
 export async function POST(req: Request) {
   console.log('API route hit');
   
+  // Safari-specific headers for compatibility
+  const safariHeaders = {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+
   // Environment variables for feature toggles
   const enableLmStudioFallback = process.env.ENABLE_LM_STUDIO_FALLBACK === 'true';
   const forceHuggingFace402 = process.env.FORCE_HUGGINGFACE_402 === 'true';
@@ -123,7 +134,7 @@ export async function POST(req: Request) {
     if (!contentType?.includes('application/json')) {
       return NextResponse.json(
         { error: 'Invalid content type' },
-        { status: 415 },
+        { status: 415, headers: safariHeaders },
       )
     }
 
@@ -134,16 +145,30 @@ export async function POST(req: Request) {
     } catch (e) {
       return NextResponse.json(
         { error: 'Invalid JSON format' },
-        { status: 400 },
+        { status: 400, headers: safariHeaders },
       )
     }
 
     // Only require question in the request body
     const { question } = requestBody
-    if (!question || typeof question !== 'string') {
+    if (typeof requestBody.question !== 'string') {
       return NextResponse.json(
-        { error: 'Request must include a string question.' },
-        { status: 400 },
+        { error: 'Invalid question format' },
+        { status: 400, headers: safariHeaders },
+      )
+    }
+
+    if (requestBody.question.trim().length === 0) {
+      return NextResponse.json(
+        { error: 'Question cannot be empty' },
+        { status: 400, headers: safariHeaders },
+      )
+    }
+
+    if (requestBody.question.length > 10000) {
+      return NextResponse.json(
+        { error: 'Question too long' },
+        { status: 400, headers: safariHeaders },
       )
     }
 
@@ -221,7 +246,7 @@ Feel free to reach out for professional networking, questions about my experienc
       let answer = result.choices?.[0]?.message?.content || 'No answer found.';
       return NextResponse.json(
         { answer },
-        { headers: { 'Content-Type': 'application/json' } },
+        { headers: safariHeaders },
       );
     } catch (err: any) {
       console.log('CATCH block hit');
@@ -242,7 +267,7 @@ Feel free to reach out for professional networking, questions about my experienc
                 answer: fallbackResult.answer,
                 usedLmStudio: true
               },
-              { headers: { 'Content-Type': 'application/json' } },
+              { headers: safariHeaders },
             );
           }
           
@@ -251,7 +276,7 @@ Feel free to reach out for professional networking, questions about my experienc
         
         return NextResponse.json(
           { error: "I'm sorry, but I've hit my message limit for the month and can't answer more questions right now. If you need to reach me, please contact me via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. Thank you for your understanding!" },
-          { status: 402 }
+          { status: 402, headers: safariHeaders }
         );
       }
       
@@ -274,16 +299,16 @@ Feel free to reach out for professional networking, questions about my experienc
       // All other errors - provide friendly message with contact info
       return NextResponse.json(
         { error: "I'm experiencing some technical difficulties right now and can't answer your question. Please feel free to reach out to me directly via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. I'd be happy to help you personally!" },
-        { status: 500 }
+        { status: 500, headers: safariHeaders }
       );
     }
   } catch (error) {
-    console.error('Chat API error:', error)
+    console.log('Chat API error:', error)
     return NextResponse.json(
       { error: "I'm experiencing some technical difficulties right now and can't answer your question. Please feel free to reach out to me directly via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. I'd be happy to help you personally!" },
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: safariHeaders,
       },
     )
   }

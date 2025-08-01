@@ -46,7 +46,7 @@ describe('POST /api/chat', () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toMatch(/Request must include a string question/);
+    expect(data.error).toMatch(/Invalid question format/);
   });
 
   it('returns 400 if question is not a string', async () => {
@@ -54,7 +54,7 @@ describe('POST /api/chat', () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toMatch(/Request must include a string question/);
+    expect(data.error).toMatch(/Invalid question format/);
   });
 
   it('returns 400 if question is an empty string', async () => {
@@ -62,7 +62,16 @@ describe('POST /api/chat', () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toMatch(/Request must include a string question/);
+    expect(data.error).toMatch(/Question cannot be empty/);
+  });
+
+  it('returns 400 if question is too long', async () => {
+    const longQuestion = 'a'.repeat(10001); // Over the 10000 character limit
+    const req = mockRequest({ body: { question: longQuestion } });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/Question too long/);
   });
 
   it('handles very long question strings', async () => {
@@ -261,7 +270,7 @@ describe('POST /api/chat', () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toMatch(/Request must include a string question/);
+    expect(data.error).toMatch(/Invalid question format/);
   });
 
   it('handles question that is undefined', async () => {
@@ -269,7 +278,7 @@ describe('POST /api/chat', () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toMatch(/Request must include a string question/);
+    expect(data.error).toMatch(/Invalid question format/);
   });
 
   it('handles question that is an array', async () => {
@@ -277,7 +286,7 @@ describe('POST /api/chat', () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toMatch(/Request must include a string question/);
+    expect(data.error).toMatch(/Invalid question format/);
   });
 
   it('handles question that is a boolean', async () => {
@@ -285,7 +294,7 @@ describe('POST /api/chat', () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toMatch(/Request must include a string question/);
+    expect(data.error).toMatch(/Invalid question format/);
   });
 
   describe('LM Studio Fallback Tests', () => {

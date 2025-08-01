@@ -1,0 +1,27 @@
+{
+  "name": "Michael Fried - AI-Powered Portfolio",
+  "short_name": "Michael Fried",
+  "description": "Professional portfolio showcasing software engineering expertise with AI-powered chatbot assistance",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffbf00",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/profile.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/profile.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["portfolio", "professional", "technology"],
+  "lang": "en-US",
+  "dir": "ltr"
+}

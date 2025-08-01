@@ -1,0 +1,31 @@
+# CODEOWNERS file for Michael Fried's AI-Powered Portfolio
+# This file defines who owns and can approve changes to different parts of the codebase
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global ownership - Michael Fried owns everything by default
+* @michaelfried-dev
+
+# Critical configuration files require explicit approval
+/.github/ @michaelfried-dev
+/package.json @michaelfried-dev
+/pnpm-lock.yaml @michaelfried-dev
+/next.config.mjs @michaelfried-dev
+/tailwind.config.ts @michaelfried-dev
+/tsconfig.json @michaelfried-dev
+
+# Security-sensitive files
+/.env* @michaelfried-dev
+/src/app/api/ @michaelfried-dev
+
+# Documentation
+/README.md @michaelfried-dev
+/CHANGELOG.md @michaelfried-dev
+
+# Deployment configuration
+/netlify.toml @michaelfried-dev
+/Dockerfile @michaelfried-dev
+/.lighthouserc.json @michaelfried-dev
+
+# CI/CD workflows
+/.github/workflows/ @michaelfried-dev
+/.github/dependabot.yml @michaelfried-dev

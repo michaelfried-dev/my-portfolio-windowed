@@ -1,0 +1,13 @@
+{
+  "ignores": [
+    "@cloudflare/next-on-pages",
+    "@tailwindcss/postcss", 
+    "jest-environment-jsdom",
+    "postcss",
+    "prettier-plugin-tailwindcss",
+    "tailwindcss",
+    "ts-jest",
+    "ts-node"
+  ],
+  "skip-missing": true
+}

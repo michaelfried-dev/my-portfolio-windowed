@@ -9,10 +9,78 @@ import { Chatbot } from '@/components/chatbot'
 const archivo = Archivo({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Michael Fried',
+  title: {
+    default: 'Michael Fried - AI-Powered Portfolio',
+    template: '%s | Michael Fried',
+  },
+  description:
+    "Michael Fried's professional portfolio showcasing software engineering expertise, AI-powered chatbot assistance, and innovative projects built with modern web technologies.",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+  },
+  keywords: [
+    'Michael Fried',
+    'Software Engineer',
+    'AI Portfolio',
+    'Web Development',
+    'React',
+    'Next.js',
+    'TypeScript',
+  ],
+  authors: [{ name: 'Michael Fried' }],
+  creator: 'Michael Fried',
+  publisher: 'Michael Fried',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://michaelfried.dev'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Michael Fried - AI-Powered Portfolio',
+    description:
+      'Professional portfolio showcasing software engineering expertise with AI-powered chatbot assistance.',
+    url: 'https://michaelfried.dev',
+    siteName: 'Michael Fried Portfolio',
+    images: [
+      {
+        url: '/profile.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Michael Fried - Software Engineer',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Michael Fried - AI-Powered Portfolio',
+    description:
+      'Professional portfolio showcasing software engineering expertise with AI-powered chatbot assistance.',
+    images: ['/profile.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: '/profile.jpg',
+    shortcut: '/profile.jpg',
+    apple: '/profile.jpg',
   },
+  manifest: '/manifest.json',
 }
 
 export default function RootLayout({

@@ -24,7 +24,10 @@ function linkifyText(text: string): string {
   const escapedPhone = CONTACT_INFO.phone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const phoneRegex = new RegExp(escapedPhone, 'g')
   const rawPhoneNumber = CONTACT_INFO.phone.replace(/\D/g, '')
-  result = result.replace(phoneRegex, `[${CONTACT_INFO.phone}](tel:${rawPhoneNumber})`)
+  result = result.replace(
+    phoneRegex,
+    `[${CONTACT_INFO.phone}](tel:${rawPhoneNumber})`,
+  )
 
   // 2. URL linkification – match http/https URLs not already in markdown links
   //    This basic regex intentionally stops at whitespace or closing parenthesis.
@@ -32,7 +35,8 @@ function linkifyText(text: string): string {
   result = result.replace(urlRegex, (url) => `[${url}](${url})`)
 
   // 3. Email linkification – match simple email patterns not already in markdown links
-  const emailRegex = /(?<!\]\()([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g
+  const emailRegex =
+    /(?<!\]\()([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g
   result = result.replace(emailRegex, (email) => `[${email}](mailto:${email})`)
 
   return result
@@ -126,7 +130,10 @@ export function Chatbot() {
       if (!response.ok) {
         const errorData = await response.json()
         if (response.status === 402) {
-          setError(errorData.error || "I've hit my message limit for the month. Please try again later.")
+          setError(
+            errorData.error ||
+              "I've hit my message limit for the month. Please try again later.",
+          )
         } else {
           setError(errorData.error || 'Failed to get answer')
         }
@@ -134,25 +141,25 @@ export function Chatbot() {
         return
       }
       const data = await response.json()
-    // Ensure answer is always a string
-    let safeAnswer: string
-    if (typeof data.answer === 'string') {
-      safeAnswer = data.answer
-    } else if (data.answer != null) {
-      safeAnswer = `[Invalid answer type: ${typeof data.answer}]`
-      console.error(
-        'Chatbot backend returned non-string answer:',
-        data.answer,
-      )
-    } else {
-      safeAnswer = '[No answer received]'
-    }
-    
-    // Add a note if LM Studio was used
-    if (data.usedLmStudio) {
-      safeAnswer = `*Response generated using my local LM Studio API*\n\n${safeAnswer}`
-    }
-      
+      // Ensure answer is always a string
+      let safeAnswer: string
+      if (typeof data.answer === 'string') {
+        safeAnswer = data.answer
+      } else if (data.answer != null) {
+        safeAnswer = `[Invalid answer type: ${typeof data.answer}]`
+        console.error(
+          'Chatbot backend returned non-string answer:',
+          data.answer,
+        )
+      } else {
+        safeAnswer = '[No answer received]'
+      }
+
+      // Add a note if LM Studio was used
+      if (data.usedLmStudio) {
+        safeAnswer = `*Response generated using my local LM Studio API*\n\n${safeAnswer}`
+      }
+
       // Update the last QA pair with the answer
       setQa((prev) => {
         const updated = [...prev]
@@ -181,12 +188,12 @@ export function Chatbot() {
       {!open && (
         <Button
           variant="neutral"
-          size="icon"
-          className="fixed right-6 bottom-6 z-50"
-          aria-label="Open Chatbot"
+          className="fixed right-6 bottom-6 z-50 flex h-auto items-center gap-2 px-4 py-2"
+          aria-label="Open AI Assistant"
           onClick={() => setOpen(true)}
         >
-          <MessageSquare className="h-6 w-6" />
+          <MessageSquare className="h-5 w-5" />
+          <span className="text-sm font-medium">AI Assistant</span>
         </Button>
       )}
       {/* Chatbot Widget */}
@@ -208,15 +215,18 @@ export function Chatbot() {
               'fixed z-50 shadow-lg',
               isSmallScreen
                 ? 'inset-0 h-full w-full'
-                : 'right-4 bottom-4 w-full max-w-md'
+                : 'right-4 bottom-4 w-full max-w-md',
             )}
           >
-            <Card className={cn(isSmallScreen && 'h-full flex flex-col')}>
+            <Card className={cn(isSmallScreen && 'flex h-full flex-col')}>
               <div className="border-border flex items-center gap-2 border-b p-4">
                 <MessageSquare className="text-primary h-5 w-5" />
-                <span className="flex-1 font-semibold">
-                  Ask about my experience
-                </span>
+                <div className="flex-1">
+                  <span className="font-semibold">AI Assistant</span>
+                  <div className="text-muted-foreground text-xs">
+                    Ask about my experience • Powered by AI
+                  </div>
+                </div>
                 <Button
                   variant="neutral"
                   size="icon"
@@ -231,9 +241,9 @@ export function Chatbot() {
               <div
                 ref={chatAreaRef}
                 className={cn(
-                'space-y-2 overflow-y-auto p-4',
-                isSmallScreen ? 'flex-grow' : 'h-64'
-              )}
+                  'space-y-2 overflow-y-auto p-4',
+                  isSmallScreen ? 'flex-grow' : 'h-64',
+                )}
               >
                 {qa.map((item, i: number) => (
                   <div key={i}>
@@ -255,7 +265,8 @@ export function Chatbot() {
                           </div>
                         ) : isLoading && i === qa.length - 1 ? (
                           <span className="text-muted animate-pulse">
-                            Thinking... trying Hugging Face first, then my local LM Studio API with DeepSeek if needed
+                            Thinking... trying Hugging Face first, then my local
+                            LM Studio API with DeepSeek if needed
                           </span>
                         ) : null}
                       </div>
@@ -264,10 +275,8 @@ export function Chatbot() {
                 ))}
                 {error && (
                   <div className="mt-2 flex justify-center">
-                    <div className="bg-error text-error-foreground rounded-lg px-3 py-2 prose dark:prose-invert max-w-none text-sm">
-                      <SafeMarkdown>
-                        {linkifyText(error)}
-                      </SafeMarkdown>
+                    <div className="bg-error text-error-foreground prose dark:prose-invert max-w-none rounded-lg px-3 py-2 text-sm">
+                      <SafeMarkdown>{linkifyText(error)}</SafeMarkdown>
                     </div>
                   </div>
                 )}

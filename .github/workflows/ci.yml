@@ -13,7 +13,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [18.x, 20.x]
     
     steps:
     - name: Checkout code
@@ -144,5 +144,4 @@ jobs:
       uses: treosh/lighthouse-ci-action@v10
       with:
         configPath: './.lighthouserc.json'
-        uploadArtifacts: true
         temporaryPublicStorage: true

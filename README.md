@@ -30,6 +30,35 @@ The portfolio includes an intelligent chatbot that can answer questions about my
 
 The chatbot uses advanced prompt engineering and context extraction to provide accurate, helpful responses about my professional background while maintaining a friendly, conversational tone.
 
+## CI/CD & Security
+
+This project includes comprehensive automated testing and security scanning through GitHub Actions:
+
+### 🔄 Continuous Integration
+- **Multi-Node Testing**: Tests run on Node.js 18.x and 20.x
+- **Type Checking**: TypeScript compilation and type safety validation
+- **Code Quality**: ESLint and Prettier formatting checks
+- **Test Coverage**: Jest tests with coverage reporting to Codecov
+- **Build Verification**: Ensures production builds complete successfully
+
+### 🔒 Security Scanning
+- **Dependency Auditing**: npm audit and OSV Scanner for vulnerability detection
+- **Secret Detection**: TruffleHog scans for exposed secrets and credentials
+- **Code Analysis**: CodeQL static analysis for security vulnerabilities
+- **Container Security**: Trivy scans for container vulnerabilities
+- **Dependency Updates**: Automated Dependabot security and version updates
+
+### 📊 Code Quality
+- **SonarCloud Integration**: Comprehensive code quality and security analysis
+- **Performance Audits**: Lighthouse CI for performance, accessibility, and SEO
+- **Bundle Analysis**: Automated bundle size monitoring
+- **Unused Dependencies**: Detection of unused packages
+
+### 🚀 Deployment
+- **Cloudflare Pages**: Optimized builds with Edge Runtime compatibility
+- **Docker Support**: Production-ready containerization
+- **Environment Validation**: Automated testing of deployment configurations
+
 ## Getting Started
 
 To run this project locally, follow these steps.

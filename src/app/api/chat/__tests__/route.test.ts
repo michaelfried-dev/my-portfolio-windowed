@@ -67,6 +67,7 @@ describe('POST /api/chat', () => {
 
   it('handles very long question strings', async () => {
     process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    delete process.env.FORCE_HUGGINGFACE_402;
     jest.resetModules();
     jest.doMock('@huggingface/inference', () => ({
       InferenceClient: class {
@@ -88,6 +89,7 @@ describe('POST /api/chat', () => {
 
   it('handles unicode and emoji in question', async () => {
     process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    delete process.env.FORCE_HUGGINGFACE_402;
     jest.resetModules();
     jest.doMock('@huggingface/inference', () => ({
       InferenceClient: class {
@@ -108,6 +110,7 @@ describe('POST /api/chat', () => {
 
   it('ignores extra properties in the request body', async () => {
     process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    delete process.env.FORCE_HUGGINGFACE_402;
     jest.resetModules();
     jest.doMock('@huggingface/inference', () => ({
       InferenceClient: class {
@@ -136,6 +139,7 @@ describe('POST /api/chat', () => {
 
   it('never includes error field in successful responses', async () => {
     process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    delete process.env.FORCE_HUGGINGFACE_402;
     jest.resetModules();
     jest.doMock('@huggingface/inference', () => ({
       InferenceClient: class {
@@ -171,6 +175,7 @@ describe('POST /api/chat', () => {
 
   it('returns 200 and answer on successful chat completion', async () => {
     process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    delete process.env.FORCE_HUGGINGFACE_402;
     jest.resetModules();
     jest.doMock('@huggingface/inference', () => ({
       InferenceClient: class {
@@ -214,6 +219,7 @@ describe('POST /api/chat', () => {
 
   it('returns 500 and fallback error message on generic Hugging Face API error', async () => {
     process.env.HUGGINGFACE_API_KEY = 'fake-key';
+    delete process.env.FORCE_HUGGINGFACE_402;
     jest.resetModules();
     jest.doMock('@huggingface/inference', () => ({
       InferenceClient: class {
@@ -414,6 +420,7 @@ describe('POST /api/chat', () => {
       process.env.HUGGINGFACE_API_KEY = 'test-key';
       process.env.ENABLE_LM_STUDIO_FALLBACK = 'true';
       process.env.LM_STUDIO_URL = 'http://localhost:1234';
+      delete process.env.FORCE_HUGGINGFACE_402;
 
       // Mock Hugging Face error (non-402)
       jest.doMock('@huggingface/inference', () => ({

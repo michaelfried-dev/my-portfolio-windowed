@@ -181,12 +181,12 @@ export function Chatbot() {
       {!open && (
         <Button
           variant="neutral"
-          size="icon"
-          className="fixed right-6 bottom-6 z-50"
-          aria-label="Open Chatbot"
+          className="fixed right-6 bottom-6 z-50 flex items-center gap-2 px-4 py-2 h-auto"
+          aria-label="Open AI Assistant"
           onClick={() => setOpen(true)}
         >
-          <MessageSquare className="h-6 w-6" />
+          <MessageSquare className="h-5 w-5" />
+          <span className="text-sm font-medium">AI Assistant</span>
         </Button>
       )}
       {/* Chatbot Widget */}
@@ -214,9 +214,14 @@ export function Chatbot() {
             <Card className={cn(isSmallScreen && 'h-full flex flex-col')}>
               <div className="border-border flex items-center gap-2 border-b p-4">
                 <MessageSquare className="text-primary h-5 w-5" />
-                <span className="flex-1 font-semibold">
-                  Ask about my experience
-                </span>
+                <div className="flex-1">
+                  <span className="font-semibold">
+                    AI Assistant
+                  </span>
+                  <div className="text-xs text-muted-foreground">
+                    Ask about my experience • Powered by AI
+                  </div>
+                </div>
                 <Button
                   variant="neutral"
                   size="icon"

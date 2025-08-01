@@ -47,7 +47,7 @@ describe('Chatbot', () => {
 
     it('renders in full-screen mode', () => {
       render(<Chatbot />)
-      fireEvent.click(screen.getByLabelText('Open Chatbot'))
+      fireEvent.click(screen.getByLabelText('Open AI Assistant'))
 
       const widget = screen.getByTestId('chatbot-widget')
       // Check for full-screen classes
@@ -63,7 +63,7 @@ describe('Chatbot', () => {
 
     it('renders as a pop-up widget', () => {
       render(<Chatbot />)
-      fireEvent.click(screen.getByLabelText('Open Chatbot'))
+      fireEvent.click(screen.getByLabelText('Open AI Assistant'))
 
       const widget = screen.getByTestId('chatbot-widget')
       // Check for pop-up classes
@@ -74,20 +74,20 @@ describe('Chatbot', () => {
   it('renders the floating open button', () => {
     render(<Chatbot />)
     // Button should be present with correct aria-label
-    expect(screen.getByLabelText('Open Chatbot')).toBeInTheDocument()
+    expect(screen.getByLabelText('Open AI Assistant')).toBeInTheDocument()
   })
 
   it('opens the chatbot widget with animation', async () => {
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     expect(
-      await screen.findByText('Ask about my experience'),
+      await screen.findByText('AI Assistant'),
     ).toBeInTheDocument()
   })
 
   it('closes the chatbot widget when close button is clicked', async () => {
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     fireEvent.click(await screen.findByLabelText('Close Chatbot'))
     // Wait for the chatbot widget to be removed from the DOM
     await waitFor(
@@ -105,7 +105,7 @@ describe('Chatbot', () => {
 
   it('sends a question and displays the answer', async () => {
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -124,7 +124,7 @@ describe('Chatbot', () => {
       }),
     )
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -153,7 +153,7 @@ describe('Chatbot', () => {
         ),
     )
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -181,7 +181,7 @@ describe('Chatbot', () => {
       })
     )
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -198,7 +198,7 @@ describe('Chatbot', () => {
       Promise.reject(new Error('Network error'))
     )
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -214,7 +214,7 @@ describe('Chatbot', () => {
 
   it('handles empty input submission gracefully', async () => {
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -226,7 +226,7 @@ describe('Chatbot', () => {
 
   it('handles whitespace-only input submission gracefully', async () => {
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -252,7 +252,7 @@ describe('Chatbot', () => {
         ),
     )
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -275,7 +275,7 @@ describe('Chatbot', () => {
       }),
     )
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -298,7 +298,7 @@ describe('Chatbot', () => {
       }),
     )
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -321,7 +321,7 @@ describe('Chatbot', () => {
       }),
     )
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -336,7 +336,7 @@ describe('Chatbot', () => {
 
   it('focuses input after opening chatbot', async () => {
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -345,7 +345,7 @@ describe('Chatbot', () => {
 
   it('maintains focus on input after form submission', async () => {
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -361,7 +361,7 @@ describe('Chatbot', () => {
 
   it('clears input after successful submission', async () => {
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -375,7 +375,7 @@ describe('Chatbot', () => {
 
   it('handles multiple questions in sequence', async () => {
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -403,7 +403,7 @@ describe('Chatbot', () => {
       }),
     )
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -429,7 +429,7 @@ describe('Chatbot', () => {
     )
     
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -455,7 +455,7 @@ describe('Chatbot', () => {
     )
     
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
@@ -480,7 +480,7 @@ describe('Chatbot', () => {
     )
     
     render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open Chatbot'))
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )

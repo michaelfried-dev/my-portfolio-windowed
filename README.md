@@ -1,6 +1,8 @@
 # Michael's Professional Portfolio
 
-This repository contains the source code for my personal portfolio website, designed to showcase my skills, professional experience, and project work. The site is built with a modern, clean, neobrutalist aesthetic and is fully responsive.
+🤖 **Built with AI & Windsurf** - This portfolio was developed using AI-powered development tools and the Windsurf IDE, showcasing modern AI-assisted software development practices.
+
+This repository contains the source code for my personal portfolio website, designed to showcase my skills, professional experience, and project work. The site features a modern, clean, neobrutalist aesthetic and is fully responsive across all devices.
 
 ## Tech Stack
 
@@ -12,6 +14,21 @@ This project is built with a modern, robust, and scalable tech stack:
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/) 4
 - **Testing:** [Jest](https://jestjs.io/) & [React Testing Library](https://testing-library.com/)
 - **Deployment:** [Cloudflare Pages](https://pages.cloudflare.com/)
+- **AI Integration:** [Hugging Face](https://huggingface.co/) API with local LM Studio fallback
+
+## Features
+
+### 🤖 AI-Powered Chatbot
+
+The portfolio includes an intelligent chatbot that can answer questions about my professional experience, skills, and background. Key features:
+
+- **Smart AI Assistant**: Powered by Hugging Face's DeepSeek model with advanced reasoning capabilities
+- **Local Fallback**: Seamless fallback to local LM Studio API when cloud quota is exceeded
+- **Safari Compatible**: Optimized for all browsers including Safari with proper caching headers
+- **Responsive Design**: Works seamlessly on both desktop and mobile devices
+- **Natural Conversations**: Ask questions like "Where did Michael work in 2023?" or "What are his technical skills?"
+
+The chatbot uses advanced prompt engineering and context extraction to provide accurate, helpful responses about my professional background while maintaining a friendly, conversational tone.
 
 ## Getting Started
 

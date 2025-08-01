@@ -53,7 +53,7 @@ jobs:
         run: pnpm audit --audit-level moderate
 
       - name: Run OSV Scanner
-        uses: google/osv-scanner-action@v1.7.4
+        uses: google/osv-scanner-action@v1.8.5
         with:
           scan-args: |-
             -r

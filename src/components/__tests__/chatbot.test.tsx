@@ -1,20 +1,20 @@
-// All mocks and requires at the top level
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { Chatbot } from '../chatbot';
+import * as useWindowSizeModule from '@/hooks/useWindowSize';
+
+// All mocks at the top level
 jest.mock('@/hooks/useWindowSize', () => ({
   useWindowSize: jest.fn(),
 }))
-jest.mock('framer-motion', () => {
-  const React = require('react');
-  return {
-    AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
-    motion: {
-      div: React.forwardRef((props: any, ref: any) => React.createElement('div', { ref, ...props })),
-    },
-  };
-});
-const { render, screen, fireEvent, waitFor } = require('@testing-library/react');
-require('@testing-library/jest-dom');
-const { Chatbot } = require('../chatbot');
-const useWindowSizeModule = require('@/hooks/useWindowSize');
+
+jest.mock('framer-motion', () => ({
+  AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
+  motion: {
+    div: React.forwardRef((props: any, ref: any) => React.createElement('div', { ref, ...props })),
+  },
+}));
 
 // Mock scrollIntoView for jsdom
 beforeAll(() => {

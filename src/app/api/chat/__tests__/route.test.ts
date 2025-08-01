@@ -366,7 +366,8 @@ describe('POST /api/chat', () => {
       process.env.HUGGINGFACE_API_KEY = 'test-key';
       process.env.FORCE_HUGGINGFACE_402 = 'true';
       process.env.ENABLE_LM_STUDIO_FALLBACK = 'true';
-      // LM_STUDIO_URL not set
+      // Explicitly clear LM_STUDIO_URL to simulate not configured
+      delete process.env.LM_STUDIO_URL;
 
       const req = mockRequest({ body: { question: 'test question' } });
       const res = await POST(req);

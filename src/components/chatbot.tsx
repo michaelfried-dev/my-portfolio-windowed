@@ -125,33 +125,46 @@ export function Chatbot() {
       })
       if (!response.ok) {
         const errorData = await response.json()
+        let errorMessage = ''
         if (response.status === 402) {
-          setError(errorData.error || "I've hit my message limit for the month. Please try again later.")
+          errorMessage = errorData.error || "I've hit my message limit for the month. Please try again later."
         } else {
-          setError(errorData.error || 'Failed to get answer')
+          errorMessage = errorData.error || 'Failed to get answer'
         }
+        
+        // Add debug information if available
+        if (errorData.debugInfo && Array.isArray(errorData.debugInfo) && errorData.debugInfo.length > 0) {
+          errorMessage += `\n\n**Debug Information:**\n${errorData.debugInfo.map((info: string) => `- ${info}`).join('\n')}`
+        }
+        
+        setError(errorMessage)
         setIsLoading(false)
         return
       }
       const data = await response.json()
-      // Ensure answer is always a string
-      let safeAnswer: string
-      if (typeof data.answer === 'string') {
-        safeAnswer = data.answer
-      } else if (data.answer != null) {
-        safeAnswer = `[Invalid answer type: ${typeof data.answer}]`
-        console.error(
-          'Chatbot backend returned non-string answer:',
-          data.answer,
-        )
-      } else {
-        safeAnswer = '[No answer received]'
-      }
-      
-      // Add a note if LM Studio was used
-      if (data.usedLmStudio) {
-        safeAnswer = `*Response generated using my local LM Studio API*\n\n${safeAnswer}`
-      }
+    // Ensure answer is always a string
+    let safeAnswer: string
+    if (typeof data.answer === 'string') {
+      safeAnswer = data.answer
+    } else if (data.answer != null) {
+      safeAnswer = `[Invalid answer type: ${typeof data.answer}]`
+      console.error(
+        'Chatbot backend returned non-string answer:',
+        data.answer,
+      )
+    } else {
+      safeAnswer = '[No answer received]'
+    }
+    
+    // Add a note if LM Studio was used
+    if (data.usedLmStudio) {
+      safeAnswer = `*Response generated using my local LM Studio API*\n\n${safeAnswer}`
+    }
+    
+    // Add debug information if available (for troubleshooting LM Studio connection)
+    if (data.debugInfo && Array.isArray(data.debugInfo) && data.debugInfo.length > 0) {
+      safeAnswer += `\n\n**Debug Information:**\n${data.debugInfo.map((info: string) => `- ${info}`).join('\n')}`
+    }
       
       // Update the last QA pair with the answer
       setQa((prev) => {

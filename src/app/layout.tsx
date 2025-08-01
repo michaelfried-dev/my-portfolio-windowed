@@ -15,6 +15,10 @@ export const metadata: Metadata = {
   },
   description:
     "Michael Fried's professional portfolio showcasing software engineering expertise, AI-powered chatbot assistance, and innovative projects built with modern web technologies.",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+  },
   keywords: [
     'Michael Fried',
     'Software Engineer',

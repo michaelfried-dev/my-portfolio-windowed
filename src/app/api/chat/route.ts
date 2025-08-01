@@ -87,12 +87,12 @@ Context:\n${context}`;
     
     // Handle cases where response is undefined (can happen in Cloudflare environment)
     if (!response) {
-      console.error('[DEBUG] LM Studio API error: Response is undefined');
+      console.log('[DEBUG] LM Studio API error: Response is undefined');
       return null;
     }
     
     if (!response.ok) {
-      console.error('[DEBUG] LM Studio API error:', response.status, response.statusText);
+      console.log('[DEBUG] LM Studio API error:', response.status, response.statusText);
       return null;
     }
     
@@ -105,7 +105,7 @@ Context:\n${context}`;
     console.log('[DEBUG] LM Studio fallback successful');
     return { answer };
   } catch (error) {
-    console.error('[DEBUG] LM Studio fallback failed:', error);
+    console.log('[DEBUG] LM Studio fallback failed:', error);
     return null;
   }
 }
@@ -188,7 +188,7 @@ Feel free to reach out for professional networking, questions about my experienc
     // Use Hugging Face InferenceClient for chatCompletion
     const apiKey = process.env.HUGGINGFACE_API_KEY
     if (!apiKey) {
-      console.error('[DEBUG] HUGGINGFACE_API_KEY is missing or not loaded')
+      console.log('[DEBUG] HUGGINGFACE_API_KEY is missing or not loaded')
       return NextResponse.json(
         { error: "I'm experiencing some technical difficulties right now and can't answer your question. Please feel free to reach out to me directly via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. I'd be happy to help you personally!" },
         { status: 500 },
@@ -225,7 +225,7 @@ Feel free to reach out for professional networking, questions about my experienc
       );
     } catch (err: any) {
       console.log('CATCH block hit');
-      console.error('[DEBUG] Hugging Face InferenceClient error:', err);
+      console.log('[DEBUG] Hugging Face InferenceClient error:', err);
 
       // Handle 402 errors from Hugging Face API
       if (err.httpResponse && err.httpResponse.status === 402) {

@@ -1,16 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CERTIFICATIONS } from '@/lib/constants'
 
 export default function CertificationsPage() {
-  const certifications = [
-    {
-      name: 'ICAgile Certified Professional - Agile Testing (ICP-TST)',
-      date: 'Completed March 1st, 2017',
-    },
-    {
-      name: 'ICAgile Certified Professional - Agile Test Automation (ICP-ATA)',
-      date: 'Completed March 1st, 2017',
-    },
-  ]
+  const certifications = CERTIFICATIONS
 
   return (
     <div className="w600:p-[30px] w600:text-lg w400:p-5 w400:text-base p-10 text-xl leading-[1.7]">

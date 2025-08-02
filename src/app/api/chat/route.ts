@@ -153,6 +153,7 @@ export async function POST(req: Request) {
   const enableLmStudioFallback =
     process.env.ENABLE_LM_STUDIO_FALLBACK === 'true'
   const forceHuggingFace402 = process.env.FORCE_HUGGINGFACE_402 === 'true'
+  const useLmStudioFirst = process.env.USE_LM_STUDIO_FIRST === 'true'
 
   try {
     // Verify content type
@@ -237,10 +238,61 @@ Feel free to reach out for professional networking, questions about my experienc
       )
     }
 
-    // Use Hugging Face InferenceClient for chatCompletion
+    // Determine which API to use first based on environment variable
     const apiKey = process.env.HUGGINGFACE_API_KEY
+
+    // Check if we should use LM Studio first
+    if (useLmStudioFirst && enableLmStudioFallback) {
+      console.log('[DEBUG] Using LM Studio as primary API')
+      try {
+        // Try LM Studio first
+        const lmStudioResult = await tryLmStudioFallback(question, context)
+
+        if (lmStudioResult) {
+          console.log('[DEBUG] LM Studio primary call successful')
+          const lmStudioModel = process.env.LM_STUDIO_MODEL || 'local-model'
+          return NextResponse.json(
+            {
+              answer: lmStudioResult.answer,
+              usedLmStudio: true,
+              lmStudioModel: lmStudioModel,
+            },
+            { headers: safariHeaders },
+          )
+        }
+
+        console.log(
+          '[DEBUG] LM Studio primary call failed, falling back to Hugging Face',
+        )
+        // Fall back to Hugging Face if LM Studio fails
+      } catch (lmError) {
+        console.log('[DEBUG] LM Studio primary call error:', lmError)
+        // Continue to Hugging Face as fallback
+      }
+    }
+
+    // Use Hugging Face (either as primary or fallback)
     if (!apiKey) {
       console.log('[DEBUG] HUGGINGFACE_API_KEY is missing or not loaded')
+
+      // If LM Studio is enabled but wasn't used first or failed, try it now
+      if (enableLmStudioFallback && !useLmStudioFirst) {
+        console.log(
+          '[DEBUG] Attempting LM Studio due to missing Hugging Face API key',
+        )
+        const fallbackResult = await tryLmStudioFallback(question, context)
+
+        if (fallbackResult) {
+          return NextResponse.json(
+            {
+              answer: fallbackResult.answer,
+              usedLmStudio: true,
+            },
+            { headers: safariHeaders },
+          )
+        }
+      }
+
       return NextResponse.json(
         {
           error:
@@ -249,13 +301,12 @@ Feel free to reach out for professional networking, questions about my experienc
         { status: 500 },
       )
     }
+
     console.log(
       `[DEBUG] HUGGINGFACE_API_KEY loaded: ${apiKey.slice(0, 6)}... (length: ${apiKey.length})`,
     )
-    console.log(
-      '[DEBUG] Sending question to Hugging Face (InferenceClient):',
-      question,
-    )
+    console.log('[DEBUG] Using Hugging Face API')
+
     try {
       // Force 402 for testing if enabled
       if (forceHuggingFace402) {
@@ -276,23 +327,24 @@ Feel free to reach out for professional networking, questions about my experienc
       let answer = result.choices?.[0]?.message?.content || 'No answer found.'
       return NextResponse.json({ answer }, { headers: safariHeaders })
     } catch (err: any) {
-      console.log('CATCH block hit')
       console.log('[DEBUG] Hugging Face InferenceClient error:', err)
 
       // Handle 402 errors from Hugging Face API
       if (err.httpResponse && err.httpResponse.status === 402) {
         console.log('[DEBUG] Hugging Face 402 error detected')
 
-        // Try LM Studio fallback if enabled
-        if (enableLmStudioFallback) {
+        // Try LM Studio fallback if enabled and not already used as primary
+        if (enableLmStudioFallback && !useLmStudioFirst) {
           console.log('[DEBUG] Attempting LM Studio fallback due to 402 error')
           const fallbackResult = await tryLmStudioFallback(question, context)
 
           if (fallbackResult) {
+            const lmStudioModel = process.env.LM_STUDIO_MODEL || 'local-model'
             return NextResponse.json(
               {
                 answer: fallbackResult.answer,
                 usedLmStudio: true,
+                lmStudioModel: lmStudioModel,
               },
               { headers: safariHeaders },
             )
@@ -310,8 +362,8 @@ Feel free to reach out for professional networking, questions about my experienc
         )
       }
 
-      // For other errors, try LM Studio fallback if enabled
-      if (enableLmStudioFallback) {
+      // For other errors, try LM Studio fallback if enabled and not already used as primary
+      if (enableLmStudioFallback && !useLmStudioFirst) {
         console.log(
           '[DEBUG] Attempting LM Studio fallback due to other Hugging Face error',
         )
@@ -323,7 +375,7 @@ Feel free to reach out for professional networking, questions about my experienc
               answer: fallbackResult.answer,
               usedLmStudio: true,
             },
-            { headers: { 'Content-Type': 'application/json' } },
+            { headers: safariHeaders },
           )
         }
       }

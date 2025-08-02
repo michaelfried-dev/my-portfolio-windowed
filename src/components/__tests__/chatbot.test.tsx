@@ -170,11 +170,7 @@ describe('Chatbot', () => {
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
     await waitFor(() => {
-      expect(
-        screen.getByText(
-          /Thinking.*Hugging Face.*local LM Studio API.*DeepSeek/,
-        ),
-      ).toBeInTheDocument()
+      expect(screen.getByText(/Connecting to AI/)).toBeInTheDocument()
     })
     await waitFor(() => {
       expect(screen.getByText('Delayed answer')).toBeInTheDocument()
@@ -432,7 +428,7 @@ describe('Chatbot', () => {
     ).toBeInTheDocument()
   })
 
-  it('displays enhanced thinking message about LM Studio fallback', async () => {
+  it('displays generic thinking message when loading', async () => {
     // Mock a delayed fetch to ensure loading state persists
     ;(global.fetch as jest.Mock).mockImplementationOnce(
       () =>
@@ -457,12 +453,8 @@ describe('Chatbot', () => {
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
 
-    // Should show enhanced thinking message about LM Studio fallback
-    expect(
-      await screen.findByText(
-        /Thinking.*Hugging Face.*local LM Studio API.*DeepSeek/,
-      ),
-    ).toBeInTheDocument()
+    // Should show generic thinking message
+    expect(await screen.findByText(/Connecting to AI/)).toBeInTheDocument()
   })
 
   it('displays LM Studio usage indicator when usedLmStudio flag is true', async () => {
@@ -473,6 +465,7 @@ describe('Chatbot', () => {
           Promise.resolve({
             answer: 'LM Studio response',
             usedLmStudio: true,
+            lmStudioModel: 'test-model',
           }),
       }),
     )
@@ -486,16 +479,14 @@ describe('Chatbot', () => {
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
 
-    // Should show LM Studio usage indicator
+    // Should show LM Studio usage indicator with model name
+    expect(await screen.findByText(/LM Studio response/)).toBeInTheDocument()
     expect(
-      await screen.findByText(
-        /Response generated using my local LM Studio API/,
-      ),
+      screen.getByText(/Powered by local and private AI \(test-model\)/),
     ).toBeInTheDocument()
-    expect(screen.getByText(/LM Studio response/)).toBeInTheDocument()
   })
 
-  it('does not display LM Studio usage indicator when usedLmStudio flag is false', async () => {
+  it('displays Hugging Face indicator when usedLmStudio flag is false', async () => {
     ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
@@ -516,10 +507,39 @@ describe('Chatbot', () => {
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
 
-    // Should not show LM Studio usage indicator
+    // Should show Hugging Face indicator
     expect(await screen.findByText('Regular response')).toBeInTheDocument()
+    expect(screen.getByText(/Powered by Hugging Face/)).toBeInTheDocument()
+  })
+
+  it('displays default LM Studio name when lmStudioModel is not provided', async () => {
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            answer: 'LM Studio fallback response',
+            usedLmStudio: true,
+            // No lmStudioModel provided
+          }),
+      }),
+    )
+
+    render(<Chatbot />)
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
+    const input = await screen.findByPlaceholderText(
+      'e.g. Where did Michael Fried work in 2023?',
+    )
+    fireEvent.change(input, { target: { value: 'Test question' } })
+    const form = input.closest('form')
+    if (form) fireEvent.submit(form)
+
+    // Should show LM Studio usage indicator with default name
     expect(
-      screen.queryByText(/Response generated using my local LM Studio API/),
-    ).not.toBeInTheDocument()
+      await screen.findByText(/LM Studio fallback response/),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/Powered by local and private AI \(LM Studio\)/),
+    ).toBeInTheDocument()
   })
 })

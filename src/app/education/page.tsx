@@ -1,14 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { EDUCATION } from '@/lib/constants'
 
 export default function EducationPage() {
-  const education = {
-    school: 'Drexel University',
-    location: 'Philadelphia, Pennsylvania',
-    degree: 'Bachelor of Science (BS), Software Engineering',
-    minor: 'Minor: Computer Science',
-    date: 'August 2008 - July 2013',
-    gpa: 'Cumulative GPA: 3.37',
-  }
+  const education = EDUCATION
 
   return (
     <div className="w600:p-[30px] w600:text-lg w400:p-5 w400:text-base p-10 text-xl leading-[1.7]">

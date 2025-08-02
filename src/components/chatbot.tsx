@@ -72,7 +72,14 @@ export function Chatbot() {
   const { width, height } = useWindowSize()
   const isSmallScreen = (width || 0) < 448 || (height || 0) < 700 // max-w-md is 448px, 700px is arbitrary height
   const [open, setOpen] = useState(false)
-  const [qa, setQa] = useState<Array<{ question: string; answer: string }>>([])
+  const [qa, setQa] = useState<
+    Array<{
+      question: string
+      answer: string
+      usedLmStudio?: boolean
+      lmStudioModel?: string
+    }>
+  >([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -155,15 +162,15 @@ export function Chatbot() {
         safeAnswer = '[No answer received]'
       }
 
-      // Add a note if LM Studio was used
-      if (data.usedLmStudio) {
-        safeAnswer = `*Response generated using my local LM Studio API*\n\n${safeAnswer}`
-      }
-
-      // Update the last QA pair with the answer
+      // Update the last QA pair with the answer and API source info
       setQa((prev) => {
         const updated = [...prev]
-        updated[updated.length - 1] = { question, answer: safeAnswer }
+        updated[updated.length - 1] = {
+          question,
+          answer: safeAnswer,
+          usedLmStudio: data.usedLmStudio,
+          lmStudioModel: data.lmStudioModel,
+        }
         return updated
       })
     } catch (err) {
@@ -262,11 +269,20 @@ export function Chatbot() {
                             <SafeMarkdown>
                               {linkifyText(item.answer)}
                             </SafeMarkdown>
+                            {item.usedLmStudio ? (
+                              <div className="text-muted-foreground mt-2 text-xs italic">
+                                Powered by local and private AI (
+                                {item.lmStudioModel || 'LM Studio'})
+                              </div>
+                            ) : (
+                              <div className="text-muted-foreground mt-2 text-xs italic">
+                                Powered by Hugging Face (DeepSeek-V3)
+                              </div>
+                            )}
                           </div>
                         ) : isLoading && i === qa.length - 1 ? (
                           <span className="text-muted animate-pulse">
-                            Thinking... trying Hugging Face first, then my local
-                            LM Studio API with DeepSeek if needed
+                            Connecting to AI...
                           </span>
                         ) : null}
                       </div>

@@ -766,4 +766,246 @@ describe('cleanThinkingContent function', () => {
     )
     expect(data.answer).not.toMatch(/\n\n\n/)
   })
+
+  describe('API Priority Settings', () => {
+    beforeEach(() => {
+      // Reset environment variables and mocks before each test
+      delete process.env.ENABLE_LM_STUDIO_FALLBACK
+      delete process.env.USE_LM_STUDIO_FIRST
+      delete process.env.FORCE_HUGGINGFACE_402
+      delete process.env.HUGGINGFACE_API_KEY
+      jest.resetModules()
+      global.fetch = jest.fn()
+    })
+
+    it('uses LM Studio as primary when USE_LM_STUDIO_FIRST is true', async () => {
+      // Set up environment variables
+      process.env.ENABLE_LM_STUDIO_FALLBACK = 'true'
+      process.env.USE_LM_STUDIO_FIRST = 'true'
+      process.env.LM_STUDIO_URL = 'http://localhost:1234'
+      process.env.HUGGINGFACE_API_KEY = 'fake-key'
+
+      // Mock LM Studio API call to succeed
+      global.fetch = jest.fn().mockImplementation((url: string) => {
+        if (url.includes('localhost:1234')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                choices: [
+                  {
+                    message: {
+                      content: 'Response from LM Studio as primary',
+                    },
+                  },
+                ],
+              }),
+          })
+        }
+        return Promise.reject(new Error('Unexpected URL'))
+      })
+
+      // Re-import POST after setting environment variables
+      const { POST: MockedPOST } = await import('../route')
+
+      const request = {
+        json: async () => ({ question: 'Test question' }),
+        method: 'POST',
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+      } as any
+
+      const response = await MockedPOST(request)
+      const data = await response.json()
+
+      // Verify LM Studio was used as primary
+      expect(data.answer).toBe('Response from LM Studio as primary')
+      expect(data.usedLmStudio).toBe(true)
+
+      // Verify fetch was called with LM Studio URL
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:1234/v1/chat/completions',
+        expect.any(Object),
+      )
+
+      // Verify Hugging Face was not called (no InferenceClient import)
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('falls back to Hugging Face when LM Studio fails and USE_LM_STUDIO_FIRST is true', async () => {
+      // Set up environment variables
+      process.env.ENABLE_LM_STUDIO_FALLBACK = 'true'
+      process.env.USE_LM_STUDIO_FIRST = 'true'
+      process.env.LM_STUDIO_URL = 'http://localhost:1234'
+      process.env.HUGGINGFACE_API_KEY = 'fake-key'
+
+      // Mock LM Studio to fail and Hugging Face to succeed
+      global.fetch = jest.fn().mockImplementation((url: string) => {
+        if (url.includes('localhost:1234')) {
+          return Promise.resolve({
+            ok: false,
+            status: 500,
+            statusText: 'Internal Server Error',
+          })
+        }
+        return Promise.reject(new Error('Unexpected URL'))
+      })
+
+      // Mock Hugging Face API
+      jest.doMock(
+        '@huggingface/inference',
+        () => ({
+          InferenceClient: class {
+            constructor() {}
+            async chatCompletion() {
+              return {
+                choices: [
+                  {
+                    message: {
+                      content: 'Response from Hugging Face as fallback',
+                    },
+                  },
+                ],
+              }
+            }
+          },
+        }),
+        { virtual: true },
+      )
+
+      // Re-import POST after setting environment variables
+      const { POST: MockedPOST } = await import('../route')
+
+      const request = {
+        json: async () => ({ question: 'Test question' }),
+        method: 'POST',
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+      } as any
+
+      const response = await MockedPOST(request)
+      const data = await response.json()
+
+      // Verify Hugging Face was used as fallback
+      expect(data.answer).toBe('Response from Hugging Face as fallback')
+      expect(data.usedLmStudio).toBeUndefined()
+
+      // Verify LM Studio was attempted first
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:1234/v1/chat/completions',
+        expect.any(Object),
+      )
+    })
+
+    it('uses Hugging Face as primary when USE_LM_STUDIO_FIRST is false', async () => {
+      // Set up environment variables
+      process.env.ENABLE_LM_STUDIO_FALLBACK = 'true'
+      process.env.USE_LM_STUDIO_FIRST = 'false'
+      process.env.LM_STUDIO_URL = 'http://localhost:1234'
+      process.env.HUGGINGFACE_API_KEY = 'fake-key'
+
+      // Mock Hugging Face API
+      jest.doMock(
+        '@huggingface/inference',
+        () => ({
+          InferenceClient: class {
+            constructor() {}
+            async chatCompletion() {
+              return {
+                choices: [
+                  {
+                    message: {
+                      content: 'Response from Hugging Face as primary',
+                    },
+                  },
+                ],
+              }
+            }
+          },
+        }),
+        { virtual: true },
+      )
+
+      // Re-import POST after setting environment variables
+      const { POST: MockedPOST } = await import('../route')
+
+      const request = {
+        json: async () => ({ question: 'Test question' }),
+        method: 'POST',
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+      } as any
+
+      const response = await MockedPOST(request)
+      const data = await response.json()
+
+      // Verify Hugging Face was used as primary
+      expect(data.answer).toBe('Response from Hugging Face as primary')
+      expect(data.usedLmStudio).toBeUndefined()
+
+      // Verify LM Studio was not called
+      expect(global.fetch).not.toHaveBeenCalled()
+    })
+
+    it('falls back to LM Studio when Hugging Face fails and USE_LM_STUDIO_FIRST is false', async () => {
+      // Set up environment variables
+      process.env.ENABLE_LM_STUDIO_FALLBACK = 'true'
+      process.env.USE_LM_STUDIO_FIRST = 'false'
+      process.env.LM_STUDIO_URL = 'http://localhost:1234'
+      process.env.HUGGINGFACE_API_KEY = 'fake-key'
+
+      // Mock Hugging Face to fail
+      jest.doMock(
+        '@huggingface/inference',
+        () => ({
+          InferenceClient: class {
+            constructor() {}
+            async chatCompletion() {
+              throw { httpResponse: { status: 500 } }
+            }
+          },
+        }),
+        { virtual: true },
+      )
+
+      // Mock LM Studio to succeed
+      global.fetch = jest.fn().mockImplementation((url: string) => {
+        if (url.includes('localhost:1234')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                choices: [
+                  {
+                    message: {
+                      content: 'Response from LM Studio as fallback',
+                    },
+                  },
+                ],
+              }),
+          })
+        }
+        return Promise.reject(new Error('Unexpected URL'))
+      })
+
+      // Re-import POST after setting environment variables
+      const { POST: MockedPOST } = await import('../route')
+
+      const request = {
+        json: async () => ({ question: 'Test question' }),
+        method: 'POST',
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+      } as any
+
+      const response = await MockedPOST(request)
+      const data = await response.json()
+
+      // Verify LM Studio was used as fallback
+      expect(data.answer).toBe('Response from LM Studio as fallback')
+      expect(data.usedLmStudio).toBe(true)
+
+      // Verify LM Studio was called
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:1234/v1/chat/completions',
+        expect.any(Object),
+      )
+    })
+  })
 })

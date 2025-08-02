@@ -316,9 +316,12 @@ Feel free to reach out for professional networking, questions about my experienc
 
       const { InferenceClient } = await import('@huggingface/inference')
       const client = new InferenceClient(apiKey)
+      const huggingFaceModel =
+        process.env.HUGGINGFACE_MODEL || 'google/gemma-7b-it'
       const systemPrompt = `You are a helpful assistant that answers questions about the following resume and portfolio content. Context:\n${context}`
+      console.log(`[DEBUG] Using Hugging Face model: ${huggingFaceModel}`)
       const result = await client.chatCompletion({
-        model: 'deepseek-ai/DeepSeek-V3-0324',
+        model: huggingFaceModel,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: question },

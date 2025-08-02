@@ -24,6 +24,10 @@ export const metadata: Metadata = {
     viewportFit: 'cover',
     interactiveWidget: 'resizes-visual',
   },
+  // Add a custom meta tag for iOS devices
+  other: {
+    'format-detection': 'telephone=no,date=no,address=no,email=no,url=no',
+  },
   keywords: [
     'Michael Fried',
     'Software Engineer',

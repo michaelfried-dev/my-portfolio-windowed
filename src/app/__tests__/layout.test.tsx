@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 import { screen } from '@testing-library/react'
-import type { Viewport } from 'next'
+import type { Viewport, Metadata } from 'next'
 import { metadata } from '../layout'
 
 describe('Layout Metadata', () => {
@@ -11,7 +11,11 @@ describe('Layout Metadata', () => {
     expect(viewport).toBeDefined()
     expect(viewport.width).toBe('device-width')
     expect(viewport.initialScale).toBe(1)
+    expect(viewport.maximumScale).toBe(1)
+    expect(viewport.minimumScale).toBe(1)
     expect(viewport.userScalable).toBe(false)
+    expect(viewport.viewportFit).toBe('cover')
+    expect(viewport.interactiveWidget).toBe('resizes-visual')
   })
 
   it('has the correct metadata', () => {
@@ -49,6 +53,13 @@ describe('Layout Metadata', () => {
 
     expect(metadata.description).toBe(
       "Michael Fried's professional portfolio showcasing software engineering expertise, AI-powered chatbot assistance, and innovative projects built with modern web technologies.",
+    )
+  })
+  
+  it('has the correct format-detection settings', () => {
+    expect(metadata.other).toBeDefined()
+    expect(metadata.other?.['format-detection']).toBe(
+      'telephone=no,date=no,address=no,email=no,url=no',
     )
   })
 })

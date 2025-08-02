@@ -88,7 +88,7 @@ describe('Layout Metadata', () => {
 
     // Type assertion for title which can be string | TitleTemplate
     const title = metadata.title as { default: string; template: string }
-    expect(title.default).toBe('Michael Fried - AI-Powered Portfolio')
+    expect(title.default).toBe('Michael Fried - Portfolio')
     expect(title.template).toBe('%s | Michael Fried')
 
     expect(metadata.description).toBe(

@@ -76,7 +76,7 @@ async function tryLmStudioFallback(
   console.log('[DEBUG] Attempting LM Studio fallback:', lmStudioUrl)
 
   try {
-    const systemPrompt = `You are a helpful assistant that answers questions about the following resume and portfolio content. Provide direct, concise answers.
+    const systemPrompt = `You are a helpful assistant that answers questions about the following resume and portfolio content. Provide direct, concise answers that include relevant emojis and colorful language to make your responses engaging and visually appealing. Use markdown formatting when appropriate to highlight important points.
 
 Context:\n${context}`
 
@@ -316,9 +316,12 @@ Feel free to reach out for professional networking, questions about my experienc
 
       const { InferenceClient } = await import('@huggingface/inference')
       const client = new InferenceClient(apiKey)
-      const systemPrompt = `You are a helpful assistant that answers questions about the following resume and portfolio content. Context:\n${context}`
+      const huggingFaceModel =
+        process.env.HUGGINGFACE_MODEL || 'google/gemma-7b-it'
+      const systemPrompt = `You are a helpful assistant that answers questions about the following resume and portfolio content. Provide direct, concise answers that include relevant emojis and colorful language to make your responses engaging and visually appealing. Use markdown formatting when appropriate to highlight important points. Context:\n${context}`
+      console.log(`[DEBUG] Using Hugging Face model: ${huggingFaceModel}`)
       const result = await client.chatCompletion({
-        model: 'deepseek-ai/DeepSeek-V3-0324',
+        model: huggingFaceModel,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: question },

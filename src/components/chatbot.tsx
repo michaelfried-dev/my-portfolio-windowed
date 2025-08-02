@@ -276,7 +276,7 @@ export function Chatbot() {
                               </div>
                             ) : (
                               <div className="text-muted-foreground mt-2 text-xs italic">
-                                Powered by Hugging Face (DeepSeek-V3)
+                                Powered by Hugging Face (Gemma-7B)
                               </div>
                             )}
                           </div>

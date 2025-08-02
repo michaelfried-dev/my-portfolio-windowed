@@ -25,15 +25,18 @@ describe('Layout Metadata', () => {
 })
 
 describe('Layout Metadata', () => {
-  it('has the correct viewport settings including userScalable: false', () => {
-    // Check that the viewport metadata is correctly set
-    expect(metadata.viewport).toBeDefined()
-
-    // Type assertion to handle the viewport type which can be string | ViewportLayout
+  it('has the correct viewport settings including all required properties', () => {
     const viewport = metadata.viewport as Viewport
+    
+    // Check that the viewport metadata is correctly set
+    expect(viewport).toBeDefined()
     expect(viewport.width).toBe('device-width')
     expect(viewport.initialScale).toBe(1)
+    expect(viewport.maximumScale).toBe(1)
+    expect(viewport.minimumScale).toBe(1)
     expect(viewport.userScalable).toBe(false)
+    expect(viewport.viewportFit).toBe('cover')
+    expect(viewport.interactiveWidget).toBe('resizes-visual')
   })
 
   it('has the correct title and description', () => {

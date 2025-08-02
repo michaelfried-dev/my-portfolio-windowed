@@ -94,8 +94,8 @@ importers:
         specifier: ^8.57.1
         version: 8.57.1
       eslint-config-next:
-        specifier: 15.2.4
-        version: 15.2.4(eslint@8.57.1)(typescript@5.9.2)
+        specifier: 15.4.5
+        version: 15.4.5(eslint@8.57.1)(typescript@5.9.2)
       eslint-config-prettier:
         specifier: ^9.1.2
         version: 9.1.2(eslint@8.57.1)
@@ -1571,10 +1571,10 @@ packages:
         integrity: sha512-ruM+q2SCOVCepUiERoxOmZY9ZVoecR3gcXNwCYZRvQQWRjhOiPJGmQ2fAiLR6YKWXcSAh7G79KEFxN3rwhs4LQ==,
       }
 
-  '@next/eslint-plugin-next@15.2.4':
+  '@next/eslint-plugin-next@15.4.5':
     resolution:
       {
-        integrity: sha512-O8ScvKtnxkp8kL9TpJTTKnMqlkZnS+QxwoQnJwPGBxjBbzd6OVVPEJ5/pMNrktSyXQD/chEfzfFzYLM6JANOOQ==,
+        integrity: sha512-YhbrlbEt0m4jJnXHMY/cCUDBAWgd5SaTa5mJjzOt82QwflAFfW/h3+COp2TfVSzhmscIZ5sg2WXt3MLziqCSCw==,
       }
 
   '@next/swc-darwin-arm64@15.4.5':
@@ -4099,10 +4099,10 @@ packages:
       }
     engines: { node: '>=12' }
 
-  eslint-config-next@15.2.4:
+  eslint-config-next@15.4.5:
     resolution:
       {
-        integrity: sha512-v4gYjd4eYIme8qzaJItpR5MMBXJ0/YV07u7eb50kEnlEmX7yhOjdUdzz70v4fiINYRjLf8X8TbogF0k7wlz6sA==,
+        integrity: sha512-IMijiXaZ43qFB+Gcpnb374ipTKD8JIyVNR+6VsifFQ/LHyx+A9wgcgSIhCX5PYSjwOoSYD5LtNHKlM5uc23eww==,
       }
     peerDependencies:
       eslint: ^7.23.0 || ^8.0.0 || ^9.0.0
@@ -6363,6 +6363,18 @@ packages:
     resolution:
       {
         integrity: sha512-DJm/CJkZkRjKKj4Zi4BsKVZh3ValV5IR5s7LVZnW+6YMh0W1BfNA8XSs6DLMGYlId5F3KnA70uu2qepcR08Qqg==,
+      }
+    engines: { node: 4.x || >=6.0.0 }
+    peerDependencies:
+      encoding: ^0.1.0
+    peerDependenciesMeta:
+      encoding:
+        optional: true
+
+  node-fetch@2.7.0:
+    resolution:
+      {
+        integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==,
       }
     engines: { node: 4.x || >=6.0.0 }
     peerDependencies:
@@ -9226,7 +9238,7 @@ snapshots:
       consola: 3.4.2
       detect-libc: 2.0.4
       https-proxy-agent: 7.0.6
-      node-fetch: 2.6.9
+      node-fetch: 2.7.0
       nopt: 8.1.0
       semver: 7.7.2
       tar: 7.4.3
@@ -9243,7 +9255,7 @@ snapshots:
 
   '@next/env@15.4.5': {}
 
-  '@next/eslint-plugin-next@15.2.4':
+  '@next/eslint-plugin-next@15.4.5':
     dependencies:
       fast-glob: 3.3.1
 
@@ -10778,9 +10790,9 @@ snapshots:
 
   escape-string-regexp@5.0.0: {}
 
-  eslint-config-next@15.2.4(eslint@8.57.1)(typescript@5.9.2):
+  eslint-config-next@15.4.5(eslint@8.57.1)(typescript@5.9.2):
     dependencies:
-      '@next/eslint-plugin-next': 15.2.4
+      '@next/eslint-plugin-next': 15.4.5
       '@rushstack/eslint-patch': 1.12.0
       '@typescript-eslint/eslint-plugin': 8.38.0(@typescript-eslint/parser@8.38.0(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)
       '@typescript-eslint/parser': 8.38.0(eslint@8.57.1)(typescript@5.9.2)
@@ -12614,6 +12626,10 @@ snapshots:
       whatwg-url: 5.0.0
 
   node-fetch@2.6.9:
+    dependencies:
+      whatwg-url: 5.0.0
+
+  node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
 

@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { SiGmail, SiGithub, SiLinkedin } from '@icons-pack/react-simple-icons'
+import { SiGmail, SiGithub } from '@icons-pack/react-simple-icons'
+import { FaLinkedin } from 'react-icons/fa'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -13,7 +14,7 @@ export default function Home() {
       label: 'Email',
     },
     {
-      icon: SiLinkedin,
+      icon: FaLinkedin,
       href: 'https://www.linkedin.com/in/michael-fried/',
       label: 'LinkedIn',
     },

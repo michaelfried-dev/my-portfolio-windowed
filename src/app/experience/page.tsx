@@ -16,9 +16,11 @@ export default function ExperiencePage() {
             <p className="pt-1 text-xl font-semibold">{job.title}</p>
           </CardHeader>
           <CardContent>
-            <p className="font-semibold">
-              {job.location} | {job.date}
-            </p>
+            {job.location && job.date && (
+              <p className="font-semibold">
+                {job.location} | {job.date}
+              </p>
+            )}
             <ul className="list-outside list-disc pt-2 pl-5">
               {job.description.map((item, i) => (
                 <li key={i} className="mb-2 font-normal">

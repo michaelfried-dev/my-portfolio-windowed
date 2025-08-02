@@ -4,6 +4,10 @@ import ExperiencePage from '../page'
 
 const experience = [
   {
+    company: 'Personal Projects',
+    title: 'Personal Portfolio Website',
+  },
+  {
     company: 'Lincoln Financial Group',
     title: 'Software Engineer',
     location: 'Philadelphia, PA',
@@ -64,8 +68,11 @@ describe('ExperiencePage', () => {
     })
   })
 
-  it('should render all locations and dates', () => {
+  it('should render all locations and dates when available', () => {
     experience.forEach((job) => {
+      // Skip Personal Projects which doesn't have location and date
+      if (job.company === 'Personal Projects') return
+
       const locationAndDate = screen.getByText(`${job.location} | ${job.date}`)
       expect(locationAndDate).toBeInTheDocument()
     })

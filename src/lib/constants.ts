@@ -34,6 +34,19 @@ export const CERTIFICATIONS = [
 
 export const EXPERIENCE = [
   {
+    company: 'Personal Projects',
+    title: 'Personal Portfolio Website',
+    description: [
+      'Developed this portfolio website using Next.js 15, React 19, TypeScript, and Tailwind CSS, featuring a responsive design with light/dark mode and smooth animations.',
+      'Utilized AI copilot Windsurf to enhance development productivity and implement best practices throughout the codebase.',
+      'Implemented an AI-powered chatbot with a dual-API architecture that seamlessly integrates with both Hugging Face AI APIs and local LM Studio models for privacy-focused, resilient interactions.',
+      'Created a fallback system that automatically switches between cloud and local AI providers based on availability, ensuring 100% uptime of the interactive assistant feature.',
+      'Built a containerized deployment pipeline using Docker and GitHub Actions for automated testing, dependency management, and continuous deployment to Cloudflare Pages.',
+      'Achieved 92%+ test coverage with Jest and React Testing Library, including comprehensive tests for the chatbot component and API routes.',
+      'Designed a system prompt engineering solution that enables the AI assistant to accurately answer questions about my experience, skills, and background without hallucinations.',
+    ],
+  },
+  {
     company: 'Lincoln Financial Group',
     location: 'Philadelphia, PA',
     title: 'Software Engineer',

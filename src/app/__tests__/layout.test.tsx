@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 import { render } from '@testing-library/react'
-import { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import RootLayout, { metadata } from '../layout'
 
 // Mock the next/font module
@@ -75,19 +75,21 @@ describe('Layout Metadata', () => {
   it('has the correct viewport settings including userScalable: false', () => {
     // Check that the viewport metadata is correctly set
     expect(metadata.viewport).toBeDefined()
-    expect(metadata.viewport?.width).toBe('device-width')
-    expect(metadata.viewport?.initialScale).toBe(1)
-    expect(metadata.viewport?.userScalable).toBe(false)
+
+    // Type assertion to handle the viewport type which can be string | ViewportLayout
+    const viewport = metadata.viewport as Viewport
+    expect(viewport.width).toBe('device-width')
+    expect(viewport.initialScale).toBe(1)
+    expect(viewport.userScalable).toBe(false)
   })
 
   it('has the correct title and description', () => {
     expect(metadata.title).toBeDefined()
-    if (typeof metadata.title === 'object') {
-      expect(metadata.title.default).toBe(
-        'Michael Fried - AI-Powered Portfolio',
-      )
-      expect(metadata.title.template).toBe('%s | Michael Fried')
-    }
+
+    // Type assertion for title which can be string | TitleTemplate
+    const title = metadata.title as { default: string; template: string }
+    expect(title.default).toBe('Michael Fried - AI-Powered Portfolio')
+    expect(title.template).toBe('%s | Michael Fried')
 
     expect(metadata.description).toBe(
       "Michael Fried's professional portfolio showcasing software engineering expertise, AI-powered chatbot assistance, and innovative projects built with modern web technologies.",

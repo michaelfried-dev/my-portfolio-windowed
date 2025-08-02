@@ -213,8 +213,10 @@ Feel free to reach out for professional networking, questions about my experienc
       // Experience
       let expText = EXPERIENCE.map((job) => {
         let jobText = `Company: ${job.company}\nTitle: ${job.title}\n`
-        if (job.location) jobText += `Location: ${job.location}\n`
-        if (job.date) jobText += `Date: ${job.date}\n`
+        // Handle optional location and date properties
+        if ('location' in job && job.location)
+          jobText += `Location: ${job.location}\n`
+        if ('date' in job && job.date) jobText += `Date: ${job.date}\n`
         jobText += `Description: ${job.description.join(' ')}\n`
         return jobText
       }).join('\n')

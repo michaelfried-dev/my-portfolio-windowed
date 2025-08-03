@@ -114,24 +114,26 @@ describe('Chatbot', () => {
 
   it('submits a question and displays the answer', async () => {
     render(<Chatbot />)
-    
+
     // The chatbot starts closed, so we need to find the button to open it
-    const toggleButton = screen.getByRole('button', { name: /open ai assistant/i })
+    const toggleButton = screen.getByRole('button', {
+      name: /open ai assistant/i,
+    })
     fireEvent.click(toggleButton)
-    
+
     // Find the input and submit a question
     const input = await screen.findByPlaceholderText(
       'e.g. Where did Michael Fried work in 2023?',
     )
-    
+
     fireEvent.change(input, { target: { value: 'Test question' } })
-    
+
     // Submit the form
     const form = input.closest('form')
     if (form) {
       fireEvent.submit(form)
     }
-    
+
     // Wait for the answer to appear
     await waitFor(() => {
       expect(screen.getByText('Test answer')).toBeInTheDocument()
@@ -344,7 +346,8 @@ describe('Chatbot', () => {
     ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({ answer: 'Sorry, I could not generate an answer.' }),
+        json: () =>
+          Promise.resolve({ answer: 'Sorry, I could not generate an answer.' }),
       }),
     )
     render(<Chatbot />)

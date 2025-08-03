@@ -38,6 +38,23 @@
   --chart-active-dot: #fff;
 }
 
+/* Prevent iOS zoom on input focus */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+/* For smaller devices, ensure inputs are at least 16px when focused */
+@media screen and (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px !important;
+    min-height: 44px; /* Minimum touch target size for better accessibility */
+  }
+}
+
 @theme inline {
   --color-main: var(--main);
   --color-background: var(--background);

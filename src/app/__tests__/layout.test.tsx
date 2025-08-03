@@ -31,7 +31,7 @@ describe('Layout Metadata', () => {
 describe('Layout Metadata', () => {
   it('has the correct viewport settings including all required properties', () => {
     const viewport = metadata.viewport as Viewport
-    
+
     // Check that the viewport metadata is correctly set
     expect(viewport).toBeDefined()
     expect(viewport.width).toBe('device-width')
@@ -55,7 +55,7 @@ describe('Layout Metadata', () => {
       "Michael Fried's professional portfolio showcasing software engineering expertise, AI-powered chatbot assistance, and innovative projects built with modern web technologies.",
     )
   })
-  
+
   it('has the correct format-detection settings', () => {
     expect(metadata.other).toBeDefined()
     expect(metadata.other?.['format-detection']).toBe(

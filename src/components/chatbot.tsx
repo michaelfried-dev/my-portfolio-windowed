@@ -1,7 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { useWindowSize } from '@/hooks/useWindowSize'
-import { useIosZoomPrevention } from '@/hooks/useIosZoomPrevention'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
@@ -92,9 +91,6 @@ export function Chatbot() {
   const prevAnswer = useRef<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const isMounted = useRef(true)
-
-  // Prevent iOS zoom on input focus
-  useIosZoomPrevention()
 
   // Scroll to the new answer (assistant message) when it arrives
   useEffect(() => {
@@ -190,10 +186,11 @@ export function Chatbot() {
           if (lastIndex >= 0) {
             updated[lastIndex] = {
               question,
-              answer: 'Sorry, there was an error processing your request. Please try again later.',
+              answer:
+                'Sorry, there was an error processing your request. Please try again later.',
               source: 'error',
               model: 'error',
-              usedLmStudio: false
+              usedLmStudio: false,
             }
           }
           return updated
@@ -342,7 +339,10 @@ export function Chatbot() {
                     placeholder="e.g. Where did Michael Fried work in 2023?"
                     disabled={isLoading}
                   />
-                  <Button type="submit" disabled={isLoading || !inputValue.trim()}>
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !inputValue.trim()}
+                  >
                     {isLoading ? '...' : 'Send'}
                   </Button>
                 </div>

@@ -68,19 +68,21 @@ function SafeMarkdown({ children }: { children: string }) {
   )
 }
 
+interface QAPair {
+  question: string
+  answer: string
+  usedLmStudio?: boolean
+  lmStudioModel?: string
+  source?: string
+  model?: string
+}
+
 export function Chatbot() {
   const { width, height } = useWindowSize()
   const isSmallScreen = (width || 0) < 448 || (height || 0) < 700 // max-w-md is 448px, 700px is arbitrary height
   const [open, setOpen] = useState(false)
-  const [qa, setQa] = useState<
-    Array<{
-      question: string
-      answer: string
-      usedLmStudio?: boolean
-      lmStudioModel?: string
-    }>
-  >([])
-  const [input, setInput] = useState('')
+  const [qa, setQa] = useState<QAPair[]>([])
+  const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const chatAreaRef = useRef<HTMLDivElement>(null)
@@ -88,6 +90,7 @@ export function Chatbot() {
   const latestAnswerRef = useRef<HTMLDivElement>(null)
   const prevAnswer = useRef<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const isMounted = useRef(true)
 
   // Scroll to the new answer (assistant message) when it arrives
   useEffect(() => {
@@ -111,74 +114,97 @@ export function Chatbot() {
     prevAnswer.current = last ? last.answer : null
   }, [qa, isLoading])
 
+  // Handle input change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value)
+  }
+
+  // Handle key down events for form submission
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit(e as unknown as React.FormEvent)
+    }
+  }
+
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim()) return
+    if (!inputValue.trim() || isLoading) return
+
+    // Add the user's question to the chat
+    const question = inputValue.trim()
+    setQa((prev) => [...prev, { question, answer: '' }])
+    setInputValue('')
     setIsLoading(true)
     setError(null)
-    const question = input.trim()
-    setInput('')
-    // Focus the input after submit
-    if (inputRef.current) inputRef.current.focus()
-    // Show the user's prompt immediately with a placeholder answer
-    setQa((prev) => [...prev, { question, answer: '' }])
-    // Scroll to bottom after submitting
-    setTimeout(() => {
-      if (endOfMessagesRef.current) {
-        endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' })
-      }
-    }, 0)
+
     try {
+      // Call the API
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ question }),
       })
+
       if (!response.ok) {
-        const errorData = await response.json()
-        if (response.status === 402) {
-          setError(
-            errorData.error ||
-              "I've hit my message limit for the month. Please try again later.",
-          )
-        } else {
-          setError(errorData.error || 'Failed to get answer')
-        }
-        setIsLoading(false)
-        return
-      }
-      const data = await response.json()
-      // Ensure answer is always a string
-      let safeAnswer: string
-      if (typeof data.answer === 'string') {
-        safeAnswer = data.answer
-      } else if (data.answer != null) {
-        safeAnswer = `[Invalid answer type: ${typeof data.answer}]`
-        console.error(
-          'Chatbot backend returned non-string answer:',
-          data.answer,
-        )
-      } else {
-        safeAnswer = '[No answer received]'
+        throw new Error('Failed to get answer')
       }
 
-      // Update the last QA pair with the answer and API source info
-      setQa((prev) => {
-        const updated = [...prev]
-        updated[updated.length - 1] = {
-          question,
-          answer: safeAnswer,
-          usedLmStudio: data.usedLmStudio,
-          lmStudioModel: data.lmStudioModel,
-        }
-        return updated
-      })
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'An unexpected error occurred',
-      )
+      const data = await response.json()
+      const answer = data.answer || 'Sorry, I could not generate an answer.'
+      const source = data.source || 'unknown'
+      const model = data.model || 'unknown'
+
+      // Only update state if component is still mounted
+      if (isMounted.current) {
+        // Update the last QA pair with the answer and API source info
+        setQa((prev) => {
+          const updated = [...prev]
+          const lastIndex = updated.length - 1
+          if (lastIndex >= 0) {
+            updated[lastIndex] = {
+              question,
+              answer,
+              source,
+              model,
+              usedLmStudio: source === 'lmstudio',
+              lmStudioModel: source === 'lmstudio' ? model : undefined,
+            }
+          }
+          return updated
+        })
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      if (isMounted.current) {
+        setQa((prev) => {
+          const updated = [...prev]
+          const lastIndex = updated.length - 1
+          if (lastIndex >= 0) {
+            updated[lastIndex] = {
+              question,
+              answer:
+                'Sorry, there was an error processing your request. Please try again later.',
+              source: 'error',
+              model: 'error',
+              usedLmStudio: false,
+            }
+          }
+          return updated
+        })
+      }
     } finally {
-      setIsLoading(false)
+      if (isMounted.current) {
+        setIsLoading(false)
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      isMounted.current = false
     }
   }
 
@@ -306,13 +332,17 @@ export function Chatbot() {
                   <Input
                     ref={inputRef}
                     type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
                     className="flex-1"
                     placeholder="e.g. Where did Michael Fried work in 2023?"
                     disabled={isLoading}
                   />
-                  <Button type="submit" disabled={isLoading || !input.trim()}>
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !inputValue.trim()}
+                  >
                     {isLoading ? '...' : 'Send'}
                   </Button>
                 </div>

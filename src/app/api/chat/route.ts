@@ -212,7 +212,13 @@ Feel free to reach out for professional networking, questions about my experienc
 
       // Experience
       let expText = EXPERIENCE.map((job) => {
-        return `Company: ${job.company}\nTitle: ${job.title}\nLocation: ${job.location}\nDate: ${job.date}\nDescription: ${job.description.join(' ')}\n`
+        let jobText = `Company: ${job.company}\nTitle: ${job.title}\n`
+        // Handle optional location and date properties
+        if ('location' in job && job.location)
+          jobText += `Location: ${job.location}\n`
+        if ('date' in job && job.date) jobText += `Date: ${job.date}\n`
+        jobText += `Description: ${job.description.join(' ')}\n`
+        return jobText
       }).join('\n')
 
       // Education

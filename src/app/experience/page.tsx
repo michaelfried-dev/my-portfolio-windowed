@@ -16,9 +16,27 @@ export default function ExperiencePage() {
             <p className="pt-1 text-xl font-semibold">{job.title}</p>
           </CardHeader>
           <CardContent>
-            <p className="font-semibold">
-              {job.location} | {job.date}
-            </p>
+            {/* Handle optional location and date properties */}
+            {(() => {
+              // Type guard to check if job has location property
+              const hasLocation =
+                'location' in job && typeof job.location === 'string'
+              // Type guard to check if job has date property
+              const hasDate = 'date' in job && typeof job.date === 'string'
+
+              if (hasLocation && hasDate) {
+                return (
+                  <p className="font-semibold">
+                    {job.location} | {job.date}
+                  </p>
+                )
+              } else if (hasLocation) {
+                return <p className="font-semibold">{job.location}</p>
+              } else if (hasDate) {
+                return <p className="font-semibold">{job.date}</p>
+              }
+              return null
+            })()}
             <ul className="list-outside list-disc pt-2 pl-5">
               {job.description.map((item, i) => (
                 <li key={i} className="mb-2 font-normal">

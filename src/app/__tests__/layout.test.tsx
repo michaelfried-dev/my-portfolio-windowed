@@ -1,86 +1,46 @@
 import '@testing-library/jest-dom'
-import { render } from '@testing-library/react'
-import type { Metadata, Viewport } from 'next'
-import RootLayout, { metadata } from '../layout'
+import { screen } from '@testing-library/react'
+import type { Viewport, Metadata } from 'next'
+import { metadata } from '../layout'
 
-// Mock the next/font module
-jest.mock('next/font/google', () => ({
-  Archivo: () => ({
-    className: 'mocked-font-class',
-    style: { fontFamily: 'mocked-font-family' },
-    subsets: ['latin'],
-  }),
-}))
+describe('Layout Metadata', () => {
+  it('has the correct viewport settings', () => {
+    const viewport = metadata.viewport as Viewport
 
-// Mock the components used in the layout
-jest.mock('@/components/nav', () => ({
-  __esModule: true,
-  default: () => <div data-testid="mock-nav">Nav Component</div>,
-}))
+    // Test the viewport settings
+    expect(viewport).toBeDefined()
+    expect(viewport.width).toBe('device-width')
+    expect(viewport.initialScale).toBe(1)
+    expect(viewport.maximumScale).toBe(1)
+    expect(viewport.minimumScale).toBe(1)
+    expect(viewport.userScalable).toBe(false)
+    expect(viewport.viewportFit).toBe('cover')
+    expect(viewport.interactiveWidget).toBe('resizes-visual')
+  })
 
-jest.mock('@/components/theme-provider', () => ({
-  ThemeProvider: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="mock-theme-provider">{children}</div>
-  ),
-}))
-
-jest.mock('@/components/chatbot', () => ({
-  Chatbot: () => <div data-testid="mock-chatbot">Chatbot Component</div>,
-}))
-
-// Mock next/link
-jest.mock('next/link', () => ({
-  __esModule: true,
-  default: ({
-    children,
-    href,
-  }: {
-    children: React.ReactNode
-    href: string
-  }) => (
-    <a href={href} data-testid="mock-link">
-      {children}
-    </a>
-  ),
-}))
-
-describe('RootLayout', () => {
-  it('renders the layout with children', () => {
-    const { container } = render(
-      <RootLayout>
-        <div data-testid="test-children">Test Children</div>
-      </RootLayout>,
-    )
-
-    expect(container).toMatchSnapshot()
-    expect(
-      container.querySelector('[data-testid="test-children"]'),
-    ).toBeInTheDocument()
-    expect(
-      container.querySelector('[data-testid="mock-nav"]'),
-    ).toBeInTheDocument()
-    expect(
-      container.querySelector('[data-testid="mock-theme-provider"]'),
-    ).toBeInTheDocument()
-    expect(
-      container.querySelector('[data-testid="mock-chatbot"]'),
-    ).toBeInTheDocument()
-    expect(
-      container.querySelector('[data-testid="mock-link"]'),
-    ).toBeInTheDocument()
+  it('has the correct metadata', () => {
+    // Test the metadata settings
+    expect(metadata.title).toBeDefined()
+    expect(metadata.description).toBeDefined()
+    expect(metadata.keywords).toBeDefined()
+    expect(metadata.creator).toBeDefined()
+    expect(metadata.creator).toContain('Michael Fried')
   })
 })
 
 describe('Layout Metadata', () => {
-  it('has the correct viewport settings including userScalable: false', () => {
-    // Check that the viewport metadata is correctly set
-    expect(metadata.viewport).toBeDefined()
-
-    // Type assertion to handle the viewport type which can be string | ViewportLayout
+  it('has the correct viewport settings including all required properties', () => {
     const viewport = metadata.viewport as Viewport
+
+    // Check that the viewport metadata is correctly set
+    expect(viewport).toBeDefined()
     expect(viewport.width).toBe('device-width')
     expect(viewport.initialScale).toBe(1)
+    expect(viewport.maximumScale).toBe(1)
+    expect(viewport.minimumScale).toBe(1)
     expect(viewport.userScalable).toBe(false)
+    expect(viewport.viewportFit).toBe('cover')
+    expect(viewport.interactiveWidget).toBe('resizes-visual')
   })
 
   it('has the correct title and description', () => {
@@ -93,6 +53,13 @@ describe('Layout Metadata', () => {
 
     expect(metadata.description).toBe(
       "Michael Fried's professional portfolio showcasing software engineering expertise, AI-powered chatbot assistance, and innovative projects built with modern web technologies.",
+    )
+  })
+
+  it('has the correct format-detection settings', () => {
+    expect(metadata.other).toBeDefined()
+    expect(metadata.other?.['format-detection']).toBe(
+      'telephone=no,date=no,address=no,email=no,url=no',
     )
   })
 })

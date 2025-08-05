@@ -60,6 +60,7 @@ describe('Chatbot', () => {
       const widget = screen.getByTestId('chatbot-widget')
       // Check for full-screen classes
       expect(widget).toHaveClass('inset-0 h-full w-full')
+      expect(screen.queryByLabelText(/fullscreen/i)).not.toBeInTheDocument()
     })
   })
 
@@ -78,6 +79,24 @@ describe('Chatbot', () => {
 
       const widget = screen.getByTestId('chatbot-widget')
       // Check for pop-up classes
+      expect(widget).toHaveClass('right-4 bottom-4 w-full max-w-md')
+      expect(widget).not.toHaveClass('inset-0 h-full w-full')
+      expect(screen.getByLabelText('Enter fullscreen')).toBeInTheDocument()
+    })
+
+    it('toggles fullscreen on desktop', () => {
+      render(<Chatbot />)
+      fireEvent.click(screen.getByLabelText('Open AI Assistant'))
+
+      const widget = screen.getByTestId('chatbot-widget')
+
+      const enterButton = screen.getByLabelText('Enter fullscreen')
+      fireEvent.click(enterButton)
+      expect(widget).toHaveClass('inset-0 h-full w-full')
+      expect(widget).not.toHaveClass('right-4 bottom-4 w-full max-w-md')
+
+      const exitButton = screen.getByLabelText('Exit fullscreen')
+      fireEvent.click(exitButton)
       expect(widget).toHaveClass('right-4 bottom-4 w-full max-w-md')
       expect(widget).not.toHaveClass('inset-0 h-full w-full')
     })

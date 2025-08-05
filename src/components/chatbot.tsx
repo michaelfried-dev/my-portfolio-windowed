@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, Maximize2, Minimize2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -81,6 +81,7 @@ export function Chatbot() {
   const { width, height } = useWindowSize()
   const isSmallScreen = (width || 0) < 448 || (height || 0) < 700 // max-w-md is 448px, 700px is arbitrary height
   const [open, setOpen] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [qa, setQa] = useState<QAPair[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -253,7 +254,7 @@ export function Chatbot() {
             style={{ transformOrigin: 'bottom right' }}
             className={cn(
               'fixed z-50 shadow-lg',
-              isSmallScreen
+              isSmallScreen || isFullscreen
                 ? 'inset-0 h-full w-full'
                 : 'right-4 bottom-4 w-full max-w-md',
             )}
@@ -267,12 +268,33 @@ export function Chatbot() {
                     Ask about my experience • Powered by AI
                   </div>
                 </div>
+                {!isSmallScreen && (
+                  <Button
+                    variant="neutral"
+                    size="icon"
+                    className="ml-auto"
+                    aria-label={
+                      isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'
+                    }
+                    onClick={() => setIsFullscreen((prev) => !prev)}
+                    type="button"
+                  >
+                    {isFullscreen ? (
+                      <Minimize2 className="h-4 w-4" />
+                    ) : (
+                      <Maximize2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
                 <Button
                   variant="neutral"
                   size="icon"
-                  className="ml-auto"
+                  className={cn(isSmallScreen && 'ml-auto')}
                   aria-label="Close Chatbot"
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    setOpen(false)
+                    setIsFullscreen(false)
+                  }}
                   type="button"
                 >
                   <span className="text-lg">×</span>

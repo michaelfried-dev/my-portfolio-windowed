@@ -501,7 +501,7 @@ describe('Chatbot', () => {
     // Should show LM Studio usage indicator with model name
     expect(await screen.findByText(/LM Studio response/)).toBeInTheDocument()
     expect(
-      screen.getByText(/Powered by Hugging Face \(Gemma-7B\)/),
+      screen.getByText(/Powered by local and private AI \(test-model\)/),
     ).toBeInTheDocument()
   })
 
@@ -558,7 +558,7 @@ describe('Chatbot', () => {
       await screen.findByText(/LM Studio fallback response/),
     ).toBeInTheDocument()
     expect(
-      screen.getByText(/Powered by Hugging Face \(Gemma-7B\)/),
+      screen.getByText(/Powered by local and private AI \(LM Studio\)/),
     ).toBeInTheDocument()
   })
 })

@@ -137,7 +137,7 @@ export function Chatbot() {
   }
 
   // Handle image drop events
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (e: React.DragEvent<HTMLElement>) => {
     e.preventDefault()
     const file = e.dataTransfer.files?.[0]
     if (file) {
@@ -146,7 +146,7 @@ export function Chatbot() {
   }
 
   // Allow dropping by preventing default drag over behaviour
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: React.DragEvent<HTMLElement>) => {
     e.preventDefault()
   }
 

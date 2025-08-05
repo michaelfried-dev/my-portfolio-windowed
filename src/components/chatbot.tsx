@@ -71,6 +71,7 @@ function SafeMarkdown({ children }: { children: string }) {
 interface QAPair {
   question: string
   answer: string
+  image?: string
   usedLmStudio?: boolean
   lmStudioModel?: string
   source?: string
@@ -84,8 +85,9 @@ export function Chatbot() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [qa, setQa] = useState<QAPair[]>([])
   const [inputValue, setInputValue] = useState('')
+  const [imageData, setImageData] = useState<string | null>(null)
+  const [imageType, setImageType] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const chatAreaRef = useRef<HTMLDivElement>(null)
   const endOfMessagesRef = useRef<HTMLDivElement>(null)
   const latestAnswerRef = useRef<HTMLDivElement>(null)
@@ -120,6 +122,58 @@ export function Chatbot() {
     setInputValue(e.target.value)
   }
 
+  // Convert a dropped or pasted image file to base64 and store it
+  const processFile = (file: File) => {
+    if (!file.type.startsWith('image/')) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      const base64 = result.split(',')[1]
+      setImageData(base64)
+      setImageType(file.type)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Handle image drop events
+  const handleDrop = (e: React.DragEvent<HTMLElement>) => {
+    e.preventDefault()
+    const file = e.dataTransfer.files?.[0]
+    if (file) {
+      processFile(file)
+    }
+  }
+
+  // Allow dropping by preventing default drag over behaviour
+  const handleDragOver = (e: React.DragEvent<HTMLElement>) => {
+    e.preventDefault()
+  }
+
+  // Handle pasting images into the input
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const items = e.clipboardData.items
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      if (item.kind === 'file') {
+        const file = item.getAsFile()
+        if (file) {
+          processFile(file)
+          e.preventDefault()
+          break
+        }
+      }
+    }
+  }
+
+  // Remove the currently selected image
+  const removeImage = () => {
+    setImageData(null)
+    setImageType(null)
+  }
+
+  const previewUrl =
+    imageData && imageType ? `data:${imageType};base64,${imageData}` : null
+
   // Handle key down events for form submission
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -133,38 +187,47 @@ export function Chatbot() {
     e.preventDefault()
     if (!inputValue.trim() || isLoading) return
 
-    // Add the user's question to the chat
+    // Add the user's question (and image if present) to the chat
     const question = inputValue.trim()
-    setQa((prev) => [...prev, { question, answer: '' }])
+    const preview =
+      imageData && imageType
+        ? `data:${imageType};base64,${imageData}`
+        : undefined
+    setQa((prev) => [...prev, { question, answer: '', image: preview }])
     setInputValue('')
+    setImageData(null)
+    setImageType(null)
     setIsLoading(true)
-    setError(null)
 
     try {
       // Call the API
+      const payload: Record<string, any> = { question }
+      if (imageData) payload.image = imageData
+      if (imageType) payload.imageType = imageType
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify(payload),
       })
 
+      const data = await response.json().catch(() => null)
       if (!response.ok) {
-        throw new Error('Failed to get answer')
+        const errMsg = data?.error || 'Failed to get answer'
+        throw new Error(errMsg)
       }
 
-      const data = await response.json()
-      const answer = data.answer || 'Sorry, I could not generate an answer.'
+      const answer = data?.answer || 'Sorry, I could not generate an answer.'
       const usedLmStudio =
-        data.usedLmStudio || data.source === 'lmstudio' || false
+        data?.usedLmStudio || data?.source === 'lmstudio' || false
       const lmStudioModel = usedLmStudio
-        ? data.lmStudioModel || data.model || 'LM Studio'
+        ? data?.lmStudioModel || data?.model || 'LM Studio'
         : undefined
-      const source = usedLmStudio ? 'lmstudio' : data.source || 'huggingface'
+      const source = usedLmStudio ? 'lmstudio' : data?.source || 'huggingface'
       const model = usedLmStudio
         ? lmStudioModel || 'LM Studio'
-        : data.model || 'unknown'
+        : data?.model || 'unknown'
 
       // Only update state if component is still mounted
       if (isMounted.current) {
@@ -173,6 +236,7 @@ export function Chatbot() {
           const updated = [...prev]
           const lastIndex = updated.length - 1
           if (lastIndex >= 0) {
+            const last = updated[lastIndex]
             updated[lastIndex] = {
               question,
               answer,
@@ -180,6 +244,7 @@ export function Chatbot() {
               model,
               usedLmStudio,
               lmStudioModel,
+              image: last.image,
             }
           }
           return updated
@@ -188,17 +253,22 @@ export function Chatbot() {
     } catch (error) {
       console.error('Error:', error)
       if (isMounted.current) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Sorry, there was an error processing your request. Please try again later.'
         setQa((prev) => {
           const updated = [...prev]
           const lastIndex = updated.length - 1
           if (lastIndex >= 0) {
+            const last = updated[lastIndex]
             updated[lastIndex] = {
               question,
-              answer:
-                'Sorry, there was an error processing your request. Please try again later.',
+              answer: message,
               source: 'error',
               model: 'error',
               usedLmStudio: false,
+              image: last.image,
             }
           }
           return updated
@@ -307,6 +377,8 @@ export function Chatbot() {
               <div
                 ref={chatAreaRef}
                 data-testid="chatbot-chat-area"
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
                 className={cn(
                   'space-y-2 overflow-y-auto p-4',
                   isSmallScreen || isFullscreen ? 'flex-grow' : 'h-64',
@@ -316,6 +388,13 @@ export function Chatbot() {
                   <div key={i}>
                     <div className="flex justify-end">
                       <div className="bg-primary text-primary-foreground max-w-[80%] rounded-lg px-3 py-2">
+                        {item.image && (
+                          <img
+                            src={item.image}
+                            alt="Uploaded"
+                            className="mb-2 max-w-full rounded"
+                          />
+                        )}
                         {item.question}
                       </div>
                     </div>
@@ -349,19 +428,32 @@ export function Chatbot() {
                     </div>
                   </div>
                 ))}
-                {error && (
-                  <div className="mt-2 flex justify-center">
-                    <div className="bg-error text-error-foreground prose dark:prose-invert max-w-none rounded-lg px-3 py-2 text-sm">
-                      <SafeMarkdown>{linkifyText(error)}</SafeMarkdown>
-                    </div>
-                  </div>
-                )}
                 <div ref={endOfMessagesRef} />
               </div>
               <form
                 onSubmit={handleSubmit}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
                 className="border-border border-t p-4"
               >
+                {previewUrl && (
+                  <div className="mb-2 flex items-center gap-2">
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className="h-16 w-16 rounded object-cover"
+                    />
+                    <Button
+                      type="button"
+                      variant="neutral"
+                      onClick={removeImage}
+                      aria-label="Remove image"
+                      className="h-8"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <Input
                     ref={inputRef}
@@ -369,6 +461,7 @@ export function Chatbot() {
                     value={inputValue}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
+                    onPaste={handlePaste}
                     className="flex-1"
                     placeholder="e.g. Where did Michael Fried work in 2023?"
                     disabled={isLoading}

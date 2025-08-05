@@ -64,6 +64,8 @@ function cleanThinkingContent(content: string): string {
 async function tryLmStudioFallback(
   question: string,
   context: string,
+  image?: string,
+  imageType?: string,
 ): Promise<{ answer: string } | null> {
   const lmStudioUrl = process.env.LM_STUDIO_URL
   const lmStudioModel = process.env.LM_STUDIO_MODEL || 'local-model'
@@ -80,6 +82,21 @@ async function tryLmStudioFallback(
 
 Context:\n${context}`
 
+    const userMessage = image
+      ? {
+          role: 'user',
+          content: [
+            { type: 'text', text: question },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:${imageType || 'image/png'};base64,${image}`,
+              },
+            },
+          ],
+        }
+      : { role: 'user', content: question }
+
     const response = await fetch(`${lmStudioUrl}/v1/chat/completions`, {
       method: 'POST',
       headers: {
@@ -89,7 +106,7 @@ Context:\n${context}`
         model: lmStudioModel,
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: question },
+          userMessage,
           { role: 'assistant', content: '<think>\n\n</think>\n\n' },
         ],
         temperature: 0.7,
@@ -241,6 +258,45 @@ Feel free to reach out for professional networking, questions about my experienc
             "I'm experiencing some technical difficulties right now and can't answer your question. Please feel free to reach out to me directly via LinkedIn https://www.linkedin.com/in/michael-fried/ or by email at Email@MichaelFried.info. I'd be happy to help you personally!",
         },
         { status: 500 },
+      )
+    }
+
+    const image =
+      typeof requestBody.image === 'string' ? requestBody.image : undefined
+    const imageType =
+      typeof requestBody.imageType === 'string'
+        ? requestBody.imageType
+        : undefined
+
+    if (image) {
+      if (!enableLmStudioFallback) {
+        return NextResponse.json(
+          { error: 'Image questions require LM Studio to be configured.' },
+          { status: 500, headers: safariHeaders },
+        )
+      }
+
+      const imgResult = await tryLmStudioFallback(
+        question,
+        context,
+        image,
+        imageType,
+      )
+      if (imgResult) {
+        const lmStudioModel = process.env.LM_STUDIO_MODEL || 'local-model'
+        return NextResponse.json(
+          {
+            answer: imgResult.answer,
+            usedLmStudio: true,
+            lmStudioModel,
+          },
+          { headers: safariHeaders },
+        )
+      }
+
+      return NextResponse.json(
+        { error: 'Failed to process image with LM Studio.' },
+        { status: 500, headers: safariHeaders },
       )
     }
 

@@ -61,6 +61,10 @@ describe('Chatbot', () => {
       // Check for full-screen classes
       expect(widget).toHaveClass('inset-0 h-full w-full')
       expect(screen.queryByLabelText(/fullscreen/i)).not.toBeInTheDocument()
+      expect(screen.getByTestId('chatbot-card')).toHaveClass(
+        'flex h-full flex-col',
+      )
+      expect(screen.getByTestId('chatbot-chat-area')).toHaveClass('flex-grow')
     })
   })
 
@@ -94,11 +98,19 @@ describe('Chatbot', () => {
       fireEvent.click(enterButton)
       expect(widget).toHaveClass('inset-0 h-full w-full')
       expect(widget).not.toHaveClass('right-4 bottom-4 w-full max-w-md')
+      expect(screen.getByTestId('chatbot-card')).toHaveClass(
+        'flex h-full flex-col',
+      )
+      expect(screen.getByTestId('chatbot-chat-area')).toHaveClass('flex-grow')
 
       const exitButton = screen.getByLabelText('Exit fullscreen')
       fireEvent.click(exitButton)
       expect(widget).toHaveClass('right-4 bottom-4 w-full max-w-md')
       expect(widget).not.toHaveClass('inset-0 h-full w-full')
+      expect(screen.getByTestId('chatbot-card')).not.toHaveClass(
+        'flex h-full flex-col',
+      )
+      expect(screen.getByTestId('chatbot-chat-area')).toHaveClass('h-64')
     })
   })
   it('renders the floating open button', () => {

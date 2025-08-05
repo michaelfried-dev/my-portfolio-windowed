@@ -259,7 +259,12 @@ export function Chatbot() {
                 : 'right-4 bottom-4 w-full max-w-md',
             )}
           >
-            <Card className={cn(isSmallScreen && 'flex h-full flex-col')}>
+            <Card
+              data-testid="chatbot-card"
+              className={cn(
+                (isSmallScreen || isFullscreen) && 'flex h-full flex-col',
+              )}
+            >
               <div className="border-border flex items-center gap-2 border-b p-4">
                 <MessageSquare className="text-primary h-5 w-5" />
                 <div className="flex-1">
@@ -269,10 +274,8 @@ export function Chatbot() {
                   </div>
                 </div>
                 {!isSmallScreen && (
-                  <Button
-                    variant="neutral"
-                    size="icon"
-                    className="ml-auto"
+                  <button
+                    className="ml-auto rounded-base p-1 text-muted-foreground hover:bg-muted"
                     aria-label={
                       isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'
                     }
@@ -284,12 +287,13 @@ export function Chatbot() {
                     ) : (
                       <Maximize2 className="h-4 w-4" />
                     )}
-                  </Button>
+                  </button>
                 )}
-                <Button
-                  variant="neutral"
-                  size="icon"
-                  className={cn(isSmallScreen && 'ml-auto')}
+                <button
+                  className={cn(
+                    'rounded-base p-1 text-muted-foreground hover:bg-muted',
+                    isSmallScreen && 'ml-auto',
+                  )}
                   aria-label="Close Chatbot"
                   onClick={() => {
                     setOpen(false)
@@ -298,13 +302,14 @@ export function Chatbot() {
                   type="button"
                 >
                   <span className="text-lg">×</span>
-                </Button>
+                </button>
               </div>
               <div
                 ref={chatAreaRef}
+                data-testid="chatbot-chat-area"
                 className={cn(
                   'space-y-2 overflow-y-auto p-4',
-                  isSmallScreen ? 'flex-grow' : 'h-64',
+                  isSmallScreen || isFullscreen ? 'flex-grow' : 'h-64',
                 )}
               >
                 {qa.map((item, i: number) => (

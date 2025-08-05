@@ -171,10 +171,63 @@ describe('Chatbot', () => {
     })
   })
 
-  it('renders image upload input when chatbot is open', async () => {
+  it('allows pasting an image into the input', async () => {
     render(<Chatbot />)
     fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    expect(await screen.findByLabelText('Upload image')).toBeInTheDocument()
+    const input = await screen.findByPlaceholderText(
+      'e.g. Where did Michael Fried work in 2023?',
+    )
+    const file = new File(['dummy'], 'test.png', { type: 'image/png' })
+    fireEvent.paste(input, {
+      clipboardData: {
+        items: [
+          {
+            kind: 'file',
+            type: 'image/png',
+            getAsFile: () => file,
+          },
+        ],
+        files: [file],
+      },
+    } as any)
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0))
+    })
+    fireEvent.change(input, { target: { value: 'Image question' } })
+    const form = input.closest('form')
+    if (form) fireEvent.submit(form)
+    await screen.findByText('Test answer')
+    expect(screen.getByAltText('Uploaded')).toBeInTheDocument()
+  })
+
+  it('allows dropping an image into the chat area', async () => {
+    render(<Chatbot />)
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
+    const dropZone = await screen.findByTestId('chatbot-chat-area')
+    const file = new File(['dummy'], 'test.png', { type: 'image/png' })
+    fireEvent.drop(dropZone, {
+      dataTransfer: {
+        items: [
+          {
+            kind: 'file',
+            type: 'image/png',
+            getAsFile: () => file,
+          },
+        ],
+        files: [file],
+      },
+    })
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0))
+    })
+    const input = await screen.findByPlaceholderText(
+      'e.g. Where did Michael Fried work in 2023?',
+    )
+    fireEvent.change(input, { target: { value: 'Image question' } })
+    const form = input.closest('form')
+    if (form) fireEvent.submit(form)
+    await screen.findByText('Test answer')
+    expect(screen.getByAltText('Uploaded')).toBeInTheDocument()
   })
 
   it('renders phone number as clickable tel: link in answer', async () => {

@@ -24,7 +24,7 @@ The portfolio includes an intelligent chatbot that can answer questions about my
 
 - **Smart AI Assistant**: Powered by Hugging Face's DeepSeek model with advanced reasoning capabilities
 - **Local Fallback**: Seamless fallback to local LM Studio API when cloud quota is exceeded
-- **Image Uploads**: Attach images to your questions when using a local LM Studio model
+- **Image Uploads**: Drag & drop or paste images into your questions when using a local LM Studio model
 - **Safari Compatible**: Optimized for all browsers including Safari with proper caching headers
 - **Responsive Design**: Works seamlessly on both desktop and mobile devices
 - **Natural Conversations**: Ask questions like "Where did Michael work in 2023?" or "What are his technical skills?"

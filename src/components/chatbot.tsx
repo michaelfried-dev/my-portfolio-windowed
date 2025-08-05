@@ -123,14 +123,9 @@ export function Chatbot() {
     setInputValue(e.target.value)
   }
 
-  // Handle image file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) {
-      setImageData(null)
-      setImageType(null)
-      return
-    }
+  // Convert a dropped or pasted image file to base64 and store it
+  const processFile = (file: File) => {
+    if (!file.type.startsWith('image/')) return
     const reader = new FileReader()
     reader.onload = () => {
       const result = reader.result as string
@@ -139,6 +134,36 @@ export function Chatbot() {
       setImageType(file.type)
     }
     reader.readAsDataURL(file)
+  }
+
+  // Handle image drop events
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const file = e.dataTransfer.files?.[0]
+    if (file) {
+      processFile(file)
+    }
+  }
+
+  // Allow dropping by preventing default drag over behaviour
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+  }
+
+  // Handle pasting images into the input
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const items = e.clipboardData.items
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      if (item.kind === 'file') {
+        const file = item.getAsFile()
+        if (file) {
+          processFile(file)
+          e.preventDefault()
+          break
+        }
+      }
+    }
   }
 
   // Handle key down events for form submission
@@ -341,6 +366,8 @@ export function Chatbot() {
               <div
                 ref={chatAreaRef}
                 data-testid="chatbot-chat-area"
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
                 className={cn(
                   'space-y-2 overflow-y-auto p-4',
                   isSmallScreen || isFullscreen ? 'flex-grow' : 'h-64',
@@ -401,34 +428,28 @@ export function Chatbot() {
               </div>
               <form
                 onSubmit={handleSubmit}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
                 className="border-border border-t p-4"
               >
-                <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
                   <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    aria-label="Upload image"
+                    ref={inputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onPaste={handlePaste}
+                    className="flex-1"
+                    placeholder="e.g. Where did Michael Fried work in 2023?"
                     disabled={isLoading}
                   />
-                  <div className="flex gap-2">
-                    <Input
-                      ref={inputRef}
-                      type="text"
-                      value={inputValue}
-                      onChange={handleInputChange}
-                      onKeyDown={handleKeyDown}
-                      className="flex-1"
-                      placeholder="e.g. Where did Michael Fried work in 2023?"
-                      disabled={isLoading}
-                    />
-                    <Button
-                      type="submit"
-                      disabled={isLoading || !inputValue.trim()}
-                    >
-                      {isLoading ? '...' : 'Send'}
-                    </Button>
-                  </div>
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !inputValue.trim()}
+                  >
+                    {isLoading ? '...' : 'Send'}
+                  </Button>
                 </div>
               </form>
             </Card>

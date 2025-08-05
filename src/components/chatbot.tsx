@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, Maximize2, Minimize2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -68,12 +68,22 @@ function SafeMarkdown({ children }: { children: string }) {
   )
 }
 
+interface QAPair {
+  question: string
+  answer: string
+  usedLmStudio?: boolean
+  lmStudioModel?: string
+  source?: string
+  model?: string
+}
+
 export function Chatbot() {
   const { width, height } = useWindowSize()
   const isSmallScreen = (width || 0) < 448 || (height || 0) < 700 // max-w-md is 448px, 700px is arbitrary height
   const [open, setOpen] = useState(false)
-  const [qa, setQa] = useState<Array<{ question: string; answer: string }>>([])
-  const [input, setInput] = useState('')
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [qa, setQa] = useState<QAPair[]>([])
+  const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const chatAreaRef = useRef<HTMLDivElement>(null)
@@ -81,6 +91,7 @@ export function Chatbot() {
   const latestAnswerRef = useRef<HTMLDivElement>(null)
   const prevAnswer = useRef<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const isMounted = useRef(true)
 
   // Scroll to the new answer (assistant message) when it arrives
   useEffect(() => {
@@ -104,74 +115,104 @@ export function Chatbot() {
     prevAnswer.current = last ? last.answer : null
   }, [qa, isLoading])
 
+  // Handle input change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value)
+  }
+
+  // Handle key down events for form submission
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit(e as unknown as React.FormEvent)
+    }
+  }
+
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim()) return
+    if (!inputValue.trim() || isLoading) return
+
+    // Add the user's question to the chat
+    const question = inputValue.trim()
+    setQa((prev) => [...prev, { question, answer: '' }])
+    setInputValue('')
     setIsLoading(true)
     setError(null)
-    const question = input.trim()
-    setInput('')
-    // Focus the input after submit
-    if (inputRef.current) inputRef.current.focus()
-    // Show the user's prompt immediately with a placeholder answer
-    setQa((prev) => [...prev, { question, answer: '' }])
-    // Scroll to bottom after submitting
-    setTimeout(() => {
-      if (endOfMessagesRef.current) {
-        endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' })
-      }
-    }, 0)
+
     try {
+      // Call the API
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ question }),
       })
+
       if (!response.ok) {
-        const errorData = await response.json()
-        if (response.status === 402) {
-          setError(
-            errorData.error ||
-              "I've hit my message limit for the month. Please try again later.",
-          )
-        } else {
-          setError(errorData.error || 'Failed to get answer')
-        }
-        setIsLoading(false)
-        return
+        throw new Error('Failed to get answer')
       }
+
       const data = await response.json()
-      // Ensure answer is always a string
-      let safeAnswer: string
-      if (typeof data.answer === 'string') {
-        safeAnswer = data.answer
-      } else if (data.answer != null) {
-        safeAnswer = `[Invalid answer type: ${typeof data.answer}]`
-        console.error(
-          'Chatbot backend returned non-string answer:',
-          data.answer,
-        )
-      } else {
-        safeAnswer = '[No answer received]'
-      }
+      const answer = data.answer || 'Sorry, I could not generate an answer.'
+      const usedLmStudio =
+        data.usedLmStudio || data.source === 'lmstudio' || false
+      const lmStudioModel = usedLmStudio
+        ? data.lmStudioModel || data.model || 'LM Studio'
+        : undefined
+      const source = usedLmStudio ? 'lmstudio' : data.source || 'huggingface'
+      const model = usedLmStudio
+        ? lmStudioModel || 'LM Studio'
+        : data.model || 'unknown'
 
-      // Add a note if LM Studio was used
-      if (data.usedLmStudio) {
-        safeAnswer = `*Response generated using my local LM Studio API*\n\n${safeAnswer}`
+      // Only update state if component is still mounted
+      if (isMounted.current) {
+        // Update the last QA pair with the answer and API source info
+        setQa((prev) => {
+          const updated = [...prev]
+          const lastIndex = updated.length - 1
+          if (lastIndex >= 0) {
+            updated[lastIndex] = {
+              question,
+              answer,
+              source,
+              model,
+              usedLmStudio,
+              lmStudioModel,
+            }
+          }
+          return updated
+        })
       }
-
-      // Update the last QA pair with the answer
-      setQa((prev) => {
-        const updated = [...prev]
-        updated[updated.length - 1] = { question, answer: safeAnswer }
-        return updated
-      })
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'An unexpected error occurred',
-      )
+    } catch (error) {
+      console.error('Error:', error)
+      if (isMounted.current) {
+        setQa((prev) => {
+          const updated = [...prev]
+          const lastIndex = updated.length - 1
+          if (lastIndex >= 0) {
+            updated[lastIndex] = {
+              question,
+              answer:
+                'Sorry, there was an error processing your request. Please try again later.',
+              source: 'error',
+              model: 'error',
+              usedLmStudio: false,
+            }
+          }
+          return updated
+        })
+      }
     } finally {
-      setIsLoading(false)
+      if (isMounted.current) {
+        setIsLoading(false)
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      isMounted.current = false
     }
   }
 
@@ -213,12 +254,17 @@ export function Chatbot() {
             style={{ transformOrigin: 'bottom right' }}
             className={cn(
               'fixed z-50 shadow-lg',
-              isSmallScreen
+              isSmallScreen || isFullscreen
                 ? 'inset-0 h-full w-full'
                 : 'right-4 bottom-4 w-full max-w-md',
             )}
           >
-            <Card className={cn(isSmallScreen && 'flex h-full flex-col')}>
+            <Card
+              data-testid="chatbot-card"
+              className={cn(
+                (isSmallScreen || isFullscreen) && 'flex h-full flex-col',
+              )}
+            >
               <div className="border-border flex items-center gap-2 border-b p-4">
                 <MessageSquare className="text-primary h-5 w-5" />
                 <div className="flex-1">
@@ -227,22 +273,43 @@ export function Chatbot() {
                     Ask about my experience • Powered by AI
                   </div>
                 </div>
-                <Button
-                  variant="neutral"
-                  size="icon"
-                  className="ml-auto"
+                {!isSmallScreen && (
+                  <button
+                    className="rounded-base text-muted-foreground hover:bg-muted ml-auto p-1"
+                    aria-label={
+                      isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'
+                    }
+                    onClick={() => setIsFullscreen((prev) => !prev)}
+                    type="button"
+                  >
+                    {isFullscreen ? (
+                      <Minimize2 className="h-4 w-4" />
+                    ) : (
+                      <Maximize2 className="h-4 w-4" />
+                    )}
+                  </button>
+                )}
+                <button
+                  className={cn(
+                    'rounded-base text-muted-foreground hover:bg-muted p-1',
+                    isSmallScreen && 'ml-auto',
+                  )}
                   aria-label="Close Chatbot"
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    setOpen(false)
+                    setIsFullscreen(false)
+                  }}
                   type="button"
                 >
                   <span className="text-lg">×</span>
-                </Button>
+                </button>
               </div>
               <div
                 ref={chatAreaRef}
+                data-testid="chatbot-chat-area"
                 className={cn(
                   'space-y-2 overflow-y-auto p-4',
-                  isSmallScreen ? 'flex-grow' : 'h-64',
+                  isSmallScreen || isFullscreen ? 'flex-grow' : 'h-64',
                 )}
               >
                 {qa.map((item, i: number) => (
@@ -262,11 +329,20 @@ export function Chatbot() {
                             <SafeMarkdown>
                               {linkifyText(item.answer)}
                             </SafeMarkdown>
+                            {item.usedLmStudio ? (
+                              <div className="text-muted-foreground mt-2 text-xs italic">
+                                Powered by local and private AI (
+                                {item.lmStudioModel || 'LM Studio'})
+                              </div>
+                            ) : (
+                              <div className="text-muted-foreground mt-2 text-xs italic">
+                                Powered by Hugging Face (Gemma-7B)
+                              </div>
+                            )}
                           </div>
                         ) : isLoading && i === qa.length - 1 ? (
                           <span className="text-muted animate-pulse">
-                            Thinking... trying Hugging Face first, then my local
-                            LM Studio API with DeepSeek if needed
+                            Connecting to AI...
                           </span>
                         ) : null}
                       </div>
@@ -290,13 +366,17 @@ export function Chatbot() {
                   <Input
                     ref={inputRef}
                     type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
                     className="flex-1"
                     placeholder="e.g. Where did Michael Fried work in 2023?"
                     disabled={isLoading}
                   />
-                  <Button type="submit" disabled={isLoading || !input.trim()}>
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !inputValue.trim()}
+                  >
                     {isLoading ? '...' : 'Send'}
                   </Button>
                 </div>

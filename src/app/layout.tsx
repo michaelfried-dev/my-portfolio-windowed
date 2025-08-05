@@ -10,7 +10,7 @@ const archivo = Archivo({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
-    default: 'Michael Fried - AI-Powered Portfolio',
+    default: 'Michael Fried - Portfolio',
     template: '%s | Michael Fried',
   },
   description:
@@ -18,6 +18,15 @@ export const metadata: Metadata = {
   viewport: {
     width: 'device-width',
     initialScale: 1,
+    maximumScale: 1,
+    minimumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover',
+    interactiveWidget: 'resizes-visual',
+  },
+  // Add a custom meta tag for iOS devices
+  other: {
+    'format-detection': 'telephone=no,date=no,address=no,email=no,url=no',
   },
   keywords: [
     'Michael Fried',
@@ -41,7 +50,7 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'Michael Fried - AI-Powered Portfolio',
+    title: 'Michael Fried - Portfolio',
     description:
       'Professional portfolio showcasing software engineering expertise with AI-powered chatbot assistance.',
     url: 'https://michaelfried.dev',
@@ -59,7 +68,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Michael Fried - AI-Powered Portfolio',
+    title: 'Michael Fried - Portfolio',
     description:
       'Professional portfolio showcasing software engineering expertise with AI-powered chatbot assistance.',
     images: ['/profile.jpg'],

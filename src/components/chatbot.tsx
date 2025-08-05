@@ -275,7 +275,7 @@ export function Chatbot() {
                 </div>
                 {!isSmallScreen && (
                   <button
-                    className="ml-auto rounded-base p-1 text-muted-foreground hover:bg-muted"
+                    className="rounded-base text-muted-foreground hover:bg-muted ml-auto p-1"
                     aria-label={
                       isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'
                     }
@@ -291,7 +291,7 @@ export function Chatbot() {
                 )}
                 <button
                   className={cn(
-                    'rounded-base p-1 text-muted-foreground hover:bg-muted',
+                    'rounded-base text-muted-foreground hover:bg-muted p-1',
                     isSmallScreen && 'ml-auto',
                   )}
                   aria-label="Close Chatbot"

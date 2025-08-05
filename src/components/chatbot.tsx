@@ -155,8 +155,15 @@ export function Chatbot() {
 
       const data = await response.json()
       const answer = data.answer || 'Sorry, I could not generate an answer.'
-      const source = data.source || 'unknown'
-      const model = data.model || 'unknown'
+      const usedLmStudio =
+        data.usedLmStudio || data.source === 'lmstudio' || false
+      const lmStudioModel = usedLmStudio
+        ? data.lmStudioModel || data.model || 'LM Studio'
+        : undefined
+      const source = usedLmStudio ? 'lmstudio' : data.source || 'huggingface'
+      const model = usedLmStudio
+        ? lmStudioModel || 'LM Studio'
+        : data.model || 'unknown'
 
       // Only update state if component is still mounted
       if (isMounted.current) {
@@ -170,8 +177,8 @@ export function Chatbot() {
               answer,
               source,
               model,
-              usedLmStudio: source === 'lmstudio',
-              lmStudioModel: source === 'lmstudio' ? model : undefined,
+              usedLmStudio,
+              lmStudioModel,
             }
           }
           return updated

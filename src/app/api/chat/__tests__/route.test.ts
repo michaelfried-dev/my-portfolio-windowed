@@ -551,6 +551,41 @@ describe('POST /api/chat', () => {
       const data = await res.json()
       expect(data.answer).toBe('No answer found from LM Studio.')
     })
+
+    it('returns error when image is provided but LM Studio is disabled', async () => {
+      process.env.ENABLE_LM_STUDIO_FALLBACK = 'false'
+
+      const req = mockRequest({
+        body: { question: 'test', image: 'abc', imageType: 'image/png' },
+      })
+      const res = await POST(req)
+      expect(res.status).toBe(500)
+      const data = await res.json()
+      expect(data.error).toMatch(/LM Studio/i)
+    })
+
+    it('processes image with LM Studio when enabled', async () => {
+      process.env.ENABLE_LM_STUDIO_FALLBACK = 'true'
+      process.env.LM_STUDIO_URL = 'http://localhost:1234'
+      process.env.LM_STUDIO_MODEL = 'test-model'
+
+      // Mock successful LM Studio response
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          choices: [{ message: { content: 'image answer' } }],
+        }),
+      } as Response)
+
+      const req = mockRequest({
+        body: { question: 'see image', image: 'xyz', imageType: 'image/png' },
+      })
+      const res = await POST(req)
+      expect(res.status).toBe(200)
+      const data = await res.json()
+      expect(data.answer).toBe('image answer')
+      expect(data.usedLmStudio).toBe(true)
+    })
   })
 })
 

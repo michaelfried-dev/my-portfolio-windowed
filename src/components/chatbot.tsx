@@ -71,6 +71,7 @@ function SafeMarkdown({ children }: { children: string }) {
 interface QAPair {
   question: string
   answer: string
+  image?: string
   usedLmStudio?: boolean
   lmStudioModel?: string
   source?: string
@@ -84,6 +85,8 @@ export function Chatbot() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [qa, setQa] = useState<QAPair[]>([])
   const [inputValue, setInputValue] = useState('')
+  const [imageData, setImageData] = useState<string | null>(null)
+  const [imageType, setImageType] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const chatAreaRef = useRef<HTMLDivElement>(null)
@@ -120,6 +123,24 @@ export function Chatbot() {
     setInputValue(e.target.value)
   }
 
+  // Handle image file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) {
+      setImageData(null)
+      setImageType(null)
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      const base64 = result.split(',')[1]
+      setImageData(base64)
+      setImageType(file.type)
+    }
+    reader.readAsDataURL(file)
+  }
+
   // Handle key down events for form submission
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -133,21 +154,30 @@ export function Chatbot() {
     e.preventDefault()
     if (!inputValue.trim() || isLoading) return
 
-    // Add the user's question to the chat
+    // Add the user's question (and image if present) to the chat
     const question = inputValue.trim()
-    setQa((prev) => [...prev, { question, answer: '' }])
+    const preview =
+      imageData && imageType
+        ? `data:${imageType};base64,${imageData}`
+        : undefined
+    setQa((prev) => [...prev, { question, answer: '', image: preview }])
     setInputValue('')
+    setImageData(null)
+    setImageType(null)
     setIsLoading(true)
     setError(null)
 
     try {
       // Call the API
+      const payload: Record<string, any> = { question }
+      if (imageData) payload.image = imageData
+      if (imageType) payload.imageType = imageType
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
@@ -173,6 +203,7 @@ export function Chatbot() {
           const updated = [...prev]
           const lastIndex = updated.length - 1
           if (lastIndex >= 0) {
+            const last = updated[lastIndex]
             updated[lastIndex] = {
               question,
               answer,
@@ -180,6 +211,7 @@ export function Chatbot() {
               model,
               usedLmStudio,
               lmStudioModel,
+              image: last.image,
             }
           }
           return updated
@@ -192,6 +224,7 @@ export function Chatbot() {
           const updated = [...prev]
           const lastIndex = updated.length - 1
           if (lastIndex >= 0) {
+            const last = updated[lastIndex]
             updated[lastIndex] = {
               question,
               answer:
@@ -199,6 +232,7 @@ export function Chatbot() {
               source: 'error',
               model: 'error',
               usedLmStudio: false,
+              image: last.image,
             }
           }
           return updated
@@ -316,6 +350,13 @@ export function Chatbot() {
                   <div key={i}>
                     <div className="flex justify-end">
                       <div className="bg-primary text-primary-foreground max-w-[80%] rounded-lg px-3 py-2">
+                        {item.image && (
+                          <img
+                            src={item.image}
+                            alt="Uploaded"
+                            className="mb-2 max-w-full rounded"
+                          />
+                        )}
                         {item.question}
                       </div>
                     </div>
@@ -362,23 +403,32 @@ export function Chatbot() {
                 onSubmit={handleSubmit}
                 className="border-border border-t p-4"
               >
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2">
                   <Input
-                    ref={inputRef}
-                    type="text"
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    onKeyDown={handleKeyDown}
-                    className="flex-1"
-                    placeholder="e.g. Where did Michael Fried work in 2023?"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    aria-label="Upload image"
                     disabled={isLoading}
                   />
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !inputValue.trim()}
-                  >
-                    {isLoading ? '...' : 'Send'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Input
+                      ref={inputRef}
+                      type="text"
+                      value={inputValue}
+                      onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
+                      className="flex-1"
+                      placeholder="e.g. Where did Michael Fried work in 2023?"
+                      disabled={isLoading}
+                    />
+                    <Button
+                      type="submit"
+                      disabled={isLoading || !inputValue.trim()}
+                    >
+                      {isLoading ? '...' : 'Send'}
+                    </Button>
+                  </div>
                 </div>
               </form>
             </Card>

@@ -171,6 +171,12 @@ describe('Chatbot', () => {
     })
   })
 
+  it('renders image upload input when chatbot is open', async () => {
+    render(<Chatbot />)
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
+    expect(await screen.findByLabelText('Upload image')).toBeInTheDocument()
+  })
+
   it('renders phone number as clickable tel: link in answer', async () => {
     ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({

@@ -1,12 +1,9 @@
 import type { Metadata } from 'next'
-import { Archivo } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/nav'
 import { ThemeProvider } from '@/components/theme-provider'
 import Link from 'next/link'
 import { Chatbot } from '@/components/chatbot'
-
-const archivo = Archivo({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
@@ -99,7 +96,7 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning lang="en">
-      <body className={archivo.className}>
+      <body className="font-sans">
         <ThemeProvider attribute="class" disableTransitionOnChange>
           <div className="outline-border rounded-base w600:grid-cols-[70px_auto] w500:grid-cols-1 portrait:w1000:max-h-[800px] mdHeight:w-[100dvw] mdHeight:max-w-[100dvw] grid h-[800px] max-h-[100dvh] w-[1000px] max-w-[1000px] grid-cols-[100px_auto] shadow-[10px_10px_0_0_#000] outline-4 portrait:h-[100dvh]">
             <header>

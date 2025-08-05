@@ -64,7 +64,9 @@ function cleanThinkingContent(content: string): string {
 async function tryLmStudioFallback(
   question: string,
   context: string,
-): Promise<{ answer: string } | null> {
+  image?: string,
+  imageType?: string,
+): Promise<{ answer: string; thinking?: string } | null> {
   const lmStudioUrl = process.env.LM_STUDIO_URL
   const lmStudioModel = process.env.LM_STUDIO_MODEL || 'local-model'
 
@@ -80,6 +82,21 @@ async function tryLmStudioFallback(
 
 Context:\n${context}`
 
+    const userMessage = image
+      ? {
+          role: 'user',
+          content: [
+            { type: 'text', text: question },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:${imageType || 'image/png'};base64,${image}`,
+              },
+            },
+          ],
+        }
+      : { role: 'user', content: question }
+
     const response = await fetch(`${lmStudioUrl}/v1/chat/completions`, {
       method: 'POST',
       headers: {
@@ -89,7 +106,7 @@ Context:\n${context}`
         model: lmStudioModel,
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: question },
+          userMessage,
           { role: 'assistant', content: '<think>\n\n</think>\n\n' },
         ],
         temperature: 0.7,
@@ -121,14 +138,46 @@ Context:\n${context}`
     }
 
     const data = await response.json()
-    let answer =
+    const rawContent =
       data.choices?.[0]?.message?.content || 'No answer found from LM Studio.'
 
+    // Extract thinking snippet (first non-empty line within <think> tags if present)
+    let thinking = ''
+    const thinkMatch = rawContent.match(/<think[^>]*>([\s\S]*?)<\/think>/i)
+    if (thinkMatch) {
+      const lines = thinkMatch[1]
+        .split('\n')
+        .map((l: string) => l.trim())
+        .filter(Boolean)
+      thinking = lines[0] || ''
+    } else {
+      const firstParagraph = rawContent.split('\n\n')[0].trim()
+      const lower = firstParagraph.toLowerCase()
+      const thinkingPhrases = [
+        'okay',
+        'let me think',
+        'i need to think',
+        'first, i should',
+        'the user',
+        'since there',
+        'this feels like',
+        'no need to',
+        'keeping it simple:',
+        'the response should',
+        'thinking:',
+        'reasoning:',
+        'analysis:',
+      ]
+      if (thinkingPhrases.some((p) => lower.startsWith(p))) {
+        thinking = firstParagraph.split('\n')[0]
+      }
+    }
+
     // Post-process to remove any thinking/reasoning content that slipped through
-    answer = cleanThinkingContent(answer)
+    let answer = cleanThinkingContent(rawContent)
 
     console.log('[DEBUG] LM Studio fallback successful')
-    return { answer }
+    return { answer, thinking }
   } catch (error) {
     console.log('[DEBUG] LM Studio fallback failed:', error)
     return null
@@ -244,6 +293,46 @@ Feel free to reach out for professional networking, questions about my experienc
       )
     }
 
+    const image =
+      typeof requestBody.image === 'string' ? requestBody.image : undefined
+    const imageType =
+      typeof requestBody.imageType === 'string'
+        ? requestBody.imageType
+        : undefined
+
+    if (image) {
+      if (!enableLmStudioFallback) {
+        return NextResponse.json(
+          { error: 'Image questions require LM Studio to be configured.' },
+          { status: 500, headers: safariHeaders },
+        )
+      }
+
+      const imgResult = await tryLmStudioFallback(
+        question,
+        context,
+        image,
+        imageType,
+      )
+      if (imgResult) {
+        const lmStudioModel = process.env.LM_STUDIO_MODEL || 'local-model'
+        return NextResponse.json(
+          {
+            answer: imgResult.answer,
+            thinking: imgResult.thinking,
+            usedLmStudio: true,
+            lmStudioModel,
+          },
+          { headers: safariHeaders },
+        )
+      }
+
+      return NextResponse.json(
+        { error: 'Failed to process image with LM Studio.' },
+        { status: 500, headers: safariHeaders },
+      )
+    }
+
     // Determine which API to use first based on environment variable
     const apiKey = process.env.HUGGINGFACE_API_KEY
 
@@ -260,6 +349,7 @@ Feel free to reach out for professional networking, questions about my experienc
           return NextResponse.json(
             {
               answer: lmStudioResult.answer,
+              thinking: lmStudioResult.thinking,
               usedLmStudio: true,
               lmStudioModel: lmStudioModel,
             },
@@ -292,6 +382,7 @@ Feel free to reach out for professional networking, questions about my experienc
           return NextResponse.json(
             {
               answer: fallbackResult.answer,
+              thinking: fallbackResult.thinking,
               usedLmStudio: true,
             },
             { headers: safariHeaders },
@@ -347,17 +438,18 @@ Feel free to reach out for professional networking, questions about my experienc
           console.log('[DEBUG] Attempting LM Studio fallback due to 402 error')
           const fallbackResult = await tryLmStudioFallback(question, context)
 
-          if (fallbackResult) {
-            const lmStudioModel = process.env.LM_STUDIO_MODEL || 'local-model'
-            return NextResponse.json(
-              {
-                answer: fallbackResult.answer,
-                usedLmStudio: true,
-                lmStudioModel: lmStudioModel,
-              },
-              { headers: safariHeaders },
-            )
-          }
+        if (fallbackResult) {
+          const lmStudioModel = process.env.LM_STUDIO_MODEL || 'local-model'
+          return NextResponse.json(
+            {
+              answer: fallbackResult.answer,
+              thinking: fallbackResult.thinking,
+              usedLmStudio: true,
+              lmStudioModel: lmStudioModel,
+            },
+            { headers: safariHeaders },
+          )
+        }
 
           console.log('[DEBUG] LM Studio fallback failed, returning 402 error')
         }
@@ -382,6 +474,7 @@ Feel free to reach out for professional networking, questions about my experienc
           return NextResponse.json(
             {
               answer: fallbackResult.answer,
+              thinking: fallbackResult.thinking,
               usedLmStudio: true,
             },
             { headers: safariHeaders },

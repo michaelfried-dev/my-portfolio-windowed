@@ -36,8 +36,8 @@ importers:
         specifier: ^12.23.12
         version: 12.23.12(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       lucide-react:
-        specifier: ^0.487.0
-        version: 0.487.0(react@19.1.0)
+        specifier: ^0.536.0
+        version: 0.536.0(react@19.1.0)
       next:
         specifier: 15.4.5
         version: 15.4.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -5794,10 +5794,10 @@ packages:
       }
     engines: { node: '>=10' }
 
-  lucide-react@0.487.0:
+  lucide-react@0.536.0:
     resolution:
       {
-        integrity: sha512-aKqhOQ+YmFnwq8dWgGjOuLc8V1R9/c/yOd+zDY4+ohsR2Jo05lSGc3WsstYPIzcTpeosN7LoCkLReUUITvaIvw==,
+        integrity: sha512-2PgvNa9v+qz4Jt/ni8vPLt4jwoFybXHuubQT8fv4iCW5TjDxkbZjNZZHa485ad73NSEn/jdsEtU57eE1g+ma8A==,
       }
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -6363,18 +6363,6 @@ packages:
     resolution:
       {
         integrity: sha512-DJm/CJkZkRjKKj4Zi4BsKVZh3ValV5IR5s7LVZnW+6YMh0W1BfNA8XSs6DLMGYlId5F3KnA70uu2qepcR08Qqg==,
-      }
-    engines: { node: 4.x || >=6.0.0 }
-    peerDependencies:
-      encoding: ^0.1.0
-    peerDependenciesMeta:
-      encoding:
-        optional: true
-
-  node-fetch@2.7.0:
-    resolution:
-      {
-        integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==,
       }
     engines: { node: 4.x || >=6.0.0 }
     peerDependencies:
@@ -9238,7 +9226,7 @@ snapshots:
       consola: 3.4.2
       detect-libc: 2.0.4
       https-proxy-agent: 7.0.6
-      node-fetch: 2.7.0
+      node-fetch: 2.6.9
       nopt: 8.1.0
       semver: 7.7.2
       tar: 7.4.3
@@ -12111,7 +12099,7 @@ snapshots:
     dependencies:
       yallist: 4.0.0
 
-  lucide-react@0.487.0(react@19.1.0):
+  lucide-react@0.536.0(react@19.1.0):
     dependencies:
       react: 19.1.0
 
@@ -12626,10 +12614,6 @@ snapshots:
       whatwg-url: 5.0.0
 
   node-fetch@2.6.9:
-    dependencies:
-      whatwg-url: 5.0.0
-
-  node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
 

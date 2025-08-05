@@ -230,6 +230,38 @@ describe('Chatbot', () => {
     expect(screen.getByAltText('Uploaded')).toBeInTheDocument()
   })
 
+  it('shows a preview of an attached image and allows removal before sending', async () => {
+    render(<Chatbot />)
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
+    const input = await screen.findByPlaceholderText(
+      'e.g. Where did Michael Fried work in 2023?',
+    )
+    const file = new File(['dummy'], 'test.png', { type: 'image/png' })
+    fireEvent.paste(input, {
+      clipboardData: {
+        items: [
+          {
+            kind: 'file',
+            type: 'image/png',
+            getAsFile: () => file,
+          },
+        ],
+        files: [file],
+      },
+    } as any)
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0))
+    })
+    expect(screen.getByAltText('Preview')).toBeInTheDocument()
+    fireEvent.click(screen.getByLabelText('Remove image'))
+    expect(screen.queryByAltText('Preview')).not.toBeInTheDocument()
+    fireEvent.change(input, { target: { value: 'No image question' } })
+    const form = input.closest('form')
+    if (form) fireEvent.submit(form)
+    await screen.findByText('Test answer')
+    expect(screen.queryByAltText('Uploaded')).not.toBeInTheDocument()
+  })
+
   it('renders phone number as clickable tel: link in answer', async () => {
     ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
@@ -307,6 +339,29 @@ describe('Chatbot', () => {
     ).toBeInTheDocument()
   })
 
+  it('displays server error message when response is not ok', async () => {
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      json: () =>
+        Promise.resolve({
+          error: 'Image questions require LM Studio to be configured.',
+        }),
+    })
+    render(<Chatbot />)
+    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
+    const input = await screen.findByPlaceholderText(
+      'e.g. Where did Michael Fried work in 2023?',
+    )
+    fireEvent.change(input, { target: { value: 'Image question' } })
+    const form = input.closest('form')
+    if (form) fireEvent.submit(form)
+    expect(
+      await screen.findByText(
+        'Image questions require LM Studio to be configured.',
+      ),
+    ).toBeInTheDocument()
+  })
+
   it('handles network errors gracefully', async () => {
     ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.reject(new Error('Network error')),
@@ -320,12 +375,8 @@ describe('Chatbot', () => {
     const form = input.closest('form')
     if (form) fireEvent.submit(form)
 
-    // Should show user-friendly error message
-    expect(
-      await screen.findByText(
-        /Sorry, there was an error processing your request. Please try again later./,
-      ),
-    ).toBeInTheDocument()
+    // Should show the network error message returned
+    expect(await screen.findByText('Network error')).toBeInTheDocument()
   })
 
   it('handles empty input submission gracefully', async () => {

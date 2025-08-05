@@ -88,7 +88,6 @@ export function Chatbot() {
   const [imageData, setImageData] = useState<string | null>(null)
   const [imageType, setImageType] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const chatAreaRef = useRef<HTMLDivElement>(null)
   const endOfMessagesRef = useRef<HTMLDivElement>(null)
   const latestAnswerRef = useRef<HTMLDivElement>(null)
@@ -166,6 +165,15 @@ export function Chatbot() {
     }
   }
 
+  // Remove the currently selected image
+  const removeImage = () => {
+    setImageData(null)
+    setImageType(null)
+  }
+
+  const previewUrl =
+    imageData && imageType ? `data:${imageType};base64,${imageData}` : null
+
   // Handle key down events for form submission
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -190,7 +198,6 @@ export function Chatbot() {
     setImageData(null)
     setImageType(null)
     setIsLoading(true)
-    setError(null)
 
     try {
       // Call the API
@@ -205,21 +212,22 @@ export function Chatbot() {
         body: JSON.stringify(payload),
       })
 
+      const data = await response.json().catch(() => null)
       if (!response.ok) {
-        throw new Error('Failed to get answer')
+        const errMsg = data?.error || 'Failed to get answer'
+        throw new Error(errMsg)
       }
 
-      const data = await response.json()
-      const answer = data.answer || 'Sorry, I could not generate an answer.'
+      const answer = data?.answer || 'Sorry, I could not generate an answer.'
       const usedLmStudio =
-        data.usedLmStudio || data.source === 'lmstudio' || false
+        data?.usedLmStudio || data?.source === 'lmstudio' || false
       const lmStudioModel = usedLmStudio
-        ? data.lmStudioModel || data.model || 'LM Studio'
+        ? data?.lmStudioModel || data?.model || 'LM Studio'
         : undefined
-      const source = usedLmStudio ? 'lmstudio' : data.source || 'huggingface'
+      const source = usedLmStudio ? 'lmstudio' : data?.source || 'huggingface'
       const model = usedLmStudio
         ? lmStudioModel || 'LM Studio'
-        : data.model || 'unknown'
+        : data?.model || 'unknown'
 
       // Only update state if component is still mounted
       if (isMounted.current) {
@@ -245,6 +253,10 @@ export function Chatbot() {
     } catch (error) {
       console.error('Error:', error)
       if (isMounted.current) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Sorry, there was an error processing your request. Please try again later.'
         setQa((prev) => {
           const updated = [...prev]
           const lastIndex = updated.length - 1
@@ -252,8 +264,7 @@ export function Chatbot() {
             const last = updated[lastIndex]
             updated[lastIndex] = {
               question,
-              answer:
-                'Sorry, there was an error processing your request. Please try again later.',
+              answer: message,
               source: 'error',
               model: 'error',
               usedLmStudio: false,
@@ -417,13 +428,6 @@ export function Chatbot() {
                     </div>
                   </div>
                 ))}
-                {error && (
-                  <div className="mt-2 flex justify-center">
-                    <div className="bg-error text-error-foreground prose dark:prose-invert max-w-none rounded-lg px-3 py-2 text-sm">
-                      <SafeMarkdown>{linkifyText(error)}</SafeMarkdown>
-                    </div>
-                  </div>
-                )}
                 <div ref={endOfMessagesRef} />
               </div>
               <form
@@ -432,6 +436,24 @@ export function Chatbot() {
                 onDragOver={handleDragOver}
                 className="border-border border-t p-4"
               >
+                {previewUrl && (
+                  <div className="mb-2 flex items-center gap-2">
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className="h-16 w-16 rounded object-cover"
+                    />
+                    <Button
+                      type="button"
+                      variant="neutral"
+                      onClick={removeImage}
+                      aria-label="Remove image"
+                      className="h-8"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <Input
                     ref={inputRef}

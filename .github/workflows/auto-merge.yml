@@ -62,7 +62,7 @@ jobs:
 
       - name: Auto-approve PR
         if: success()
-        uses: hmarr/auto-approve-action@v3
+        uses: hmarr/auto-approve-action@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 

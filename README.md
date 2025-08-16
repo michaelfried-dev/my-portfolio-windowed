@@ -30,6 +30,12 @@ The portfolio includes an intelligent chatbot that can answer questions about my
 
 The chatbot uses advanced prompt engineering and context extraction to provide accurate, helpful responses about my professional background while maintaining a friendly, conversational tone.
 
+### 📈 SEO Enhancements
+
+- **Structured Data**: JSON-LD Person schema helps search engines understand the site's owner.
+- **Sitemap**: Auto-generated sitemap exposes key pages for indexing.
+- **Robots Instructions**: robots.txt explicitly allows crawling and references the sitemap.
+
 ## CI/CD & Security
 
 This project includes comprehensive automated testing and security scanning through GitHub Actions:

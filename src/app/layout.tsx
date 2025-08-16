@@ -5,6 +5,7 @@ import Nav from '@/components/nav'
 import { ThemeProvider } from '@/components/theme-provider'
 import Link from 'next/link'
 import { Chatbot } from '@/components/chatbot'
+import Script from 'next/script'
 
 const archivo = Archivo({ subsets: ['latin'] })
 
@@ -97,9 +98,27 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Michael Fried',
+    url: 'https://michaelfried.dev',
+    sameAs: [
+      'mailto:EMAIL@MICHAELFRIED.INFO',
+      'https://www.linkedin.com/in/michael-fried/',
+      'https://github.com/michaelfried-dev',
+    ],
+    jobTitle: 'Software Engineer',
+  }
   return (
     <html suppressHydrationWarning lang="en">
       <body className={archivo.className}>
+        <Script
+          id="person-schema"
+          type="application/ld+json"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <ThemeProvider attribute="class" disableTransitionOnChange>
           <div className="outline-border rounded-base w600:grid-cols-[70px_auto] w500:grid-cols-1 portrait:w1000:max-h-[800px] mdHeight:w-[100dvw] mdHeight:max-w-[100dvw] grid h-[800px] max-h-[100dvh] w-[1000px] max-w-[1000px] grid-cols-[100px_auto] shadow-[10px_10px_0_0_#000] outline-4 portrait:h-[100dvh]">
             <header>

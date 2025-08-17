@@ -188,6 +188,36 @@ describe('POST /api/chat', () => {
     jest.dontMock('@huggingface/inference')
   })
 
+  it('includes site identity in Hugging Face system prompt', async () => {
+    process.env.HUGGINGFACE_API_KEY = 'fake-key'
+    delete process.env.FORCE_HUGGINGFACE_402
+    jest.resetModules()
+    const chatCompletion = jest
+      .fn()
+      .mockResolvedValue({ choices: [{ message: { content: 'ok' } }] })
+    jest.doMock(
+      '@huggingface/inference',
+      () => ({
+        InferenceClient: class {
+          constructor() {}
+          chatCompletion = chatCompletion
+        },
+      }),
+      { virtual: true },
+    )
+    const { POST: MockedPOST } = await import('../route')
+    const req = mockRequest({ body: { question: 'identity?' } })
+    await MockedPOST(req)
+    const args = chatCompletion.mock.calls[0][0]
+    const systemMessage = args.messages.find(
+      (msg: any) => msg.role === 'system',
+    )
+    expect(systemMessage.content).toContain(
+      "You are the AI chatbot built for Michael Fried's personal portfolio website and you are currently running on this site",
+    )
+    jest.dontMock('@huggingface/inference')
+  })
+
   it('returns 500 if Hugging Face API key is missing', async () => {
     // Save and unset the env variable
     const originalKey = process.env.HUGGINGFACE_API_KEY
@@ -396,6 +426,36 @@ describe('POST /api/chat', () => {
           headers: { 'Content-Type': 'application/json' },
           body: expect.stringContaining('test-model'),
         }),
+      )
+    })
+
+    it('includes site identity in LM Studio fallback system prompt', async () => {
+      process.env.HUGGINGFACE_API_KEY = 'test-key'
+      process.env.FORCE_HUGGINGFACE_402 = 'true'
+      process.env.ENABLE_LM_STUDIO_FALLBACK = 'true'
+      process.env.LM_STUDIO_URL = 'http://localhost:1234'
+      process.env.LM_STUDIO_MODEL = 'test-model'
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: { content: 'LM Studio response' },
+            },
+          ],
+        }),
+      } as Response)
+
+      const req = mockRequest({ body: { question: 'test question' } })
+      await POST(req)
+      const body = mockFetch.mock.calls[0][1]?.body as string
+      const payload = JSON.parse(body)
+      const systemMessage = payload.messages.find(
+        (m: any) => m.role === 'system',
+      )
+      expect(systemMessage.content).toContain(
+        "You are the AI chatbot built for Michael Fried's personal portfolio website and you are currently running on this site",
       )
     })
 

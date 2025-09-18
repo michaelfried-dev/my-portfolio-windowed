@@ -1,25 +1,24 @@
+"use client";
+
 export default function ExperiencePage() {
   const fakeJobs = [
     {
       title: "Chief Meme Officer",
       company: "Internet Fun Department",
       period: "2010 - Present",
-      description: "Responsible for keeping the internet spicy with fresh memes and ensuring all employees maintain at least 3.6 roentgens of humor.",
-      location: "Remote"
+      description: "Responsible for keeping the internet spicy with fresh memes and ensuring all employees maintain at least 3.6 roentgens of humor."
     },
     {
       title: "Professional Couch Tester",
       company: "Sofa King Good Beds",
       period: "2015 - 2020",
-      description: ["Tested various couches for optimal napping conditions. Specialized in the 'I\'ll just rest my eyes for a minute' technique."],
-      location: "Home Office"
+      description: "Tested various couches for optimal napping conditions. Specialized in the 'I'll just rest my eyes for a minute' technique."
     },
     {
       title: "Snack Tasting Specialist",
       company: "Munchies R Us",
       period: "2012 - 2015",
-      description: ["Ensured all snacks met the highest standards of deliciousness. Gained 15 pounds for the job (it was a sacrifice I was willing to make)."],
-      location: "Snack Lab"
+      description: "Ensured all snacks met the highest standards of deliciousness. Gained 15 pounds for the job (it was a sacrifice I was willing to make)."
     }
   ];
 
@@ -45,7 +44,7 @@ export default function ExperiencePage() {
                   {job.period}
                 </span>
               </div>
-              <p className="mt-4 text-gray-600">{Array.isArray(job.description) ? job.description[0] : job.description}</p>
+              <p className="mt-4 text-gray-600">{job.description}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {['Procrastination', 'Snack Finding', 'Napping', 'Netflix Binging'].map((skill) => (
                   <span 
@@ -56,18 +55,6 @@ export default function ExperiencePage() {
                   </span>
                 ))}
               </div>
-              <div className="mt-4">
-                {job.location && <p className="font-semibold">{job.location}</p>}
-              </div>
-              {Array.isArray(job.description) && job.description.length > 1 && (
-                <ul className="list-outside list-disc pt-2 pl-5 mt-2">
-                  {job.description.map((item, i) => (
-                    <li key={i} className="mb-2 font-normal">
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              )}
             </div>
           ))}
         </div>
@@ -81,5 +68,5 @@ export default function ExperiencePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -4,7 +4,6 @@ import './globals.css'
 import Nav from '@/components/nav'
 import { ThemeProvider } from '@/components/theme-provider'
 import Link from 'next/link'
-import { Chatbot } from '@/components/chatbot'
 
 const archivo = Archivo({ subsets: ['latin'] })
 
@@ -121,7 +120,6 @@ export default function RootLayout({
               </div>
             </main>
           </div>
-          <Chatbot />
         </ThemeProvider>
       </body>
     </html>

@@ -18,7 +18,6 @@ export const EDUCATION = {
   degree: 'Bachelor of Science (BS), Software Engineering',
   minor: 'Minor: Computer Science',
   date: 'August 2008 - July 2013',
-  gpa: 'Cumulative GPA: 3.37',
 } as const
 
 export const CERTIFICATIONS = [

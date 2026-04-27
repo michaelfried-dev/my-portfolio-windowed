@@ -93,6 +93,14 @@ export function Chatbot() {
   const inputRef = useRef<HTMLInputElement>(null)
   const isMounted = useRef(true)
 
+  // Track mount state for async state updates
+  useEffect(() => {
+    isMounted.current = true
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
+
   // Scroll to the new answer (assistant message) when it arrives
   useEffect(() => {
     const last = qa[qa.length - 1]
@@ -151,10 +159,18 @@ export function Chatbot() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to get answer')
+        const errData = await response.json().catch(() => ({})) as { error?: string }
+        throw new Error(errData.error || 'Failed to get answer')
       }
 
-      const data = await response.json()
+      const data = await response.json() as {
+        answer?: string
+        error?: string
+        usedLmStudio?: boolean
+        lmStudioModel?: string
+        source?: string
+        model?: string
+      }
       const answer = data.answer || 'Sorry, I could not generate an answer.'
       const usedLmStudio =
         data.usedLmStudio || data.source === 'lmstudio' || false
@@ -208,11 +224,6 @@ export function Chatbot() {
       if (isMounted.current) {
         setIsLoading(false)
       }
-    }
-
-    // Cleanup function
-    return () => {
-      isMounted.current = false
     }
   }
 

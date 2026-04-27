@@ -3,6 +3,7 @@ const config = {
     screens: {
       smallHeight: { raw: '(max-height: 550px)' },
       mdHeight: { raw: '(max-height: 800px)' },
+      portrait: { raw: '(orientation: portrait)' },
       w1000: { min: '1000px' },
       w800: { max: '800px' },
       w700: { max: '700px' },

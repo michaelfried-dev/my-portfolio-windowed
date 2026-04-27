@@ -1,3 +1,4 @@
+import type { ComponentType, SVGProps } from 'react'
 import Link from 'next/link'
 import { SiGmail, SiGithub } from '@icons-pack/react-simple-icons'
 import { FaLinkedin } from 'react-icons/fa'
@@ -6,8 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import BuyMeACoffeeButton from '@/components/BuyMeACoffeeButton'
 
+type IconComponent = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>
+
 export default function Home() {
-  const links: { icon: any; href: string; label: string }[] = [
+  const links: { icon: IconComponent; href: string; label: string }[] = [
     {
       icon: SiGmail,
       href: 'mailto:EMAIL@MICHAELFRIED.INFO',

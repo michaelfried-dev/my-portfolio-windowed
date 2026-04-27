@@ -178,21 +178,21 @@ export async function POST(req: Request) {
 
     // Only require question in the request body
     const { question } = requestBody
-    if (typeof requestBody.question !== 'string') {
+    if (typeof question !== 'string') {
       return NextResponse.json(
         { error: 'Invalid question format' },
         { status: 400, headers: safariHeaders },
       )
     }
 
-    if (requestBody.question.trim().length === 0) {
+    if (question.trim().length === 0) {
       return NextResponse.json(
         { error: 'Question cannot be empty' },
         { status: 400, headers: safariHeaders },
       )
     }
 
-    if (requestBody.question.length > 10000) {
+    if (question.length > 10000) {
       return NextResponse.json(
         { error: 'Question too long' },
         { status: 400, headers: safariHeaders },

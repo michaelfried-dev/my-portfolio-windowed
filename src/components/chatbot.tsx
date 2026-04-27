@@ -1,4 +1,7 @@
 'use client'
+// Set to true to re-enable the AI chatbot integration
+const CHATBOT_ENABLED = false
+
 import { useState, useRef, useEffect } from 'react'
 import { useWindowSize } from '@/hooks/useWindowSize'
 import { Button } from '@/components/ui/button'
@@ -325,6 +328,34 @@ export function Chatbot() {
                   isSmallScreen || isFullscreen ? 'flex-grow' : 'h-64',
                 )}
               >
+                {!CHATBOT_ENABLED && (
+                  <div className="bg-muted text-muted-foreground rounded-lg px-3 py-2 text-sm">
+                    <p className="font-semibold">
+                      AI Assistant is currently disabled 🚧
+                    </p>
+                    <p className="mt-1">
+                      Running a live AI on a demo site gets expensive fast, so
+                      I&apos;ve turned it off for now. Want to chat? Reach me
+                      directly at{' '}
+                      <a
+                        href={`mailto:${CONTACT_INFO.email}`}
+                        className="text-blue-600 underline dark:text-blue-400"
+                      >
+                        {CONTACT_INFO.email}
+                      </a>{' '}
+                      or on{' '}
+                      <a
+                        href={CONTACT_INFO.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline dark:text-blue-400"
+                      >
+                        LinkedIn
+                      </a>
+                      .
+                    </p>
+                  </div>
+                )}
                 {qa.map((item, i: number) => (
                   <div key={i}>
                     <div className="flex justify-end">
@@ -383,12 +414,18 @@ export function Chatbot() {
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     className="flex-1"
-                    placeholder="e.g. Where did Michael Fried work in 2023?"
-                    disabled={isLoading}
+                    placeholder={
+                      CHATBOT_ENABLED
+                        ? 'e.g. Where did Michael Fried work in 2023?'
+                        : 'AI Assistant is currently disabled'
+                    }
+                    disabled={isLoading || !CHATBOT_ENABLED}
                   />
                   <Button
                     type="submit"
-                    disabled={isLoading || !inputValue.trim()}
+                    disabled={
+                      isLoading || !inputValue.trim() || !CHATBOT_ENABLED
+                    }
                   >
                     {isLoading ? '...' : 'Send'}
                   </Button>

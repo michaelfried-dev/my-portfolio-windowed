@@ -16,7 +16,6 @@ export default function EducationPage() {
             {education.school} | {education.location} | {education.date}
           </p>
           <p>{education.minor}</p>
-          <p>{education.gpa}</p>
         </CardContent>
       </Card>
     </div>

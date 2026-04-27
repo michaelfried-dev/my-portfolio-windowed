@@ -35,8 +35,7 @@ describe('EducationPage', () => {
     expect(minor).toBeInTheDocument()
   })
 
-  it('should render the GPA', () => {
-    const gpa = screen.getByText(/Cumulative GPA: 3.37/i)
-    expect(gpa).toBeInTheDocument()
+  it('should not render the GPA', () => {
+    expect(screen.queryByText(/Cumulative GPA/i)).not.toBeInTheDocument()
   })
 })

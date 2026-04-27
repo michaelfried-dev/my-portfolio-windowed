@@ -222,7 +222,7 @@ Feel free to reach out for professional networking, questions about my experienc
       }).join('\n')
 
       // Education
-      const eduText = `Education: ${EDUCATION.degree}\n${EDUCATION.school} | ${EDUCATION.location} | ${EDUCATION.date}\n${EDUCATION.minor}\n${EDUCATION.gpa}\n`
+      const eduText = `Education: ${EDUCATION.degree}\n${EDUCATION.school} | ${EDUCATION.location} | ${EDUCATION.date}\n${EDUCATION.minor}\n`
 
       // Certifications
       let certText = CERTIFICATIONS.map(

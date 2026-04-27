@@ -9,7 +9,7 @@ export const CONTACT_INFO = {
 export const PERSONAL_INFO = {
   name: 'Michael Fried',
   title: 'Software Engineer',
-  about: `Hi, I'm Michael! As a software engineer, I enjoy taking projects all the way from an initial idea to a fully-realized product. I'm comfortable in both Agile and traditional development environments, and I have a passion for building high-performance backend microservices using tools like Kotlin, Java, and Spring. I also have experience with front-end development for both web and iOS. I believe that quality is key, so I always focus on creating comprehensive automated tests to ensure everything runs smoothly. I'm a quick learner and I'm always excited to dive into new technologies to find the best solutions for the job. Feel free to connect with me!`,
+  about: `Hi, I'm Michael! I'm a software engineer who loves taking projects from an initial idea all the way to production. I specialize in building high-performance backend microservices with Kotlin, Java, and Spring, and I'm equally comfortable on the front end with React, Angular, and TypeScript. I'm a strong advocate for AI-assisted development — I use tools like GitHub Copilot and Claude Code daily for everything from rapid prototyping and test generation to agentic, multi-step feature builds and code review. Quality is always a priority, so I pair that speed with comprehensive automated testing at every level. I'm a quick learner who's always excited to dive into new technologies to find the best solution for the job. Feel free to connect with me!`,
 } as const
 
 export const EDUCATION = {
@@ -34,11 +34,26 @@ export const CERTIFICATIONS = [
 
 export const EXPERIENCE = [
   {
+    company: 'JPMorgan Chase',
+    location: 'Wilmington, DE',
+    title: 'Software Engineer III',
+    date: 'August 2025 – Present',
+    description: [
+      'Develop and maintain third-party integration services that interface with the three major credit bureaus (Equifax, Experian, TransUnion), ensuring reliable, high-volume data exchange for consumer lending workflows.',
+      'Design and implement a cross-region resiliency framework that intelligently routes and retries credit data requests across multiple bureaus and AWS regions, ensuring complete data retrieval even when individual bureau calls or regions fail.',
+      'Build and enhance backend microservices using Java and Spring Boot, backed by Postgres and Amazon Aurora datastores.',
+      'Provision and manage cloud infrastructure with Terraform and deploy containerized services to AWS ECS via Spinnaker continuous-delivery pipelines, utilizing S3 for artifact storage and configuration management.',
+      'Write and maintain API integration tests using Karate and validate endpoints with Bruno for rapid manual testing and debugging.',
+      'Leverage GitHub Copilot, Claude Code, and Jules to accelerate development — from AI-assisted coding and automated test generation to agentic, multi-step feature implementation and code-review workflows.',
+      'Monitor application health and troubleshoot production issues using Splunk dashboards and alerts.',
+    ],
+  },
+  {
     company: 'Personal Projects',
     title: 'Personal Portfolio Website',
     description: [
       'Developed this portfolio website using Next.js 15, React 19, TypeScript, and Tailwind CSS, featuring a responsive design with light/dark mode and smooth animations.',
-      'Utilized AI copilot Windsurf to enhance development productivity and implement best practices throughout the codebase.',
+      'Utilized AI development tools including Windsurf, GitHub Copilot, and Claude Code to enhance development productivity, generate tests, and implement best practices throughout the codebase.',
       'Implemented an AI-powered chatbot with a dual-API architecture that seamlessly integrates with both Hugging Face AI APIs and local LM Studio models for privacy-focused, resilient interactions.',
       'Created a fallback system that automatically switches between cloud and local AI providers based on availability, ensuring 100% uptime of the interactive assistant feature.',
       'Built a containerized deployment pipeline using Docker and GitHub Actions for automated testing, dependency management, and continuous deployment to Cloudflare Pages.',

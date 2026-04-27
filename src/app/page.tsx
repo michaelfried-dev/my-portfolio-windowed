@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import BuyMeACoffeeButton from '@/components/BuyMeACoffeeButton'
+import { CONTACT_INFO } from '@/lib/constants'
 
 type IconComponent = ComponentType<
   SVGProps<SVGSVGElement> & { className?: string }
@@ -15,7 +16,7 @@ export default function Home() {
   const links: { icon: IconComponent; href: string; label: string }[] = [
     {
       icon: SiGmail,
-      href: 'mailto:EMAIL@MICHAELFRIED.INFO',
+      href: `mailto:${CONTACT_INFO.email}`,
       label: 'Email',
     },
     {
@@ -76,20 +77,22 @@ export default function Home() {
           <Card className="bg-card text-foreground border-border rounded-base border-4 p-5 shadow-[8px_8px_0_0_#000]">
             <CardContent>
               <p>
-                Hi, I&apos;m <strong>Michael</strong>! As a software engineer, I
-                enjoy taking projects all the way from an initial idea to a
-                fully-realized product. I&apos;m comfortable in both Agile and
-                traditional development environments, and I have a passion for
-                building high-performance backend microservices using tools like
-                Kotlin, Java, and Spring. I also have experience with front-end
-                development for both web and iOS.
+                Hi, I&apos;m <strong>Michael</strong>! I&apos;m a software
+                engineer who loves taking projects from an initial idea all the
+                way to production. I specialize in building high-performance
+                backend microservices with Kotlin, Java, and Spring, and
+                I&apos;m equally comfortable on the front end with React,
+                Angular, and TypeScript.
               </p>
               <p className="pt-[10px]">
-                I believe that quality is key, so I always focus on creating
-                comprehensive automated tests to ensure everything runs
-                smoothly. I&apos;m a quick learner and I&apos;m always excited
-                to dive into new technologies to find the best solutions for the
-                job. Feel free to connect with me!
+                I&apos;m a strong advocate for AI-assisted development — I use
+                tools like GitHub Copilot and Claude Code daily for everything
+                from rapid prototyping and test generation to agentic,
+                multi-step feature builds and code review. Quality is always a
+                priority, so I pair that speed with comprehensive automated
+                testing at every level. I&apos;m a quick learner who&apos;s
+                always excited to dive into new technologies to find the best
+                solution for the job. Feel free to connect with me!
               </p>
               <p className="pt-[20px]">
                 Check out the repository for this site{' '}

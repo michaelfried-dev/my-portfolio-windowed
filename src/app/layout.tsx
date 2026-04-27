@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://michaelfried.dev'),
+  metadataBase: new URL('https://michaelfried.info'),
   alternates: {
     canonical: '/',
   },
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     title: 'Michael Fried - Portfolio',
     description:
       'Professional portfolio showcasing software engineering expertise with AI-powered chatbot assistance.',
-    url: 'https://michaelfried.dev',
+    url: 'https://michaelfried.info',
     siteName: 'Michael Fried Portfolio',
     images: [
       {
@@ -102,7 +102,7 @@ export default function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: 'Michael Fried',
-    url: 'https://michaelfried.dev',
+    url: 'https://michaelfried.info',
     sameAs: [
       'mailto:EMAIL@MICHAELFRIED.INFO',
       'https://www.linkedin.com/in/michael-fried/',

@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import BuyMeACoffeeButton from '@/components/BuyMeACoffeeButton'
 
-type IconComponent = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>
+type IconComponent = ComponentType<
+  SVGProps<SVGSVGElement> & { className?: string }
+>
 
 export default function Home() {
   const links: { icon: IconComponent; href: string; label: string }[] = [

@@ -159,11 +159,13 @@ export function Chatbot() {
       })
 
       if (!response.ok) {
-        const errData = await response.json().catch(() => ({})) as { error?: string }
+        const errData = (await response.json().catch(() => ({}))) as {
+          error?: string
+        }
         throw new Error(errData.error || 'Failed to get answer')
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         answer?: string
         error?: string
         usedLmStudio?: boolean

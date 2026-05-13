@@ -6,8 +6,89 @@ import {
   EDUCATION,
   CERTIFICATIONS,
   EXPERIENCE,
+  SKILLS,
 } from '@/lib/constants'
+import { log, hashIp } from '@/lib/logger'
 export const runtime = 'edge'
+
+const ROUTE = '/api/chat'
+
+// --- Security limits ---
+const MAX_BODY_BYTES = 32 * 1024 // 32 KB total request body cap
+const MAX_QUESTION_CHARS = 4096 // 4 KB per user message
+const RATE_LIMIT_MAX = 10 // requests
+const RATE_LIMIT_WINDOW_MS = 60 * 1000 // per 60s window
+
+// Best-effort in-memory rate limit. Cloudflare Pages may spin up multiple
+// isolates so this is not authoritative, but raises the bar for casual abuse.
+const rateLimitStore: Map<string, number[]> = new Map()
+
+function getClientIp(req: Request): string {
+  const cf = req.headers.get('cf-connecting-ip')
+  if (cf) return cf.trim()
+  const xff = req.headers.get('x-forwarded-for')
+  if (xff) {
+    const first = xff.split(',')[0]?.trim()
+    if (first) return first
+  }
+  const real = req.headers.get('x-real-ip')
+  if (real) return real.trim()
+  return 'anonymous'
+}
+
+function checkRateLimit(ip: string): boolean {
+  // Allow disabling in tests so the suite doesn't trip the bucket.
+  if (
+    process.env.NODE_ENV === 'test' ||
+    process.env.DISABLE_RATE_LIMIT === 'true'
+  ) {
+    return true
+  }
+  const now = Date.now()
+  const windowStart = now - RATE_LIMIT_WINDOW_MS
+  const hits = rateLimitStore.get(ip) ?? []
+  const recent = hits.filter((t) => t > windowStart)
+  if (recent.length >= RATE_LIMIT_MAX) {
+    rateLimitStore.set(ip, recent)
+    return false
+  }
+  recent.push(now)
+  rateLimitStore.set(ip, recent)
+  // Opportunistic cleanup so the Map doesn't grow unbounded.
+  if (rateLimitStore.size > 1000) {
+    for (const [key, value] of rateLimitStore) {
+      const filtered = value.filter((t) => t > windowStart)
+      if (filtered.length === 0) rateLimitStore.delete(key)
+      else rateLimitStore.set(key, filtered)
+    }
+  }
+  return true
+}
+
+// Strict shape validator for the request body. Hand-rolled to avoid adding
+// a runtime dependency. Returns a normalized payload or an error code.
+type ValidatedBody = { question: string }
+type ValidationResult =
+  | { ok: true; value: ValidatedBody }
+  | { ok: false; status: 400 | 413; error: string }
+
+function validateBody(raw: unknown): ValidationResult {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+    return { ok: false, status: 400, error: 'Invalid request' }
+  }
+  const obj = raw as Record<string, unknown>
+  const question = obj.question
+  if (typeof question !== 'string') {
+    return { ok: false, status: 400, error: 'Invalid question format' }
+  }
+  if (question.trim().length === 0) {
+    return { ok: false, status: 400, error: 'Question cannot be empty' }
+  }
+  if (question.length > MAX_QUESTION_CHARS) {
+    return { ok: false, status: 413, error: 'Question too long' }
+  }
+  return { ok: true, value: { question } }
+}
 
 // Function to clean thinking/reasoning content from responses
 function cleanThinkingContent(content: string): string {
@@ -69,11 +150,8 @@ async function tryLmStudioFallback(
   const lmStudioModel = process.env.LM_STUDIO_MODEL || 'local-model'
 
   if (!lmStudioUrl) {
-    console.log('[DEBUG] LM Studio URL not configured, skipping fallback')
     return null
   }
-
-  console.log('[DEBUG] Attempting LM Studio fallback:', lmStudioUrl)
 
   try {
     const systemPrompt = `You are the AI chatbot built for Michael Fried's personal portfolio website and you are currently running on this site. Answer questions about the following resume and portfolio content. Provide direct, concise answers that include relevant emojis and colorful language to make your responses engaging and visually appealing. Use markdown formatting when appropriate to highlight important points.
@@ -107,16 +185,10 @@ Context:\n${context}`
 
     // Handle cases where response is undefined (can happen in Cloudflare environment)
     if (!response) {
-      console.log('[DEBUG] LM Studio API error: Response is undefined')
       return null
     }
 
     if (!response.ok) {
-      console.log(
-        '[DEBUG] LM Studio API error:',
-        response.status,
-        response.statusText,
-      )
       return null
     }
 
@@ -127,16 +199,17 @@ Context:\n${context}`
     // Post-process to remove any thinking/reasoning content that slipped through
     answer = cleanThinkingContent(answer)
 
-    console.log('[DEBUG] LM Studio fallback successful')
     return { answer }
   } catch (error) {
-    console.log('[DEBUG] LM Studio fallback failed:', error)
+    const msg = error instanceof Error ? error.message : 'unknown'
+    console.error(JSON.stringify({ level: 'error', route: ROUTE, event: 'chat.lmstudio_error', err: msg }))
     return null
   }
 }
 
 export async function POST(req: Request) {
-  console.log('API route hit')
+  const requestId = crypto.randomUUID()
+  const startMs = Date.now()
 
   // Safari-specific headers for compatibility
   const safariHeaders = {
@@ -155,49 +228,119 @@ export async function POST(req: Request) {
   const forceHuggingFace402 = process.env.FORCE_HUGGINGFACE_402 === 'true'
   const useLmStudioFirst = process.env.USE_LM_STUDIO_FIRST === 'true'
 
+  const clientIp = getClientIp(req)
+  // Hash IP before any logging — raw IP never touches logs.
+  const ipHash = await hashIp(clientIp)
+
+  log({
+    ts: new Date().toISOString(),
+    level: 'info',
+    route: ROUTE,
+    requestId,
+    event: 'chat.received',
+    ipHash,
+  })
+
   try {
     // Verify content type
     const contentType = req.headers.get('content-type')
     if (!contentType?.includes('application/json')) {
+      log({
+        ts: new Date().toISOString(),
+        level: 'warn',
+        route: ROUTE,
+        requestId,
+        event: 'chat.invalid',
+        status: 415,
+        durationMs: Date.now() - startMs,
+        ipHash,
+      })
       return NextResponse.json(
         { error: 'Invalid content type' },
         { status: 415, headers: safariHeaders },
       )
     }
 
+    // Best-effort body size cap before parsing. Check Content-Length when
+    // present; we also enforce a hard cap on the question string below.
+    const contentLength = req.headers.get('content-length')
+    if (contentLength) {
+      const n = Number(contentLength)
+      if (Number.isFinite(n) && n > MAX_BODY_BYTES) {
+        log({
+          ts: new Date().toISOString(),
+          level: 'warn',
+          route: ROUTE,
+          requestId,
+          event: 'chat.invalid',
+          status: 413,
+          durationMs: Date.now() - startMs,
+          ipHash,
+        })
+        return NextResponse.json(
+          { error: 'Payload too large' },
+          { status: 413, headers: safariHeaders },
+        )
+      }
+    }
+
+    // Per-IP rate limit (best-effort, in-memory).
+    if (!checkRateLimit(clientIp)) {
+      log({
+        ts: new Date().toISOString(),
+        level: 'warn',
+        route: ROUTE,
+        requestId,
+        event: 'chat.rate_limited',
+        status: 429,
+        durationMs: Date.now() - startMs,
+        ipHash,
+      })
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429, headers: safariHeaders },
+      )
+    }
+
     // Parse and validate request body
-    let requestBody
+    let requestBody: unknown
     try {
       requestBody = await req.json()
     } catch (e) {
+      log({
+        ts: new Date().toISOString(),
+        level: 'warn',
+        route: ROUTE,
+        requestId,
+        event: 'chat.invalid',
+        status: 400,
+        durationMs: Date.now() - startMs,
+        ipHash,
+      })
       return NextResponse.json(
         { error: 'Invalid JSON format' },
         { status: 400, headers: safariHeaders },
       )
     }
 
-    // Only require question in the request body
-    const { question } = requestBody
-    if (typeof question !== 'string') {
+    const validation = validateBody(requestBody)
+    if (!validation.ok) {
+      log({
+        ts: new Date().toISOString(),
+        level: 'warn',
+        route: ROUTE,
+        requestId,
+        event: 'chat.invalid',
+        status: validation.status,
+        durationMs: Date.now() - startMs,
+        ipHash,
+      })
       return NextResponse.json(
-        { error: 'Invalid question format' },
-        { status: 400, headers: safariHeaders },
+        { error: validation.error },
+        { status: validation.status, headers: safariHeaders },
       )
     }
-
-    if (question.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Question cannot be empty' },
-        { status: 400, headers: safariHeaders },
-      )
-    }
-
-    if (question.length > 10000) {
-      return NextResponse.json(
-        { error: 'Question too long' },
-        { status: 400, headers: safariHeaders },
-      )
-    }
+    const { question } = validation.value
 
     // Extract resume context from centralized constants
     let context = ''
@@ -229,12 +372,25 @@ Feel free to reach out for professional networking, questions about my experienc
         (cert) => `Certification: ${cert.name} (${cert.date})`,
       ).join('\n')
 
-      context = `${homeText}\n\n${expText}\n${eduText}\n${certText}`
+      // Skills
+      const skillsText = SKILLS.map(
+        (s) => `${s.category}: ${s.items.join(', ')}`,
+      ).join('\n')
+
+      context = `${homeText}\n\n${expText}\n${eduText}\n${certText}\n\nSkills:\n${skillsText}`
     } catch (extractErr) {
-      console.error(
-        '[DEBUG] Failed to extract resume context from source files:',
-        extractErr,
-      )
+      const msg = extractErr instanceof Error ? extractErr.message : 'unknown'
+      log({
+        ts: new Date().toISOString(),
+        level: 'error',
+        route: ROUTE,
+        requestId,
+        event: 'chat.upstream_error',
+        status: 500,
+        durationMs: Date.now() - startMs,
+        ipHash,
+        err: msg,
+      })
       return NextResponse.json(
         {
           error:
@@ -249,14 +405,23 @@ Feel free to reach out for professional networking, questions about my experienc
 
     // Check if we should use LM Studio first
     if (useLmStudioFirst && enableLmStudioFallback) {
-      console.log('[DEBUG] Using LM Studio as primary API')
       try {
         // Try LM Studio first
         const lmStudioResult = await tryLmStudioFallback(question, context)
 
         if (lmStudioResult) {
-          console.log('[DEBUG] LM Studio primary call successful')
           const lmStudioModel = process.env.LM_STUDIO_MODEL || 'local-model'
+          log({
+            ts: new Date().toISOString(),
+            level: 'info',
+            route: ROUTE,
+            requestId,
+            event: 'chat.completed',
+            status: 200,
+            durationMs: Date.now() - startMs,
+            ipHash,
+            backend: 'lmstudio-primary',
+          })
           return NextResponse.json(
             {
               answer: lmStudioResult.answer,
@@ -267,28 +432,42 @@ Feel free to reach out for professional networking, questions about my experienc
           )
         }
 
-        console.log(
-          '[DEBUG] LM Studio primary call failed, falling back to Hugging Face',
-        )
         // Fall back to Hugging Face if LM Studio fails
       } catch (lmError) {
-        console.log('[DEBUG] LM Studio primary call error:', lmError)
+        const lmMsg =
+          lmError instanceof Error ? lmError.message : 'unknown'
+        log({
+          ts: new Date().toISOString(),
+          level: 'error',
+          route: ROUTE,
+          requestId,
+          event: 'chat.upstream_error',
+          ipHash,
+          err: lmMsg,
+          backend: 'lmstudio-primary',
+        })
         // Continue to Hugging Face as fallback
       }
     }
 
     // Use Hugging Face (either as primary or fallback)
     if (!apiKey) {
-      console.log('[DEBUG] HUGGINGFACE_API_KEY is missing or not loaded')
-
       // If LM Studio is enabled but wasn't used first or failed, try it now
       if (enableLmStudioFallback && !useLmStudioFirst) {
-        console.log(
-          '[DEBUG] Attempting LM Studio due to missing Hugging Face API key',
-        )
         const fallbackResult = await tryLmStudioFallback(question, context)
 
         if (fallbackResult) {
+          log({
+            ts: new Date().toISOString(),
+            level: 'info',
+            route: ROUTE,
+            requestId,
+            event: 'chat.completed',
+            status: 200,
+            durationMs: Date.now() - startMs,
+            ipHash,
+            backend: 'lmstudio-fallback',
+          })
           return NextResponse.json(
             {
               answer: fallbackResult.answer,
@@ -299,6 +478,17 @@ Feel free to reach out for professional networking, questions about my experienc
         }
       }
 
+      log({
+        ts: new Date().toISOString(),
+        level: 'error',
+        route: ROUTE,
+        requestId,
+        event: 'chat.upstream_error',
+        status: 500,
+        durationMs: Date.now() - startMs,
+        ipHash,
+        err: 'HUGGINGFACE_API_KEY not configured',
+      })
       return NextResponse.json(
         {
           error:
@@ -308,15 +498,10 @@ Feel free to reach out for professional networking, questions about my experienc
       )
     }
 
-    console.log(
-      `[DEBUG] HUGGINGFACE_API_KEY loaded: ${apiKey.slice(0, 6)}... (length: ${apiKey.length})`,
-    )
-    console.log('[DEBUG] Using Hugging Face API')
-
+    // NOTE: never log any portion of the API key.
     try {
       // Force 402 for testing if enabled
       if (forceHuggingFace402) {
-        console.log('[DEBUG] Forcing Hugging Face 402 response for testing')
         throw { httpResponse: { status: 402 } }
       }
 
@@ -325,7 +510,6 @@ Feel free to reach out for professional networking, questions about my experienc
       const huggingFaceModel =
         process.env.HUGGINGFACE_MODEL || 'google/gemma-7b-it'
       const systemPrompt = `You are the AI chatbot built for Michael Fried's personal portfolio website and you are currently running on this site. Answer questions about the following resume and portfolio content. Provide direct, concise answers that include relevant emojis and colorful language to make your responses engaging and visually appealing. Use markdown formatting when appropriate to highlight important points. Context:\n${context}`
-      console.log(`[DEBUG] Using Hugging Face model: ${huggingFaceModel}`)
       const result = await client.chatCompletion({
         model: huggingFaceModel,
         messages: [
@@ -334,21 +518,54 @@ Feel free to reach out for professional networking, questions about my experienc
         ],
       })
       let answer = result.choices?.[0]?.message?.content || 'No answer found.'
+      log({
+        ts: new Date().toISOString(),
+        level: 'info',
+        route: ROUTE,
+        requestId,
+        event: 'chat.completed',
+        status: 200,
+        durationMs: Date.now() - startMs,
+        ipHash,
+        backend: 'huggingface',
+      })
       return NextResponse.json({ answer }, { headers: safariHeaders })
     } catch (err: any) {
-      console.log('[DEBUG] Hugging Face InferenceClient error:', err)
+      // Avoid logging the full error object: Hugging Face errors may include
+      // request URLs / headers (Authorization) and other upstream metadata.
+      const safeMessage =
+        typeof err?.message === 'string' ? err.message : 'unknown'
+      const safeStatus = err?.httpResponse?.status ?? 'n/a'
+      log({
+        ts: new Date().toISOString(),
+        level: 'error',
+        route: ROUTE,
+        requestId,
+        event: 'chat.upstream_error',
+        ipHash,
+        err: `status=${safeStatus} msg=${safeMessage}`,
+        backend: 'huggingface',
+      })
 
       // Handle 402 errors from Hugging Face API
       if (err.httpResponse && err.httpResponse.status === 402) {
-        console.log('[DEBUG] Hugging Face 402 error detected')
-
         // Try LM Studio fallback if enabled and not already used as primary
         if (enableLmStudioFallback && !useLmStudioFirst) {
-          console.log('[DEBUG] Attempting LM Studio fallback due to 402 error')
           const fallbackResult = await tryLmStudioFallback(question, context)
 
           if (fallbackResult) {
             const lmStudioModel = process.env.LM_STUDIO_MODEL || 'local-model'
+            log({
+              ts: new Date().toISOString(),
+              level: 'info',
+              route: ROUTE,
+              requestId,
+              event: 'chat.completed',
+              status: 200,
+              durationMs: Date.now() - startMs,
+              ipHash,
+              backend: 'lmstudio-fallback',
+            })
             return NextResponse.json(
               {
                 answer: fallbackResult.answer,
@@ -358,10 +575,18 @@ Feel free to reach out for professional networking, questions about my experienc
               { headers: safariHeaders },
             )
           }
-
-          console.log('[DEBUG] LM Studio fallback failed, returning 402 error')
         }
 
+        log({
+          ts: new Date().toISOString(),
+          level: 'warn',
+          route: ROUTE,
+          requestId,
+          event: 'chat.upstream_error',
+          status: 402,
+          durationMs: Date.now() - startMs,
+          ipHash,
+        })
         return NextResponse.json(
           {
             error:
@@ -373,12 +598,20 @@ Feel free to reach out for professional networking, questions about my experienc
 
       // For other errors, try LM Studio fallback if enabled and not already used as primary
       if (enableLmStudioFallback && !useLmStudioFirst) {
-        console.log(
-          '[DEBUG] Attempting LM Studio fallback due to other Hugging Face error',
-        )
         const fallbackResult = await tryLmStudioFallback(question, context)
 
         if (fallbackResult) {
+          log({
+            ts: new Date().toISOString(),
+            level: 'info',
+            route: ROUTE,
+            requestId,
+            event: 'chat.completed',
+            status: 200,
+            durationMs: Date.now() - startMs,
+            ipHash,
+            backend: 'lmstudio-fallback',
+          })
           return NextResponse.json(
             {
               answer: fallbackResult.answer,
@@ -390,6 +623,16 @@ Feel free to reach out for professional networking, questions about my experienc
       }
 
       // All other errors - provide friendly message with contact info
+      log({
+        ts: new Date().toISOString(),
+        level: 'error',
+        route: ROUTE,
+        requestId,
+        event: 'chat.upstream_error',
+        status: 500,
+        durationMs: Date.now() - startMs,
+        ipHash,
+      })
       return NextResponse.json(
         {
           error:
@@ -399,7 +642,19 @@ Feel free to reach out for professional networking, questions about my experienc
       )
     }
   } catch (error) {
-    console.log('Chat API error:', error)
+    // Server-side log only; never echo error contents back to the client.
+    const msg = error instanceof Error ? error.message : 'unknown'
+    log({
+      ts: new Date().toISOString(),
+      level: 'error',
+      route: ROUTE,
+      requestId,
+      event: 'chat.upstream_error',
+      status: 500,
+      durationMs: Date.now() - startMs,
+      ipHash,
+      err: msg,
+    })
     return NextResponse.json(
       {
         error:

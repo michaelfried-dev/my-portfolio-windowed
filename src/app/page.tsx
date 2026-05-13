@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import BuyMeACoffeeButton from '@/components/BuyMeACoffeeButton'
-import { CONTACT_INFO } from '@/lib/constants'
+import { CONTACT_INFO, SKILLS } from '@/lib/constants'
 
 type IconComponent = ComponentType<
   SVGProps<SVGSVGElement> & { className?: string }
@@ -109,6 +109,35 @@ export default function Home() {
               </p>
             </CardContent>
           </Card>
+        </div>
+      </div>
+
+      {/* Skills Section */}
+      <div className="mt-8">
+        <h2 className="text-foreground mb-4 text-2xl font-bold">Skills</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {SKILLS.map(({ category, items }) => (
+            <Card
+              key={category}
+              className="bg-card text-foreground border-border rounded-base border-4 shadow-[8px_8px_0_0_#000]"
+            >
+              <CardContent className="p-4">
+                <h3 className="text-foreground mb-2 text-base font-semibold">
+                  {category}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {items.map((item) => (
+                    <span
+                      key={item}
+                      className="bg-secondary text-secondary-foreground border-border rounded-base border-2 px-2 py-0.5 text-sm font-medium shadow-[2px_2px_0_0_#000]"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </div>

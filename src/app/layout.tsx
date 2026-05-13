@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import Link from 'next/link'
 import { Chatbot } from '@/components/chatbot'
 import Script from 'next/script'
+import { WebVitals } from '@/components/web-vitals'
 
 const archivo = Archivo({ subsets: ['latin'] })
 
@@ -119,6 +120,14 @@ export default function RootLayout({
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <WebVitals />
+        {process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN && (
+          <Script
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={`{"token": "${process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN}"}`}
+            strategy="afterInteractive"
+          />
+        )}
         <ThemeProvider attribute="class" disableTransitionOnChange>
           <div className="outline-border rounded-base w600:grid-cols-[70px_auto] w500:grid-cols-1 portrait:w1000:max-h-[800px] mdHeight:w-[100dvw] mdHeight:max-w-[100dvw] grid h-[800px] max-h-[100dvh] w-[1000px] max-w-[1000px] grid-cols-[100px_auto] shadow-[10px_10px_0_0_#000] outline-4 portrait:h-[100dvh]">
             <header>

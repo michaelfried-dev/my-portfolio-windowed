@@ -1,0 +1,20 @@
+diff --git a/dist/index.js b/dist/index.js
+index 5ee7d946e53665c918fe27abc3d6d86417ae9d9b..213295c4dfd4b8c36667fc17c6ffa8a6891b9e39 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -6442,6 +6442,7 @@ async function buildWorkerFile({ vercelConfig, vercelOutput }, {
+   const defaultBuildOpts = {
+     target: "es2022",
+     platform: "neutral",
++    mainFields: ["main", "module"],
+     bundle: false,
+     minify
+   };
+@@ -12433,6 +12434,7 @@ async function buildFile(contents, filePath, { relativeTo } = {}) {
+     stdin: { contents },
+     target: "es2022",
+     platform: "neutral",
++    mainFields: ["main", "module"],
+     outfile: filePath,
+     bundle: true,
+     external: [

@@ -1,0 +1,14 @@
+# Auto-generated lockfiles
+pnpm-lock.yaml
+
+# Build outputs
+.next/
+out/
+coverage/
+
+# Dependencies
+node_modules/
+
+# Minified assets
+*.min.js
+*.min.css

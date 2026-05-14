@@ -12,17 +12,15 @@ const archivo = Archivo({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
-    default: 'Michael Fried - Portfolio',
-    template: '%s | Michael Fried',
+    default: 'Mike Fried - Portfolio',
+    template: '%s | Mike Fried',
   },
   description:
-    "Michael Fried's professional portfolio showcasing software engineering expertise, AI-powered chatbot assistance, and innovative projects built with modern web technologies.",
+    "Mike Fried's professional portfolio showcasing software engineering expertise, AI-powered chatbot assistance, and innovative projects built with modern web technologies.",
   viewport: {
     width: 'device-width',
     initialScale: 1,
-    maximumScale: 1,
-    minimumScale: 1,
-    userScalable: false,
+    maximumScale: 5,
     viewportFit: 'cover',
     interactiveWidget: 'resizes-visual',
   },
@@ -31,7 +29,7 @@ export const metadata: Metadata = {
     'format-detection': 'telephone=no,date=no,address=no,email=no,url=no',
   },
   keywords: [
-    'Michael Fried',
+    'Mike Fried',
     'Software Engineer',
     'AI Portfolio',
     'Web Development',
@@ -39,30 +37,30 @@ export const metadata: Metadata = {
     'Next.js',
     'TypeScript',
   ],
-  authors: [{ name: 'Michael Fried' }],
-  creator: 'Michael Fried',
-  publisher: 'Michael Fried',
+  authors: [{ name: 'Mike Fried' }],
+  creator: 'Mike Fried',
+  publisher: 'Mike Fried',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://michaelfried.info'),
+  metadataBase: new URL('https://mikefried.dev'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Michael Fried - Portfolio',
+    title: 'Mike Fried - Portfolio',
     description:
       'Professional portfolio showcasing software engineering expertise with AI-powered chatbot assistance.',
-    url: 'https://michaelfried.info',
-    siteName: 'Michael Fried Portfolio',
+    url: 'https://mikefried.dev',
+    siteName: 'Mike Fried Portfolio',
     images: [
       {
         url: '/profile.jpg',
         width: 1200,
         height: 630,
-        alt: 'Michael Fried - Software Engineer',
+        alt: 'Mike Fried - Software Engineer',
       },
     ],
     locale: 'en_US',
@@ -70,7 +68,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Michael Fried - Portfolio',
+    title: 'Mike Fried - Portfolio',
     description:
       'Professional portfolio showcasing software engineering expertise with AI-powered chatbot assistance.',
     images: ['/profile.jpg'],
@@ -102,8 +100,8 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Person',
-    name: 'Michael Fried',
-    url: 'https://michaelfried.info',
+    name: 'Mike Fried',
+    url: 'https://mikefried.dev',
     sameAs: [
       'mailto:EMAIL@MICHAELFRIED.INFO',
       'https://www.linkedin.com/in/michael-fried/',
@@ -137,7 +135,7 @@ export default function RootLayout({
               >
                 <h1 className="smallHeight:text-[30px] smallHeight:tracking-[2px] w600:text-[30px] w600:tracking-[2px] -rotate-90 text-[40px] font-bold tracking-[4px] whitespace-nowrap">
                   <span className="text-main-foreground inline-block">
-                    MICHAEL FRIED
+                    MIKE FRIED
                   </span>
                 </h1>
               </Link>

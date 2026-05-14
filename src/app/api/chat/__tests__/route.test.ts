@@ -213,7 +213,7 @@ describe('POST /api/chat', () => {
       (msg: any) => msg.role === 'system',
     )
     expect(systemMessage.content).toContain(
-      "You are the AI chatbot built for Michael Fried's personal portfolio website and you are currently running on this site",
+      "You are the AI chatbot built for Mike Fried's personal portfolio website and you are currently running on this site",
     )
     jest.dontMock('@huggingface/inference')
   })
@@ -455,7 +455,7 @@ describe('POST /api/chat', () => {
         (m: any) => m.role === 'system',
       )
       expect(systemMessage.content).toContain(
-        "You are the AI chatbot built for Michael Fried's personal portfolio website and you are currently running on this site",
+        "You are the AI chatbot built for Mike Fried's personal portfolio website and you are currently running on this site",
       )
     })
 

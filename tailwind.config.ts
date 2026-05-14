@@ -6,7 +6,7 @@ const config = {
       portrait: { raw: '(orientation: portrait)' },
       w1000: { min: '1000px' },
       w800: { max: '800px' },
-      w700: { max: '700px' },
+      w700: { max: '700px' }, // nav collapses to hamburger below this width
       w600: { max: '600px' },
       w500: { max: '500px' },
       w450: { max: '450px' },

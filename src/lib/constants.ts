@@ -7,9 +7,9 @@ export const CONTACT_INFO = {
 } as const
 
 export const PERSONAL_INFO = {
-  name: 'Michael Fried',
+  name: 'Mike Fried',
   title: 'Software Engineer',
-  about: `Hi, I'm Michael! I'm a software engineer who loves taking projects from an initial idea all the way to production. I specialize in building high-performance backend microservices with Kotlin, Java, and Spring, and I'm equally comfortable on the front end with React, Angular, and TypeScript. I believe AI is the biggest force multiplier in modern engineering — I treat tools like Claude Code, GitHub Copilot, and Cursor as core parts of my workflow, not add-ons, using them for everything from rapid prototyping and agentic feature builds to test generation and code review. Quality is always a priority, so I pair that speed with comprehensive automated testing at every level. I'm a quick learner who's always excited to dive into new technologies to find the best solution for the job. Feel free to connect with me!`,
+  about: `Hi, I'm Mike! I'm a software engineer who loves taking projects from an initial idea all the way to production. I specialize in building high-performance backend microservices with Kotlin, Java, and Spring, and I'm equally comfortable on the front end with React, Angular, and TypeScript. I believe AI is the biggest force multiplier in modern engineering — I treat tools like Claude Code, GitHub Copilot, and Cursor as core parts of my workflow, not add-ons, using them for everything from rapid prototyping and agentic feature builds to test generation and code review. Quality is always a priority, so I pair that speed with comprehensive automated testing at every level. I'm a quick learner who's always excited to dive into new technologies to find the best solution for the job. Feel free to connect with me!`,
 } as const
 
 export const EDUCATION = {
@@ -133,14 +133,7 @@ export const EXPERIENCE = [
 export const SKILLS = [
   {
     category: 'AI-Augmented Engineering',
-    items: [
-      'Claude Code',
-      'GitHub Copilot',
-      'Cursor',
-      'Jules (agentic coding, test generation, code review)',
-      'Windsurf',
-      'LM Studio',
-    ],
+    items: ['Claude Code', 'GitHub Copilot', 'LM Studio'],
   },
   {
     category: 'Programming Languages',

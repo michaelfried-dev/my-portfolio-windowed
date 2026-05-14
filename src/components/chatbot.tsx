@@ -416,7 +416,7 @@ export function Chatbot() {
                     className="flex-1"
                     placeholder={
                       CHATBOT_ENABLED
-                        ? 'e.g. Where did Michael Fried work in 2023?'
+                        ? 'e.g. Where did Mike Fried work in 2023?'
                         : 'AI Assistant is currently disabled'
                     }
                     disabled={isLoading || !CHATBOT_ENABLED}

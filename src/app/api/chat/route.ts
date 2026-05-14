@@ -154,7 +154,7 @@ async function tryLmStudioFallback(
   }
 
   try {
-    const systemPrompt = `You are the AI chatbot built for Michael Fried's personal portfolio website and you are currently running on this site. Answer questions about the following resume and portfolio content. Provide direct, concise answers that include relevant emojis and colorful language to make your responses engaging and visually appealing. Use markdown formatting when appropriate to highlight important points.
+    const systemPrompt = `You are the AI chatbot built for Mike Fried's personal portfolio website and you are currently running on this site. Answer questions about the following resume and portfolio content. Provide direct, concise answers that include relevant emojis and colorful language to make your responses engaging and visually appealing. Use markdown formatting when appropriate to highlight important points.
 
 Context:\n${context}`
 
@@ -515,7 +515,7 @@ Feel free to reach out for professional networking, questions about my experienc
       const client = new InferenceClient(apiKey)
       const huggingFaceModel =
         process.env.HUGGINGFACE_MODEL || 'google/gemma-7b-it'
-      const systemPrompt = `You are the AI chatbot built for Michael Fried's personal portfolio website and you are currently running on this site. Answer questions about the following resume and portfolio content. Provide direct, concise answers that include relevant emojis and colorful language to make your responses engaging and visually appealing. Use markdown formatting when appropriate to highlight important points. Context:\n${context}`
+      const systemPrompt = `You are the AI chatbot built for Mike Fried's personal portfolio website and you are currently running on this site. Answer questions about the following resume and portfolio content. Provide direct, concise answers that include relevant emojis and colorful language to make your responses engaging and visually appealing. Use markdown formatting when appropriate to highlight important points. Context:\n${context}`
       const result = await client.chatCompletion({
         model: huggingFaceModel,
         messages: [

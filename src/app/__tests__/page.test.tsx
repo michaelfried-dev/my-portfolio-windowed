@@ -5,9 +5,9 @@ import Page from '../page'
 describe('Page', () => {
   it('renders the main heading', () => {
     render(<Page />)
-    // The text is now split across multiple elements with "Michael" in a <strong> tag
+    // The text is now split across multiple elements with "Mike" in a <strong> tag
     const heading = screen.getByText(/Hi, I'm/i)
-    const name = screen.getByText('Michael')
+    const name = screen.getByText('Mike')
     expect(heading).toBeInTheDocument()
     expect(name).toBeInTheDocument()
     expect(name.tagName).toBe('STRONG')
@@ -18,7 +18,7 @@ describe('Page', () => {
 
     // Check for the GitHub contact link
     const githubContactLink = screen.getByRole('link', {
-      name: /Contact Michael Fried via GitHub/i,
+      name: /Contact Mike Fried via GitHub/i,
     })
     expect(githubContactLink).toBeInTheDocument()
     expect(githubContactLink).toHaveAttribute(
@@ -39,10 +39,10 @@ describe('Page', () => {
 
     // Check for other contact links to ensure they are still present
     expect(
-      screen.getByRole('link', { name: /Contact Michael Fried via Email/i }),
+      screen.getByRole('link', { name: /Contact Mike Fried via Email/i }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('link', { name: /Contact Michael Fried via LinkedIn/i }),
+      screen.getByRole('link', { name: /Contact Mike Fried via LinkedIn/i }),
     ).toBeInTheDocument()
   })
 })

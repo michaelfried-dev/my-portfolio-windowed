@@ -54,7 +54,9 @@ export default function Nav() {
         </span>
 
         <div className="flex h-full items-center">
-          <ThemeSwitcher />
+          <div className="border-border bg-main flex h-full w-[50px] items-center justify-center border-l-2">
+            <ThemeSwitcher />
+          </div>
           <button
             ref={toggleRef}
             aria-label="Toggle menu"

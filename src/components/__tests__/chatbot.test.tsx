@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { Chatbot } from '../chatbot'
 import * as useWindowSizeModule from '@/hooks/useWindowSize'
@@ -24,7 +24,6 @@ beforeAll(() => {
   window.HTMLElement.prototype.scrollIntoView = function () {}
 })
 
-// Mock fetch for API calls and window size
 beforeEach(() => {
   global.fetch = jest.fn(() =>
     Promise.resolve({
@@ -46,7 +45,6 @@ describe('Chatbot', () => {
   // Test for responsiveness
   describe('when on a small screen', () => {
     beforeEach(() => {
-      // Mock the useWindowSize hook to return a small screen size
       ;(useWindowSizeModule.useWindowSize as jest.Mock).mockReturnValue({
         width: 400,
         height: 600,
@@ -58,7 +56,6 @@ describe('Chatbot', () => {
       fireEvent.click(screen.getByLabelText('Open AI Assistant'))
 
       const widget = screen.getByTestId('chatbot-widget')
-      // Check for full-screen classes
       expect(widget).toHaveClass('inset-0 h-full w-full')
       expect(screen.queryByLabelText(/fullscreen/i)).not.toBeInTheDocument()
       expect(screen.getByTestId('chatbot-card')).toHaveClass(
@@ -70,7 +67,6 @@ describe('Chatbot', () => {
 
   describe('when on a large screen', () => {
     beforeEach(() => {
-      // Mock the useWindowSize hook to return a large screen size
       ;(useWindowSizeModule.useWindowSize as jest.Mock).mockReturnValue({
         width: 1200,
         height: 800,
@@ -82,7 +78,6 @@ describe('Chatbot', () => {
       fireEvent.click(screen.getByLabelText('Open AI Assistant'))
 
       const widget = screen.getByTestId('chatbot-widget')
-      // Check for pop-up classes
       expect(widget).toHaveClass('right-4 bottom-4 w-full max-w-md')
       expect(widget).not.toHaveClass('inset-0 h-full w-full')
       expect(screen.getByLabelText('Enter fullscreen')).toBeInTheDocument()
@@ -113,9 +108,9 @@ describe('Chatbot', () => {
       expect(screen.getByTestId('chatbot-chat-area')).toHaveClass('h-64')
     })
   })
+
   it('renders the floating open button', () => {
     render(<Chatbot />)
-    // Button should be present with correct aria-label
     expect(screen.getByLabelText('Open AI Assistant')).toBeInTheDocument()
   })
 
@@ -129,467 +124,71 @@ describe('Chatbot', () => {
     render(<Chatbot />)
     fireEvent.click(screen.getByLabelText('Open AI Assistant'))
     fireEvent.click(await screen.findByLabelText('Close Chatbot'))
-    // Wait for the chatbot widget to be removed from the DOM
     await waitFor(
       () => {
-        const widget = screen.queryByTestId('chatbot-widget')
-        if (widget) {
-          // eslint-disable-next-line no-console
-          console.log('Widget still present after close:', widget.outerHTML)
-        }
-        expect(widget).toBeNull()
+        expect(screen.queryByTestId('chatbot-widget')).toBeNull()
       },
       { timeout: 4000 },
     )
   })
 
-  it('submits a question and displays the answer', async () => {
-    render(<Chatbot />)
-
-    // The chatbot starts closed, so we need to find the button to open it
-    const toggleButton = screen.getByRole('button', {
-      name: /open ai assistant/i,
+  describe('when AI is disabled', () => {
+    it('shows the disabled notice', async () => {
+      render(<Chatbot />)
+      fireEvent.click(screen.getByLabelText('Open AI Assistant'))
+      expect(
+        await screen.findByText('AI Assistant is currently disabled 🚧'),
+      ).toBeInTheDocument()
     })
-    fireEvent.click(toggleButton)
 
-    // Find the input and submit a question
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-
-    fireEvent.change(input, { target: { value: 'Test question' } })
-
-    // Submit the form
-    const form = input.closest('form')
-    if (form) {
-      fireEvent.submit(form)
-    }
-
-    // Wait for the answer to appear
-    await waitFor(() => {
-      expect(screen.getByText('Test answer')).toBeInTheDocument()
+    it('shows contact info in the disabled notice', async () => {
+      render(<Chatbot />)
+      fireEvent.click(screen.getByLabelText('Open AI Assistant'))
+      expect(
+        await screen.findByText(/Running a live AI on a demo site/),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /LinkedIn/i }),
+      ).toBeInTheDocument()
     })
-  })
 
-  it('renders phone number as clickable tel: link in answer', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({ answer: 'You can call me at 856-905-0670.' }),
-      }),
-    )
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'phone?' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-    // Wait for the answer to appear, then check for the raw markdown link
-    const answerText = await screen.findByText(
-      /You can call me at \[856-905-0670\]\(tel:8569050670\)\./,
-    )
-    expect(answerText).toBeInTheDocument()
-  })
-
-  it('shows a loading indicator while waiting for answer', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                ok: true,
-                json: () => Promise.resolve({ answer: 'Delayed answer' }),
-              }),
-            500,
-          ),
-        ),
-    )
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'Test loading?' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-    await waitFor(() => {
-      expect(screen.getByText(/Connecting to AI/)).toBeInTheDocument()
+    it('renders a disabled input with the correct placeholder', async () => {
+      render(<Chatbot />)
+      fireEvent.click(screen.getByLabelText('Open AI Assistant'))
+      const input = await screen.findByPlaceholderText(
+        'AI Assistant is currently disabled',
+      )
+      expect(input).toBeDisabled()
     })
-    await waitFor(() => {
-      expect(screen.getByText('Delayed answer')).toBeInTheDocument()
+
+    it('renders a disabled send button', async () => {
+      render(<Chatbot />)
+      fireEvent.click(screen.getByLabelText('Open AI Assistant'))
+      await screen.findByPlaceholderText('AI Assistant is currently disabled')
+      const sendButton = screen.getByRole('button', { name: /Send/i })
+      expect(sendButton).toBeDisabled()
     })
-  })
 
-  it('shows error message when API returns an error', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            error: 'Rate limit exceeded',
-          }),
-      }),
-    )
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'Trigger error' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-    // The component shows a generic error message for API errors
-    expect(
-      await screen.findByText('Sorry, I could not generate an answer.'),
-    ).toBeInTheDocument()
-  })
-
-  it('handles network errors gracefully', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.reject(new Error('Network error')),
-    )
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'Network test' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-
-    // Should show user-friendly error message
-    expect(
-      await screen.findByText(
-        /Sorry, there was an error processing your request. Please try again later./,
-      ),
-    ).toBeInTheDocument()
-  })
-
-  it('handles empty input submission gracefully', async () => {
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-    // Should not make any API call or add to QA
-    expect(global.fetch).not.toHaveBeenCalled()
-  })
-
-  it('handles whitespace-only input submission gracefully', async () => {
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: '   ' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-    // Should not make any API call or add to QA
-    expect(global.fetch).not.toHaveBeenCalled()
-  })
-
-  it('disables input and button while loading', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                ok: true,
-                json: () => Promise.resolve({ answer: 'Delayed answer' }),
-              }),
-            1000,
-          ),
-        ),
-    )
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'Test loading state' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-
-    // Check that input and button are disabled during loading
-    expect(input).toBeDisabled()
-    const sendButton = screen.getByRole('button', { name: /\.\.\.|Send/ })
-    expect(sendButton).toBeDisabled()
-  })
-
-  it('renders email addresses as clickable mailto links', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            answer: 'Contact me at test@example.com for more info.',
-          }),
-      }),
-    )
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'email?' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-    // Wait for the answer to appear with email link
-    const answerText = await screen.findByText(
-      /Contact me at \[test@example\.com\]\(mailto:test@example\.com\) for more info\./,
-    )
-    expect(answerText).toBeInTheDocument()
-  })
-
-  it('renders URLs as clickable links', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            answer: 'Check out https://example.com for details.',
-          }),
-      }),
-    )
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'url?' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-    // Wait for the answer to appear with URL link
-    const answerText = await screen.findByText(
-      /Check out \[https:\/\/example\.com\]\(https:\/\/example\.com\) for details\./,
-    )
-    expect(answerText).toBeInTheDocument()
-  })
-
-  it('handles non-string answer gracefully', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({ answer: 'Sorry, I could not generate an answer.' }),
-      }),
-    )
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'test question' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-    // Should show the default answer when API returns an error
-    expect(
-      await screen.findByText(/Sorry, I could not generate an answer\./),
-    ).toBeInTheDocument()
-  })
-
-  it('focuses input after opening chatbot', async () => {
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    expect(input).toHaveFocus()
-  })
-
-  it('maintains focus on input after form submission', async () => {
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'Test focus' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-
-    // Input should maintain focus after submission
-    await waitFor(() => {
-      expect(input).toHaveFocus()
+    it('does not call the API when the form is submitted', async () => {
+      render(<Chatbot />)
+      fireEvent.click(screen.getByLabelText('Open AI Assistant'))
+      const input = await screen.findByPlaceholderText(
+        'AI Assistant is currently disabled',
+      )
+      const form = input.closest('form')
+      if (form) fireEvent.submit(form)
+      expect(global.fetch).not.toHaveBeenCalled()
     })
-  })
 
-  it('clears input after successful submission', async () => {
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'Test clear input' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-
-    // Input should be cleared after submission
-    expect(input).toHaveValue('')
-  })
-
-  it('handles multiple questions in sequence', async () => {
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-
-    // First question
-    fireEvent.change(input, { target: { value: 'First question' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-    expect(await screen.findByText('Test answer')).toBeInTheDocument()
-
-    // Second question
-    fireEvent.change(input, { target: { value: 'Second question' } })
-    if (form) fireEvent.submit(form)
-
-    // Both questions should be visible
-    expect(screen.getByText('First question')).toBeInTheDocument()
-    expect(screen.getByText('Second question')).toBeInTheDocument()
-  })
-
-  it('handles API response without answer field', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}), // No answer field
-      }),
-    )
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'No answer test' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-
-    // Should handle missing answer gracefully
-    expect(
-      await screen.findByText(/Sorry, I could not generate an answer\./),
-    ).toBeInTheDocument()
-  })
-
-  it('displays generic thinking message when loading', async () => {
-    // Mock a delayed fetch to ensure loading state persists
-    ;(global.fetch as jest.Mock).mockImplementationOnce(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                ok: true,
-                json: () => Promise.resolve({ answer: 'Test answer' }),
-              }),
-            100,
-          ),
-        ),
-    )
-
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'Test question' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-
-    // Should show generic thinking message
-    expect(await screen.findByText(/Connecting to AI/)).toBeInTheDocument()
-  })
-
-  it('displays LM Studio usage indicator when usedLmStudio flag is true', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            answer: 'LM Studio response',
-            usedLmStudio: true,
-            lmStudioModel: 'test-model',
-          }),
-      }),
-    )
-
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'Test question' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-
-    // Should show LM Studio usage indicator with model name
-    expect(await screen.findByText(/LM Studio response/)).toBeInTheDocument()
-    expect(
-      screen.getByText(/Powered by local and private AI \(test-model\)/),
-    ).toBeInTheDocument()
-  })
-
-  it('displays Hugging Face indicator when usedLmStudio flag is false', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            answer: 'Regular response',
-            usedLmStudio: false,
-          }),
-      }),
-    )
-
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'Test question' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-
-    // Should show Hugging Face indicator
-    expect(await screen.findByText('Regular response')).toBeInTheDocument()
-    expect(screen.getByText(/Powered by Hugging Face/)).toBeInTheDocument()
-  })
-
-  it('displays default LM Studio name when lmStudioModel is not provided', async () => {
-    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            answer: 'LM Studio fallback response',
-            usedLmStudio: true,
-            // No lmStudioModel provided
-          }),
-      }),
-    )
-
-    render(<Chatbot />)
-    fireEvent.click(screen.getByLabelText('Open AI Assistant'))
-    const input = await screen.findByPlaceholderText(
-      'e.g. Where did Michael Fried work in 2023?',
-    )
-    fireEvent.change(input, { target: { value: 'Test question' } })
-    const form = input.closest('form')
-    if (form) fireEvent.submit(form)
-
-    // Should show LM Studio usage indicator with model name
-    expect(
-      await screen.findByText(/LM Studio fallback response/),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText(/Powered by local and private AI \(LM Studio\)/),
-    ).toBeInTheDocument()
+    it('handles empty input submission gracefully', async () => {
+      render(<Chatbot />)
+      fireEvent.click(screen.getByLabelText('Open AI Assistant'))
+      const input = await screen.findByPlaceholderText(
+        'AI Assistant is currently disabled',
+      )
+      const form = input.closest('form')
+      if (form) fireEvent.submit(form)
+      expect(global.fetch).not.toHaveBeenCalled()
+    })
   })
 })

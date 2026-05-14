@@ -138,8 +138,6 @@ body {
   }
 }
 
-@media (max-width: 400px) {
-  .main {
-    max-height: calc(100dvh - 40px) !important;
-  }
-}
+/* Removed: was overriding max-height to 40px offset to compensate for the old
+   stacked mobile nav (which was ~192px tall). Now the hamburger nav is always
+   50px, so layout.tsx's calc(100dvh-50px) is correct at all viewport widths. */

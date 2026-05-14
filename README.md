@@ -1,6 +1,6 @@
-# Michael's Professional Portfolio
+# Mike's Professional Portfolio
 
-🤖 **Built with AI & Windsurf** - This portfolio was developed using AI-powered development tools and the Windsurf IDE, showcasing modern AI-assisted software development practices.
+🤖 **Built with AI** - This portfolio was developed using AI-powered development tools, showcasing modern AI-assisted software development practices.
 
 This repository contains the source code for my personal portfolio website, designed to showcase my skills, professional experience, and project work. The site features a modern, clean, neobrutalist aesthetic and is fully responsive across all devices.
 
@@ -26,7 +26,7 @@ The portfolio includes an intelligent chatbot that can answer questions about my
 - **Local Fallback**: Seamless fallback to local LM Studio API when cloud quota is exceeded
 - **Safari Compatible**: Optimized for all browsers including Safari with proper caching headers
 - **Responsive Design**: Works seamlessly on both desktop and mobile devices
-- **Natural Conversations**: Ask questions like "Where did Michael work in 2023?" or "What are his technical skills?"
+- **Natural Conversations**: Ask questions like "Where did Mike work in 2023?" or "What are his technical skills?"
 
 The chatbot uses advanced prompt engineering and context extraction to provide accurate, helpful responses about my professional background while maintaining a friendly, conversational tone.
 

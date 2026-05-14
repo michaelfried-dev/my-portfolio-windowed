@@ -28,7 +28,7 @@ describe('Layout Metadata', () => {
     expect(metadata.description).toBeDefined()
     expect(metadata.keywords).toBeDefined()
     expect(metadata.creator).toBeDefined()
-    expect(metadata.creator).toContain('Michael Fried')
+    expect(metadata.creator).toContain('Mike Fried')
   })
 })
 
@@ -56,11 +56,11 @@ describe('Layout Metadata', () => {
 
     // Type assertion for title which can be string | TitleTemplate
     const title = metadata.title as { default: string; template: string }
-    expect(title.default).toBe('Michael Fried - Portfolio')
-    expect(title.template).toBe('%s | Michael Fried')
+    expect(title.default).toBe('Mike Fried - Portfolio')
+    expect(title.template).toBe('%s | Mike Fried')
 
     expect(metadata.description).toBe(
-      "Michael Fried's professional portfolio showcasing software engineering expertise, AI-powered chatbot assistance, and innovative projects built with modern web technologies.",
+      "Mike Fried's professional portfolio showcasing software engineering expertise, AI-powered chatbot assistance, and innovative projects built with modern web technologies.",
     )
   })
 

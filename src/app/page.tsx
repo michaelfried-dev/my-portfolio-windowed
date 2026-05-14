@@ -40,7 +40,7 @@ export default function Home() {
             <Avatar className="rounded-base border-border size-[200px] border-4 shadow-[8px_8px_0_0_#000]">
               <AvatarImage
                 src="/profile.jpg"
-                alt="Michael Fried - Software Engineer profile photo"
+                alt="Mike Fried - Software Engineer profile photo"
               />
               <AvatarFallback className="text-6xl">MF</AvatarFallback>
             </Avatar>
@@ -54,7 +54,7 @@ export default function Home() {
                 >
                   <Link
                     href={href}
-                    aria-label={`Contact Michael Fried via ${label}`}
+                    aria-label={`Contact Mike Fried via ${label}`}
                     {...(href.startsWith('http')
                       ? { target: '_blank', rel: 'noopener noreferrer' }
                       : {})}
@@ -77,12 +77,12 @@ export default function Home() {
           <Card className="bg-card text-foreground border-border rounded-base border-4 p-5 shadow-[8px_8px_0_0_#000]">
             <CardContent>
               <p>
-                Hi, I&apos;m <strong>Michael</strong>! I&apos;m a software
-                engineer who loves taking projects from an initial idea all the
-                way to production. I specialize in building high-performance
-                backend microservices with Kotlin, Java, and Spring, and
-                I&apos;m equally comfortable on the front end with React,
-                Angular, and TypeScript.
+                Hi, I&apos;m <strong>Mike</strong>! I&apos;m a software engineer
+                who loves taking projects from an initial idea all the way to
+                production. I specialize in building high-performance backend
+                microservices with Kotlin, Java, and Spring, and I&apos;m
+                equally comfortable on the front end with React, Angular, and
+                TypeScript.
               </p>
               <p className="pt-[10px]">
                 I&apos;m a strong advocate for AI-assisted development — I use

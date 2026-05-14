@@ -1,7 +1,8 @@
 {
   "ignores": [
     "@cloudflare/next-on-pages",
-    "@tailwindcss/postcss", 
+    "@tailwindcss/postcss",
+    "cookie",
     "jest-environment-jsdom",
     "postcss",
     "prettier-plugin-tailwindcss",

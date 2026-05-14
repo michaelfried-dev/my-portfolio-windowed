@@ -158,8 +158,16 @@ describe('POST /api/csp-report', () => {
 
   it('handles modern report with multiple items', async () => {
     const body = [
-      { type: 'csp-violation', url: 'https://a.com', body: { effectiveDirective: 'script-src' } },
-      { type: 'csp-violation', url: 'https://b.com', body: { effectiveDirective: 'style-src' } },
+      {
+        type: 'csp-violation',
+        url: 'https://a.com',
+        body: { effectiveDirective: 'script-src' },
+      },
+      {
+        type: 'csp-violation',
+        url: 'https://b.com',
+        body: { effectiveDirective: 'style-src' },
+      },
     ]
     const req = makeRequest({ body, contentType: 'application/reports+json' })
     const res = await POST(req)

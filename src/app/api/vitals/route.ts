@@ -73,7 +73,8 @@ function validatePayload(raw: unknown): VitalsPayload | null {
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return null
   const obj = raw as Record<string, unknown>
 
-  if (typeof obj.name !== 'string' || !ALLOWED_METRICS.has(obj.name)) return null
+  if (typeof obj.name !== 'string' || !ALLOWED_METRICS.has(obj.name))
+    return null
   if (typeof obj.value !== 'number' || !Number.isFinite(obj.value)) return null
 
   // Optional fields — coerce but don't reject on absence

@@ -32,8 +32,8 @@ const contentSecurityPolicy = [
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
-  "report-uri /api/csp-report",
-  "report-to csp-endpoint",
+  'report-uri /api/csp-report',
+  'report-to csp-endpoint',
 ].join('; ')
 
 const securityHeaders = [

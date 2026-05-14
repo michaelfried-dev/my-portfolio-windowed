@@ -202,7 +202,14 @@ Context:\n${context}`
     return { answer }
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'unknown'
-    console.error(JSON.stringify({ level: 'error', route: ROUTE, event: 'chat.lmstudio_error', err: msg }))
+    console.error(
+      JSON.stringify({
+        level: 'error',
+        route: ROUTE,
+        event: 'chat.lmstudio_error',
+        err: msg,
+      }),
+    )
     return null
   }
 }
@@ -434,8 +441,7 @@ Feel free to reach out for professional networking, questions about my experienc
 
         // Fall back to Hugging Face if LM Studio fails
       } catch (lmError) {
-        const lmMsg =
-          lmError instanceof Error ? lmError.message : 'unknown'
+        const lmMsg = lmError instanceof Error ? lmError.message : 'unknown'
         log({
           ts: new Date().toISOString(),
           level: 'error',

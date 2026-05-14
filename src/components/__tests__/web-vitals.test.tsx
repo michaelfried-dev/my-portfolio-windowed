@@ -30,7 +30,9 @@ const sampleMetric = {
 }
 
 // Assign a stub fetch on global so spyOn can find it
-const mockFetch = jest.fn().mockResolvedValue(new Response(null, { status: 204 }))
+const mockFetch = jest
+  .fn()
+  .mockResolvedValue(new Response(null, { status: 204 }))
 global.fetch = mockFetch
 
 describe('WebVitals component', () => {

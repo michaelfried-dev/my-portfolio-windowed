@@ -45,7 +45,8 @@ export function log(entry: LogEntry): void {
  */
 export async function hashIp(ip: string): Promise<string> {
   try {
-    const salt = (typeof process !== 'undefined' && process.env?.LOG_IP_SALT) ?? ''
+    const salt =
+      (typeof process !== 'undefined' && process.env?.LOG_IP_SALT) ?? ''
     const input = new TextEncoder().encode(salt ? `${ip}:${salt}` : ip)
     const buf = await crypto.subtle.digest('SHA-256', input)
     return Array.from(new Uint8Array(buf))

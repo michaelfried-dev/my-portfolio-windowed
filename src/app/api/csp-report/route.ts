@@ -91,12 +91,21 @@ interface ModernReport {
 }
 
 function parseLegacy(payload: unknown): LegacyCspReport | null {
-  if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) {
+  if (
+    payload === null ||
+    typeof payload !== 'object' ||
+    Array.isArray(payload)
+  ) {
     return null
   }
   const obj = payload as Record<string, unknown>
   const report = obj['csp-report']
-  if (report === undefined || report === null || typeof report !== 'object' || Array.isArray(report)) {
+  if (
+    report === undefined ||
+    report === null ||
+    typeof report !== 'object' ||
+    Array.isArray(report)
+  ) {
     return null
   }
   return report as LegacyCspReport
@@ -186,7 +195,8 @@ export async function POST(req: Request): Promise<NextResponse> {
       event: 'csp.violation',
       ipHash,
       format: 'legacy',
-      violatedDirective: report['violated-directive'] ?? report['effective-directive'] ?? null,
+      violatedDirective:
+        report['violated-directive'] ?? report['effective-directive'] ?? null,
       blockedUri: report['blocked-uri'] ?? null,
       documentUri: report['document-uri'] ?? null,
       sourceFile: report['source-file'] ?? null,

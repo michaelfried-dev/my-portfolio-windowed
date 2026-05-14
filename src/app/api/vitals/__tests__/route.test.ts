@@ -25,38 +25,53 @@ describe('POST /api/vitals', () => {
   }
 
   it('returns 204 for valid CLS metric', async () => {
-    const req = makeRequest({ body: { name: 'CLS', value: 0.05, rating: 'good', delta: 0.05 } })
+    const req = makeRequest({
+      body: { name: 'CLS', value: 0.05, rating: 'good', delta: 0.05 },
+    })
     const res = await POST(req)
     expect(res.status).toBe(204)
   })
 
   it('returns 204 for valid LCP metric', async () => {
-    const req = makeRequest({ body: { name: 'LCP', value: 1800, rating: 'good', delta: 1800 } })
+    const req = makeRequest({
+      body: { name: 'LCP', value: 1800, rating: 'good', delta: 1800 },
+    })
     const res = await POST(req)
     expect(res.status).toBe(204)
   })
 
   it('returns 204 for valid INP metric', async () => {
-    const req = makeRequest({ body: { name: 'INP', value: 120, rating: 'needs-improvement' } })
+    const req = makeRequest({
+      body: { name: 'INP', value: 120, rating: 'needs-improvement' },
+    })
     const res = await POST(req)
     expect(res.status).toBe(204)
   })
 
   it('returns 204 for valid FCP metric', async () => {
-    const req = makeRequest({ body: { name: 'FCP', value: 900, rating: 'good' } })
+    const req = makeRequest({
+      body: { name: 'FCP', value: 900, rating: 'good' },
+    })
     const res = await POST(req)
     expect(res.status).toBe(204)
   })
 
   it('returns 204 for valid TTFB metric', async () => {
-    const req = makeRequest({ body: { name: 'TTFB', value: 200, rating: 'good' } })
+    const req = makeRequest({
+      body: { name: 'TTFB', value: 200, rating: 'good' },
+    })
     const res = await POST(req)
     expect(res.status).toBe(204)
   })
 
   it('returns 204 with navigationType field', async () => {
     const req = makeRequest({
-      body: { name: 'LCP', value: 2200, rating: 'needs-improvement', navigationType: 'navigate' },
+      body: {
+        name: 'LCP',
+        value: 2200,
+        rating: 'needs-improvement',
+        navigationType: 'navigate',
+      },
     })
     const res = await POST(req)
     expect(res.status).toBe(204)
@@ -93,7 +108,10 @@ describe('POST /api/vitals', () => {
   })
 
   it('returns 415 for wrong content-type', async () => {
-    const req = makeRequest({ body: { name: 'LCP', value: 1800 }, contentType: 'text/plain' })
+    const req = makeRequest({
+      body: { name: 'LCP', value: 1800 },
+      contentType: 'text/plain',
+    })
     const res = await POST(req)
     expect(res.status).toBe(415)
   })

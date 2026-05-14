@@ -12,8 +12,12 @@ describe('Layout Metadata', () => {
     expect(viewport.width).toBe('device-width')
     expect(viewport.initialScale).toBe(1)
     expect(viewport.maximumScale).toBe(5)
-    expect((viewport as Viewport & { minimumScale?: number }).minimumScale).toBeUndefined()
-    expect((viewport as Viewport & { userScalable?: boolean }).userScalable).toBeUndefined()
+    expect(
+      (viewport as Viewport & { minimumScale?: number }).minimumScale,
+    ).toBeUndefined()
+    expect(
+      (viewport as Viewport & { userScalable?: boolean }).userScalable,
+    ).toBeUndefined()
     expect(viewport.viewportFit).toBe('cover')
     expect(viewport.interactiveWidget).toBe('resizes-visual')
   })
@@ -37,8 +41,12 @@ describe('Layout Metadata', () => {
     expect(viewport.width).toBe('device-width')
     expect(viewport.initialScale).toBe(1)
     expect(viewport.maximumScale).toBe(5)
-    expect((viewport as Viewport & { minimumScale?: number }).minimumScale).toBeUndefined()
-    expect((viewport as Viewport & { userScalable?: boolean }).userScalable).toBeUndefined()
+    expect(
+      (viewport as Viewport & { minimumScale?: number }).minimumScale,
+    ).toBeUndefined()
+    expect(
+      (viewport as Viewport & { userScalable?: boolean }).userScalable,
+    ).toBeUndefined()
     expect(viewport.viewportFit).toBe('cover')
     expect(viewport.interactiveWidget).toBe('resizes-visual')
   })

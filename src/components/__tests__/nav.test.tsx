@@ -85,7 +85,9 @@ describe('Nav component', () => {
     mockedUsePathname.mockReturnValue('/')
     render(<Nav />)
     // Two ThemeSwitchers render (mobile bar + desktop grid)
-    expect(screen.getAllByTestId('theme-switcher').length).toBeGreaterThanOrEqual(1)
+    expect(
+      screen.getAllByTestId('theme-switcher').length,
+    ).toBeGreaterThanOrEqual(1)
   })
 
   // ── Hamburger button ────────────────────────────────────────────────────────

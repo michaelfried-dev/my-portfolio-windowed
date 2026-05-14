@@ -45,11 +45,11 @@ export default function Nav() {
   }, [isOpen, close])
 
   return (
-    <nav className="border-b-border rounded-tr-base border-b-4 bg-black text-xl w600:text-base portrait:rounded-none">
+    <nav className="border-b-border rounded-tr-base w600:text-base border-b-4 bg-black text-xl portrait:rounded-none">
       {/* Mobile collapsed bar — visible below w700 (max-width: 700px) */}
       <div className="w700:flex hidden h-[50px] w-full items-center justify-between">
         {/* Current page label shown in the collapsed bar */}
-        <span className="text-main-foreground px-4 text-sm font-semibold uppercase tracking-wide">
+        <span className="text-main-foreground px-4 text-sm font-semibold tracking-wide uppercase">
           {links.find((l) => l.href === path)?.label ?? 'Menu'}
         </span>
 
@@ -80,10 +80,7 @@ export default function Nav() {
         id="mobile-nav-drawer"
         role="region"
         aria-label="Navigation links"
-        className={clsx(
-          'w700:flex hidden flex-col',
-          !isOpen && 'w700:hidden',
-        )}
+        className={clsx('w700:flex hidden flex-col', !isOpen && 'w700:hidden')}
       >
         {links.map((link) => (
           <Link

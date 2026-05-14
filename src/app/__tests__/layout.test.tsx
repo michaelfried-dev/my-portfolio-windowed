@@ -7,13 +7,13 @@ describe('Layout Metadata', () => {
   it('has the correct viewport settings', () => {
     const viewport = metadata.viewport as Viewport
 
-    // Test the viewport settings
+    // Test the viewport settings — WCAG 1.4.4 compliant: pinch-to-zoom allowed
     expect(viewport).toBeDefined()
     expect(viewport.width).toBe('device-width')
     expect(viewport.initialScale).toBe(1)
-    expect(viewport.maximumScale).toBe(1)
-    expect(viewport.minimumScale).toBe(1)
-    expect(viewport.userScalable).toBe(false)
+    expect(viewport.maximumScale).toBe(5)
+    expect((viewport as Viewport & { minimumScale?: number }).minimumScale).toBeUndefined()
+    expect((viewport as Viewport & { userScalable?: boolean }).userScalable).toBeUndefined()
     expect(viewport.viewportFit).toBe('cover')
     expect(viewport.interactiveWidget).toBe('resizes-visual')
   })
@@ -32,13 +32,13 @@ describe('Layout Metadata', () => {
   it('has the correct viewport settings including all required properties', () => {
     const viewport = metadata.viewport as Viewport
 
-    // Check that the viewport metadata is correctly set
+    // Check that the viewport metadata is correctly set — WCAG 1.4.4 compliant
     expect(viewport).toBeDefined()
     expect(viewport.width).toBe('device-width')
     expect(viewport.initialScale).toBe(1)
-    expect(viewport.maximumScale).toBe(1)
-    expect(viewport.minimumScale).toBe(1)
-    expect(viewport.userScalable).toBe(false)
+    expect(viewport.maximumScale).toBe(5)
+    expect((viewport as Viewport & { minimumScale?: number }).minimumScale).toBeUndefined()
+    expect((viewport as Viewport & { userScalable?: boolean }).userScalable).toBeUndefined()
     expect(viewport.viewportFit).toBe('cover')
     expect(viewport.interactiveWidget).toBe('resizes-visual')
   })

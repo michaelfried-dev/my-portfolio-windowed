@@ -45,7 +45,7 @@ export default function Nav() {
   }, [isOpen, close])
 
   return (
-    <nav className="border-b-border rounded-tr-base border-b-4 bg-black text-base sm:text-xl portrait:rounded-none">
+    <nav className="border-b-border rounded-tr-base border-b-4 bg-black text-xl w600:text-base portrait:rounded-none">
       {/* Mobile collapsed bar — visible below w700 (max-width: 700px) */}
       <div className="w700:flex hidden h-[50px] w-full items-center justify-between">
         {/* Current page label shown in the collapsed bar */}

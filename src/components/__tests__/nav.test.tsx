@@ -90,6 +90,35 @@ describe('Nav component', () => {
     ).toBeGreaterThanOrEqual(1)
   })
 
+  it('desktop grid wraps ThemeSwitcher in a styled cell with border-l-4 and bg-main', () => {
+    mockedUsePathname.mockReturnValue('/')
+    render(<Nav />)
+
+    // The desktop grid is the second major section (after the mobile bar).
+    // Its ThemeSwitcher is the second one in the DOM.
+    const switchers = screen.getAllByTestId('theme-switcher')
+    const desktopSwitcher = switchers[1]
+
+    // The wrapper cell must own the border and background, not the button itself.
+    const cell = desktopSwitcher.parentElement!
+    expect(cell).toHaveClass('border-l-4')
+    expect(cell).toHaveClass('bg-main')
+  })
+
+  it('mobile bar wraps ThemeSwitcher in a styled cell with border-l-2 and bg-main', () => {
+    mockedUsePathname.mockReturnValue('/')
+    render(<Nav />)
+
+    // The mobile bar's ThemeSwitcher is the first one in the DOM.
+    const switchers = screen.getAllByTestId('theme-switcher')
+    const mobileSwitcher = switchers[0]
+
+    // The wrapper cell must own the border and background.
+    const cell = mobileSwitcher.parentElement!
+    expect(cell).toHaveClass('border-l-2')
+    expect(cell).toHaveClass('bg-main')
+  })
+
   // ── Hamburger button ────────────────────────────────────────────────────────
 
   it('renders the hamburger toggle button', () => {

@@ -133,14 +133,7 @@ export const EXPERIENCE = [
 export const SKILLS = [
   {
     category: 'AI-Augmented Engineering',
-    items: [
-      'Claude Code',
-      'GitHub Copilot',
-      'Cursor',
-      'Jules (agentic coding, test generation, code review)',
-      'Windsurf',
-      'LM Studio',
-    ],
+    items: ['Claude Code', 'GitHub Copilot', 'LM Studio'],
   },
   {
     category: 'Programming Languages',

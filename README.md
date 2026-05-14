@@ -1,6 +1,6 @@
 # Mike's Professional Portfolio
 
-🤖 **Built with AI & Windsurf** - This portfolio was developed using AI-powered development tools and the Windsurf IDE, showcasing modern AI-assisted software development practices.
+🤖 **Built with AI** - This portfolio was developed using AI-powered development tools, showcasing modern AI-assisted software development practices.
 
 This repository contains the source code for my personal portfolio website, designed to showcase my skills, professional experience, and project work. The site features a modern, clean, neobrutalist aesthetic and is fully responsive across all devices.
 

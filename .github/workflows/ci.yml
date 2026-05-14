@@ -6,14 +6,22 @@ on:
   pull_request:
     branches: [main, develop]
 
+# Default token permissions for every job in this workflow.
+# Individual jobs can widen this where needed (e.g. CodeQL needs
+# `security-events: write`).
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x, 22.x]
 
     steps:
       - name: Checkout code
@@ -46,8 +54,11 @@ jobs:
         env:
           CI: true
 
+      # Pinned to a specific SHA because this step receives CODECOV_TOKEN.
+      # Dependabot will keep the SHA and the trailing `# v5.5.1` comment
+      # updated in lockstep when a new release ships.
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@af09b5e394c93991b95a5e7646aeb90c1917f78f # v5.5.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
@@ -61,6 +72,7 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    # CodeQL requires `security-events: write` to upload SARIF results.
     permissions:
       contents: read
       security-events: write
@@ -92,8 +104,13 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
+      # Pinned to a SHA because this step receives SNYK_TOKEN.
+      # `snyk/actions/node` does not publish per-language tags, so we pin
+      # the `master` ref to a specific commit; Dependabot will bump it.
+      # continue-on-error: SNYK_TOKEN is optional in this project and the
+      # action exits non-zero when the secret is unset.
       - name: Run Snyk security scan
-        uses: snyk/actions/node@master
+        uses: snyk/actions/node@9cf6ca713d71123d2d229cc3d7f145b96ea3c518 # master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
@@ -104,6 +121,8 @@ jobs:
     name: Lighthouse Performance Audit
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code

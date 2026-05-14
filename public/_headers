@@ -1,0 +1,20 @@
+# Cloudflare Pages _headers file
+#
+# This is a belt-and-suspenders duplicate of the security headers set in
+# next.config.mjs `headers()`. @cloudflare/next-on-pages does not always
+# propagate the Next.js `headers()` config to the edge response (depending
+# on whether a route is rendered statically, via the Pages Functions worker,
+# or as an Edge route), so we declare the same headers natively here to
+# guarantee coverage for static assets and pre-rendered pages.
+#
+# If you change one of these directives, change the matching entry in
+# next.config.mjs to keep the two surfaces in sync.
+
+/*
+  Reporting-Endpoints: csp-endpoint="/api/csp-report"
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api-inference.huggingface.co https://router.huggingface.co http://localhost:1234 http://127.0.0.1:1234 https://cloudflareinsights.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; report-uri /api/csp-report; report-to csp-endpoint
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()

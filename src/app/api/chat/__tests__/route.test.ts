@@ -68,11 +68,11 @@ describe('POST /api/chat', () => {
     expect(data.error).toMatch(/Question cannot be empty/)
   })
 
-  it('returns 400 if question is too long', async () => {
-    const longQuestion = 'a'.repeat(10001) // Over the 10000 character limit
+  it('returns 413 if question is too long', async () => {
+    const longQuestion = 'a'.repeat(4097) // Over the 4096 character limit
     const req = mockRequest({ body: { question: longQuestion } })
     const res = await POST(req)
-    expect(res.status).toBe(400)
+    expect(res.status).toBe(413)
     const data = await res.json()
     expect(data.error).toMatch(/Question too long/)
   })
@@ -94,7 +94,7 @@ describe('POST /api/chat', () => {
       { virtual: true },
     )
     const { POST: MockedPOST } = await import('../route')
-    const longQuestion = 'a'.repeat(10000)
+    const longQuestion = 'a'.repeat(4096)
     const req = mockRequest({ body: { question: longQuestion } })
     const res = await MockedPOST(req)
     expect(res.status).toBe(200)

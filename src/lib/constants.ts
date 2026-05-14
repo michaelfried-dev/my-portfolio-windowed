@@ -9,7 +9,7 @@ export const CONTACT_INFO = {
 export const PERSONAL_INFO = {
   name: 'Michael Fried',
   title: 'Software Engineer',
-  about: `Hi, I'm Michael! I'm a software engineer who loves taking projects from an initial idea all the way to production. I specialize in building high-performance backend microservices with Kotlin, Java, and Spring, and I'm equally comfortable on the front end with React, Angular, and TypeScript. I'm a strong advocate for AI-assisted development — I use tools like GitHub Copilot and Claude Code daily for everything from rapid prototyping and test generation to agentic, multi-step feature builds and code review. Quality is always a priority, so I pair that speed with comprehensive automated testing at every level. I'm a quick learner who's always excited to dive into new technologies to find the best solution for the job. Feel free to connect with me!`,
+  about: `Hi, I'm Michael! I'm a software engineer who loves taking projects from an initial idea all the way to production. I specialize in building high-performance backend microservices with Kotlin, Java, and Spring, and I'm equally comfortable on the front end with React, Angular, and TypeScript. I believe AI is the biggest force multiplier in modern engineering — I treat tools like Claude Code, GitHub Copilot, and Cursor as core parts of my workflow, not add-ons, using them for everything from rapid prototyping and agentic feature builds to test generation and code review. Quality is always a priority, so I pair that speed with comprehensive automated testing at every level. I'm a quick learner who's always excited to dive into new technologies to find the best solution for the job. Feel free to connect with me!`,
 } as const
 
 export const EDUCATION = {
@@ -43,7 +43,7 @@ export const EXPERIENCE = [
       'Build and enhance backend microservices using Java and Spring Boot, backed by Postgres and Amazon Aurora datastores.',
       'Provision and manage cloud infrastructure with Terraform and deploy containerized services to AWS ECS via Spinnaker continuous-delivery pipelines, utilizing S3 for artifact storage and configuration management.',
       'Write and maintain API integration tests using Karate and validate endpoints with Bruno for rapid manual testing and debugging.',
-      'Leverage GitHub Copilot, Claude Code, and Jules to accelerate development — from AI-assisted coding and automated test generation to agentic, multi-step feature implementation and code-review workflows.',
+      'Leverage GitHub Copilot, Claude Code, and Jules to accelerate development — with nearly 100% of code AI-generated under engineering direction, reducing average feature delivery time by ~75% through agentic, multi-step implementation and AI-driven code-review workflows.',
       'Monitor application health and troubleshoot production issues using Splunk dashboards and alerts.',
     ],
   },
@@ -80,7 +80,7 @@ export const EXPERIENCE = [
   },
   {
     company: 'SoFi',
-    location: 'Claymont, Delaware',
+    location: 'Claymont, DE',
     title: 'Software Engineer',
     date: 'January 2020 - January 2023',
     description: [
@@ -99,9 +99,7 @@ export const EXPERIENCE = [
     title: 'Software Development Engineer',
     date: 'February 2016 - December 2019',
     description: [
-      'Worked as a consultant for various clients including Nemours, Capital One, Politico, Graduate School USA, developing and maintaining enterprise applications.',
-      'Built the new Nemours app platform, developing iOS applications in Swift and web applications in Angular that connected with backend APIs. Created comprehensive unit tests and automated test suites using XCUITest Framework, Fastlane, Cucumber, Selenium, Ruby, and Postman. Configured and administered Bamboo for complete CI/CD processes.',
-      'Built the internal Credit Disputes application using Java and the WaveMaker platform, managing the complete application lifecycle from development to production releases. Conducted manual application testing using Zephyr to track test results.',
+      'Worked as a consultant for various clients including Nemours, Capital One, Politico, and Graduate School USA, developing and maintaining enterprise applications.',
       'Developed features for the Politico and Politico PRO websites during the 2016 Election season using Brightspot CMS in Java. Designed and implemented IP-based user access for the "PRO" website for a large organization.',
       'Led the comprehensive redesign of the Graduate School USA website, orchestrating the entire project lifecycle from strategic planning through implementation and deployment, resulting in a transformative user experience that directly drove measurable revenue growth.',
       'Implemented automated testing frameworks and practices to improve code quality and reduce deployment risks.',
@@ -115,13 +113,9 @@ export const EXPERIENCE = [
     title: 'Software Development Engineer',
     date: 'July 2013 – January 2016',
     description: [
-      'Developed software for the Secure Lending Platform utilizing Java, Webmethods, and web-related technologies, thereby ensuring high precision and data security within the financial industry.',
-      'Administered multiple databases, each containing over 100 tables, packages, and procedures, thereby ensuring data consistency, reliability, and security.',
-      'Collaborated with multiple teams and high-profile clients to resolve technological and code issues, ensuring a positive user experience.',
-      'Utilized multiple tracking systems to monitor issues and new developments.',
-      'Managed development servers hosting technologies such as WebLogic, WebMethods, Apache, and SiteMinder, thereby ensuring seamless integration of services.',
-      'Managed code using versioning systems like SVN and Perforce, thereby ensuring organized code storage for deployment.',
-      'Integrated software with various systems, thereby creating a seamless client experience.',
+      'Built and maintained the Secure Lending Platform using Java and WebMethods, delivering high-precision, secure data processing for financial services.',
+      'Administered multiple databases (100+ tables, packages, and stored procedures each) and managed WebLogic, Apache, and SiteMinder application servers.',
+      'Integrated disparate internal systems to create a seamless end-to-end client experience across the lending workflow.',
     ],
   },
   {
@@ -130,24 +124,72 @@ export const EXPERIENCE = [
     title: 'Software Engineer/Web Developer',
     date: 'April 2011 – September 2012',
     description: [
-      'Developed web applications using Java, JSP, and the Google Web Toolkit, including a URL redirector for secure internal link creation.',
-      "Created and maintained web pages on multiple company websites, including Lockheed Martin Engineering's main site, using GWT, JSP, HTML, and other web-related technologies.",
-      'Administered over 60 databases across multiple systems, ensuring consistent and reliable data provision.',
-      'Supported various computer-related projects, creating custom web pages and applications for specific uses.',
+      'Developed internal web applications using Java, JSP, and Google Web Toolkit, including a secure URL redirector and pages for the Lockheed Martin Engineering main site.',
+      'Administered 60+ databases across multiple systems, ensuring consistent and reliable data access.',
+    ],
+  },
+] as const
+
+export const SKILLS = [
+  {
+    category: 'AI-Augmented Engineering',
+    items: [
+      'Claude Code',
+      'GitHub Copilot',
+      'Cursor',
+      'Jules (agentic coding, test generation, code review)',
+      'Windsurf',
+      'LM Studio',
     ],
   },
   {
-    company: 'Wharton Business School',
-    location: 'Philadelphia, Pennsylvania',
-    title: 'Computer Support Representative',
-    date: 'March 2010 – September 2010',
-    description: [
-      'Evaluated and identified software problems and solutions for computing equipment, email, and wireless networking to ensure students had necessary equipment.',
-      'Documented, installed, and configured software including wireless security and MS Office on various systems and devices (Windows, Mac OS, Android, iOS, Blackberry).',
-      'Documented, installed, and configured software and hardware, including hard drive replacement and memory upgrades.',
-      'Resolved student account issues, ensuring uninterrupted learning.',
-      'Managed a team of student workers to provide efficient service to Wharton Business School students.',
-      'Tracked student issues using a ticketing system, ensuring timely resolution.',
+    category: 'Programming Languages',
+    items: ['Kotlin', 'Java', 'TypeScript/JavaScript', 'Swift'],
+  },
+  {
+    category: 'Web & Mobile Frameworks',
+    items: [
+      'React',
+      'Next.js',
+      'Angular',
+      'Tailwind CSS',
+      'SpringBoot',
+      'WebFlux',
+      'Swift (iOS)',
+      'XCUITest',
+    ],
+  },
+  {
+    category: 'DevOps & Cloud Platforms',
+    items: [
+      'AWS (ECS, S3, CloudFormation, Secrets Manager)',
+      'Terraform',
+      'Docker',
+      'Kubernetes',
+      'GitLab CI/CD',
+      'GitHub Actions',
+      'Spinnaker',
+    ],
+  },
+  {
+    category: 'Databases & Data Engineering',
+    items: ['Postgres', 'Amazon Aurora', 'DynamoDB', 'Flyway'],
+  },
+  {
+    category: 'Monitoring & Logging',
+    items: ['Datadog', 'Splunk', 'SonarQube', 'Rollbar'],
+  },
+  {
+    category: 'Testing & QA',
+    items: [
+      'Jest',
+      'React Testing Library',
+      'JUnit',
+      'Karate',
+      'Cucumber',
+      'Selenium',
+      'XCUITest',
+      'Bruno',
     ],
   },
 ] as const

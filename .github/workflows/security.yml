@@ -9,10 +9,17 @@ on:
     # Run security scans daily at 2 AM UTC
     - cron: '0 2 * * *'
 
+# Read-only by default. Jobs widen this only when they need to upload
+# SARIF results to the GitHub Security tab.
+permissions:
+  contents: read
+
 jobs:
   secret-scan:
     name: Secret Detection
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -20,8 +27,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Pinned to a specific SHA: TruffleHog walks the full git history
+      # looking for secrets and is a prime supply-chain target. Previously
+      # this referenced `@main` (mutable). Dependabot will track the
+      # `# v3.90.8` comment for updates.
       - name: Run TruffleHog OSS
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@466da5b0bb161144f6afca9afe5d57975828c410 # v3.90.8
         with:
           path: ./
           extra_args: --debug --only-verified
@@ -29,6 +40,8 @@ jobs:
   dependency-security:
     name: Dependency Security Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -65,6 +78,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
+      # Required to upload Trivy SARIF results to the Security tab.
       security-events: write
 
     steps:
@@ -75,8 +89,11 @@ jobs:
         run: |
           docker build -t portfolio-security-scan .
 
+      # Pinned to a SHA: Trivy ingests the built image and emits SARIF
+      # that is uploaded to the Security tab; pinning prevents a
+      # compromised action from tampering with vulnerability output.
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: 'portfolio-security-scan'
           format: 'sarif'

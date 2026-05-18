@@ -97,12 +97,12 @@ jobs:
         continue-on-error: true
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
 
       # Pinned to a SHA because this step receives SNYK_TOKEN.
       # `snyk/actions/node` does not publish per-language tags, so we pin
